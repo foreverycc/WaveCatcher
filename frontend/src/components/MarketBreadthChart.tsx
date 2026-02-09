@@ -489,6 +489,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tickFormatter={(val) => val === 0 ? '' : (val / volumeScale.divisor).toFixed(1)}
                                 width={38}
                                 tick={{ fontSize: 10 }}
+                                tickCount={3}
                             />
                             <Tooltip content={<></>} />
                             <Bar dataKey="spxVolume" opacity={0.6} name="Volume">

@@ -94,5 +94,14 @@ export const analysisApi = {
     getSignals1234: async (ticker: string) => {
         const response = await api.get<{ cd_dates: string[], mc_dates: string[] }>(`/analysis/signals_1234/${ticker}`);
         return response.data;
+    },
+
+    getMarketBreadth: async (stockList: string) => {
+        const response = await api.get<{
+            cd_breadth: { date: string, count: number }[],
+            mc_breadth: { date: string, count: number }[],
+            run_id: number | null
+        }>(`/analysis/market_breadth/${encodeURIComponent(stockList)}`);
+        return response.data;
     }
 };

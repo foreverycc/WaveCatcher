@@ -113,17 +113,30 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId }) => {
         staleTime: 1000 * 60 * 60, // 1 hour
     });
 
-    // 2. Market Breadth Data
-    // We fetch 2 types
-    const { data: breadthCD1234 } = useQuery({
-        queryKey: ['breadth', runId, 'cd_market_breadth_1234'],
-        queryFn: () => runId ? analysisApi.getResult(runId, 'cd_market_breadth_1234') : null,
-        enabled: !!runId
+    // 2. Market Breadth Data - Index-specific queries
+    // SPX -> stocks_sp500.tab
+    const { data: spxBreadth } = useQuery({
+        queryKey: ['marketBreadth', 'stocks_sp500.tab'],
+        queryFn: () => analysisApi.getMarketBreadth('stocks_sp500.tab'),
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
-    const { data: breadthMC1234 } = useQuery({
-        queryKey: ['breadth', runId, 'mc_market_breadth_1234'],
-        queryFn: () => runId ? analysisApi.getResult(runId, 'mc_market_breadth_1234') : null,
-        enabled: !!runId
+    // QQQ -> stocks_nasdaq100.tab
+    const { data: qqqBreadth } = useQuery({
+        queryKey: ['marketBreadth', 'stocks_nasdaq100.tab'],
+        queryFn: () => analysisApi.getMarketBreadth('stocks_nasdaq100.tab'),
+        staleTime: 1000 * 60 * 5,
+    });
+    // Dow Jones -> stocks_dowjones.tab
+    const { data: djiBreadth } = useQuery({
+        queryKey: ['marketBreadth', 'stocks_dowjones.tab'],
+        queryFn: () => analysisApi.getMarketBreadth('stocks_dowjones.tab'),
+        staleTime: 1000 * 60 * 5,
+    });
+    // IWM -> stocks_russell2000.tab
+    const { data: iwmBreadth } = useQuery({
+        queryKey: ['marketBreadth', 'stocks_russell2000.tab'],
+        queryFn: () => analysisApi.getMarketBreadth('stocks_russell2000.tab'),
+        staleTime: 1000 * 60 * 5,
     });
 
     // 2b. 1234 Signals for each index (from analysis results)
@@ -253,32 +266,32 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId }) => {
                 <MarketBreadthChart
                     title="SPX"
                     spxData={spxHistory ?? []}
-                    cdBreadth={breadthCD1234 ?? []}
-                    mcBreadth={breadthMC1234 ?? []}
+                    cdBreadth={spxBreadth?.cd_breadth ?? []}
+                    mcBreadth={spxBreadth?.mc_breadth ?? []}
                     minDate={oneYearAgo}
                     signals1234={spxSignals1234}
                 />
                 <MarketBreadthChart
                     title="QQQ"
                     spxData={qqqHistory ?? []}
-                    cdBreadth={breadthCD1234 ?? []}
-                    mcBreadth={breadthMC1234 ?? []}
+                    cdBreadth={qqqBreadth?.cd_breadth ?? []}
+                    mcBreadth={qqqBreadth?.mc_breadth ?? []}
                     minDate={oneYearAgo}
                     signals1234={qqqSignals1234}
                 />
                 <MarketBreadthChart
                     title="Dow Jones"
                     spxData={djiHistory ?? []}
-                    cdBreadth={breadthCD1234 ?? []}
-                    mcBreadth={breadthMC1234 ?? []}
+                    cdBreadth={djiBreadth?.cd_breadth ?? []}
+                    mcBreadth={djiBreadth?.mc_breadth ?? []}
                     minDate={oneYearAgo}
                     signals1234={djiSignals1234}
                 />
                 <MarketBreadthChart
                     title="IWM"
                     spxData={iwmHistory ?? []}
-                    cdBreadth={breadthCD1234 ?? []}
-                    mcBreadth={breadthMC1234 ?? []}
+                    cdBreadth={iwmBreadth?.cd_breadth ?? []}
+                    mcBreadth={iwmBreadth?.mc_breadth ?? []}
                     minDate={oneYearAgo}
                     signals1234={iwmSignals1234}
                 />

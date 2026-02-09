@@ -127,6 +127,51 @@ async def get_analysis_runs(db: Session = Depends(get_db)):
         "stock_list_name": r.stock_list_name
     } for r in runs]
 
+@router.get("/market_breadth/{stock_list}")
+async def get_market_breadth_by_stock_list(
+    stock_list: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get market breadth data (CD/MC signal counts per day) for a specific stock list.
+    Returns data from the latest completed analysis run for that stock list.
+    """
+    # Find the latest completed run for this stock list
+    latest_run = db.query(AnalysisRun).filter(
+        AnalysisRun.stock_list_name == stock_list,
+        AnalysisRun.status == "completed"
+    ).order_by(desc(AnalysisRun.timestamp)).first()
+    
+    if not latest_run:
+        logger.info(f"No completed analysis run found for stock list: {stock_list}")
+        return {"cd_breadth": [], "mc_breadth": [], "run_id": None}
+    
+    run_id = latest_run.id
+    
+    # Fetch CD market breadth 1234
+    cd_result = db.query(AnalysisResult).filter(
+        AnalysisResult.run_id == run_id,
+        AnalysisResult.result_type == "cd_market_breadth_1234",
+        AnalysisResult.ticker == "ALL"
+    ).first()
+    
+    cd_breadth = cd_result.data if cd_result and cd_result.data else []
+    
+    # Fetch MC market breadth 1234
+    mc_result = db.query(AnalysisResult).filter(
+        AnalysisResult.run_id == run_id,
+        AnalysisResult.result_type == "mc_market_breadth_1234",
+        AnalysisResult.ticker == "ALL"
+    ).first()
+    
+    mc_breadth = mc_result.data if mc_result and mc_result.data else []
+    
+    return {
+        "cd_breadth": cd_breadth,
+        "mc_breadth": mc_breadth,
+        "run_id": run_id
+    }
+
 @router.get("/runs/{run_id}/results/{result_type}")
 async def get_analysis_result(
     run_id: int, 
