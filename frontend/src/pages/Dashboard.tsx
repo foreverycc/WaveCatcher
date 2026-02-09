@@ -95,10 +95,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
         refetchInterval: 30000
     });
 
-    // Find latest run for selected stock list
+    // Find latest run for selected stock list OR multi_index run
     const currentRun = React.useMemo(() => {
-        if (!runs || !selectedStockList) return null;
-        return runs.find(r => r.stock_list_name === selectedStockList);
+        if (!runs) return null;
+        // First try to find a multi_index run (for summary and breadth)
+        const multiIndexRun = runs.find(r => r.stock_list_name === 'multi_index' && r.status === 'completed');
+        // Fall back to selected stock list run
+        const stockListRun = selectedStockList ? runs.find(r => r.stock_list_name === selectedStockList) : null;
+        // Prefer multi_index run if it exists
+        return multiIndexRun || stockListRun || null;
     }, [runs, selectedStockList]);
 
     // Determine result type based on active tabs

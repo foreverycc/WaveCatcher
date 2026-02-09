@@ -69,8 +69,22 @@ def get_db():
     finally:
         db.close()
 
+# Index configuration mapping
+INDEX_CONFIG = {
+    "SPX": {"symbol": "^SPX", "stock_list": "stocks_sp500.tab"},
+    "QQQ": {"symbol": "QQQ", "stock_list": "stocks_nasdaq100.tab"},
+    "DJI": {"symbol": "^DJI", "stock_list": "stocks_dowjones.tab"},
+    "IWM": {"symbol": "IWM", "stock_list": "stocks_russell2000.tab"},
+    "SOXX": {"symbol": "SOXX", "stock_list": "stocks_soxx.tab"},
+    "XBI": {"symbol": "XBI", "stock_list": "stocks_xbi.tab"},
+}
+
 class AnalysisRequest(BaseModel):
     stock_list_file: str
+    end_date: Optional[str] = None
+
+class MultiIndexRequest(BaseModel):
+    indices: List[str]  # e.g., ["SPX", "QQQ", "IWM"]
     end_date: Optional[str] = None
 
 class JobStatus(BaseModel):
@@ -80,6 +94,16 @@ class JobStatus(BaseModel):
     error: Optional[str] = None
     start_time: Optional[str] = None
     end_time: Optional[str] = None
+
+@router.get("/indices")
+async def get_available_indices():
+    """Get list of available indices for multi-index analysis."""
+    return {
+        "indices": [
+            {"key": key, "symbol": config["symbol"], "stock_list": config["stock_list"]}
+            for key, config in INDEX_CONFIG.items()
+        ]
+    }
 
 @router.post("/run", response_model=JobStatus)
 async def run_analysis(request: AnalysisRequest):
@@ -97,6 +121,37 @@ async def run_analysis(request: AnalysisRequest):
             "start_time": job.start_time.isoformat() if job.start_time else None,
             "end_time": job.end_time.isoformat() if job.end_time else None
         }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/run_multi_index", response_model=JobStatus)
+async def run_multi_index_analysis(request: MultiIndexRequest):
+    """
+    Start analysis for multiple indices. Combines all stock lists into unique set,
+    runs analysis once, then computes per-index breadth.
+    """
+    try:
+        # Validate indices
+        invalid_indices = [idx for idx in request.indices if idx not in INDEX_CONFIG]
+        if invalid_indices:
+            raise HTTPException(status_code=400, detail=f"Invalid indices: {invalid_indices}")
+        
+        if not request.indices:
+            raise HTTPException(status_code=400, detail="At least one index must be selected")
+        
+        # Start multi-index analysis
+        job_id = job_manager.start_multi_index_analysis(request.indices, request.end_date)
+        job = job_manager.get_job(job_id)
+        return {
+            "job_id": job.job_id,
+            "status": job.status,
+            "progress": job.progress,
+            "error": job.error,
+            "start_time": job.start_time.isoformat() if job.start_time else None,
+            "end_time": job.end_time.isoformat() if job.end_time else None
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

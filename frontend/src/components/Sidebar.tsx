@@ -9,17 +9,19 @@ interface SidebarProps {
     isCollapsed: boolean;
     onToggle: () => void;
 
-    // New props
-    selectedStockList: string;
-    setSelectedStockList: (list: string) => void;
-    stockLists: string[] | undefined;
-    handleRunAnalysis: () => void;
+    // Analysis control props
     jobStatus: any;
     latestUpdate: any;
     showLogs: boolean;
     setShowLogs: (show: boolean) => void;
     dateRange?: { start: string; end: string };
     setDateRange?: (range: { start: string; end: string }) => void;
+
+    // Multi-index props
+    availableIndices?: { key: string; symbol: string; stock_list: string }[];
+    selectedIndices: string[];
+    setSelectedIndices: (indices: string[]) => void;
+    handleRunMultiIndexAnalysis: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -27,16 +29,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onNavigate,
     isCollapsed,
     onToggle,
-    selectedStockList,
-    setSelectedStockList,
-    stockLists,
-    handleRunAnalysis,
     jobStatus,
     latestUpdate,
     showLogs,
     setShowLogs,
     dateRange,
-    setDateRange
+    setDateRange,
+    availableIndices,
+    selectedIndices,
+    setSelectedIndices,
+    handleRunMultiIndexAnalysis
 }) => {
     return (
         <div
@@ -57,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="flex items-center gap-2 text-primary overflow-hidden whitespace-nowrap">
                     <Activity className="w-6 h-6 shrink-0" />
                     <span className={cn("font-bold text-xl transition-opacity duration-300", isCollapsed ? "opacity-0 w-0" : "opacity-100")}>
-                        WaveCatcher
+                        WaveCatcher Pro
                     </span>
                 </div>
             </div>
@@ -103,21 +105,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {/* Analysis Controls - Only show when expanded or show minimal icons when collapsed */}
                 <div className={cn("space-y-4", isCollapsed ? "flex flex-col items-center space-y-4" : "")}>
 
-                    {/* Stock List Selector */}
-                    {!isCollapsed ? (
+                    {/* Multi-Index Selector */}
+                    {!isCollapsed && availableIndices && (
                         <div className="space-y-2">
-                            <label className="text-xs font-medium text-muted-foreground px-1">Stock List</label>
-                            <select
-                                value={selectedStockList}
-                                onChange={(e) => setSelectedStockList(e.target.value)}
-                                className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                            >
-                                {stockLists?.map(f => <option key={f} value={f}>{f}</option>)}
-                            </select>
-                        </div>
-                    ) : (
-                        <div title={`Selected: ${selectedStockList}`} className="w-10 h-10 flex items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                            <span className="text-[10px] font-mono">{selectedStockList.slice(0, 2)}</span>
+                            <label className="text-xs font-medium text-muted-foreground px-1">Market Indices</label>
+                            <div className="space-y-1 bg-muted/50 rounded-md p-2">
+                                {availableIndices.map(idx => (
+                                    <label key={idx.key} className="flex items-center gap-2 cursor-pointer hover:bg-muted rounded px-1 py-0.5">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIndices.includes(idx.key)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedIndices([...selectedIndices, idx.key]);
+                                                } else {
+                                                    setSelectedIndices(selectedIndices.filter(k => k !== idx.key));
+                                                }
+                                            }}
+                                            className="w-3.5 h-3.5 rounded border-input accent-primary"
+                                        />
+                                        <span className="text-sm">{idx.key}</span>
+                                        <span className="text-xs text-muted-foreground">({idx.symbol})</span>
+                                    </label>
+                                ))}
+                            </div>
                         </div>
                     )}
 
@@ -141,13 +152,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         </div>
                     ) : (
                         <button
-                            onClick={handleRunAnalysis}
-                            disabled={!selectedStockList}
+                            onClick={handleRunMultiIndexAnalysis}
+                            disabled={selectedIndices.length === 0}
                             className={cn(
                                 "flex items-center gap-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all shadow-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed",
                                 isCollapsed ? "p-3 justify-center" : "w-full px-4 py-3 justify-center"
                             )}
-                            title="Run Analysis"
+                            title="Run Multi-Index Analysis"
                         >
                             <Play className="w-4 h-4 shrink-0" />
                             {!isCollapsed && <span>Run Analysis</span>}

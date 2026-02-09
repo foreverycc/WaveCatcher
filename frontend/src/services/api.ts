@@ -103,5 +103,17 @@ export const analysisApi = {
             run_id: number | null
         }>(`/analysis/market_breadth/${encodeURIComponent(stockList)}`);
         return response.data;
+    },
+
+    getIndices: async () => {
+        const response = await api.get<{
+            indices: { key: string, symbol: string, stock_list: string }[]
+        }>('/analysis/indices');
+        return response.data;
+    },
+
+    runMultiIndex: async (indices: string[], end_date?: string) => {
+        const response = await api.post<JobStatus>('/analysis/run_multi_index', { indices, end_date });
+        return response.data;
     }
 };

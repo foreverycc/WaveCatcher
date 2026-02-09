@@ -29,3 +29,5 @@ backend/app/logic/__pycache__/data_loader.cpython-313.pyc
 backend/app/logic/__pycache__/app.cpython-313.pyc
 backend/app/services/__pycache__/engine.cpython-313.pyc
 backend/backend_server.log
+.DS_Store
+.DS_Store

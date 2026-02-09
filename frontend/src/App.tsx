@@ -18,6 +18,12 @@ function AppContent() {
   });
   const [showLogs, setShowLogs] = useState(false);
 
+  // Multi-index selection state
+  const [selectedIndices, setSelectedIndices] = useState<string[]>(() => {
+    const stored = localStorage.getItem('selectedIndices');
+    return stored ? JSON.parse(stored) : ['SPX', 'QQQ', 'DJI', 'IWM'];
+  });
+
   // Date Range State (default: last 1 month)
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
     start: format(subMonths(new Date(), 1), 'yyyy-MM-dd'),
@@ -65,6 +71,21 @@ function AppContent() {
     }
   }, [stockLists, selectedStockList]);
 
+  // Persist selected indices
+  useEffect(() => {
+    localStorage.setItem('selectedIndices', JSON.stringify(selectedIndices));
+  }, [selectedIndices]);
+
+  // Fetch available indices
+  const { data: availableIndices } = useQuery({
+    queryKey: ['availableIndices'],
+    queryFn: async () => {
+      const data = await analysisApi.getIndices();
+      return data.indices;
+    },
+    staleTime: Infinity
+  });
+
   // Fetch job status
   const { data: jobStatus, refetch: refetchStatus } = useQuery({
     queryKey: ['jobStatus'],
@@ -104,6 +125,21 @@ function AppContent() {
     }
   };
 
+  // Run multi-index analysis mutation
+  const runMultiIndexMutation = useMutation({
+    mutationFn: () => analysisApi.runMultiIndex(selectedIndices),
+    onSuccess: () => {
+      refetchStatus();
+    },
+    onError: (error) => alert(`Error starting multi-index analysis: ${error}`)
+  });
+
+  const handleRunMultiIndexAnalysis = () => {
+    if (selectedIndices.length > 0) {
+      runMultiIndexMutation.mutate();
+    }
+  };
+
   // Fetch analysis runs to derive latest update time
   const { data: runs } = useQuery({
     queryKey: ['analysisRuns'],
@@ -125,17 +161,19 @@ function AppContent() {
         isCollapsed={isSidebarCollapsed}
         onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
 
-        // New props for sidebar controls
-        selectedStockList={selectedStockList}
-        setSelectedStockList={setSelectedStockList}
-        stockLists={stockLists}
-        handleRunAnalysis={handleRunAnalysis}
+        // Analysis control props
         jobStatus={jobStatus}
         latestUpdate={latestUpdate}
         showLogs={showLogs}
         setShowLogs={setShowLogs}
         dateRange={dateRange}
         setDateRange={setDateRange}
+
+        // Multi-index props
+        availableIndices={availableIndices}
+        selectedIndices={selectedIndices}
+        setSelectedIndices={setSelectedIndices}
+        handleRunMultiIndexAnalysis={handleRunMultiIndexAnalysis}
       />
 
       <main className="flex-1 overflow-auto bg-secondary/30 flex flex-col">
