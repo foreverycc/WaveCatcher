@@ -1,0 +1,11 @@
+multiprocess==0.70.18
+numpy==2.3.0
+pandas==2.3.0
+yfinance==0.2.63
+akshare==1.17.5
+plotly==6.1.2
+fastapi==0.110.0
+uvicorn==0.27.1
+pydantic==2.6.3
+python-multipart==0.0.9
+sqlalchemy==2.0.28

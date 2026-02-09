@@ -1,0 +1,8 @@
+multiprocess==0.70.18
+numpy==2.3.0
+pandas==2.3.0
+yfinance==0.2.63
+akshare==1.17.5
+streamlit==1.45.1
+plotly==6.1.2
+streamlit-aggrid==1.1.5.post1
