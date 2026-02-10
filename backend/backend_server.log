@@ -5732,3 +5732,754 @@ AttributeError: 'dict' object has no attribute 'name'
 2026-02-08 14:48:28,883 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=75
 2026-02-08 14:48:28,883 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
 2026-02-08 14:48:28,884 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-08 16:24:28,308 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=75
+2026-02-08 16:24:28,343 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 16:24:28,349 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-14', '2024-03-08']
+2026-02-08 16:24:28,350 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=75
+2026-02-08 16:24:28,350 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 16:24:28,351 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 16:24:28,359 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=75
+2026-02-08 16:24:28,359 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2025-01-14', '2025-01-13', '2024-11-04', '2024-06-11', '2024-06-05']
+2026-02-08 16:24:28,360 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-10-07', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26', '2024-05-16', '2024-03-28', '2024-03-25', '2024-03-22', '2024-03-08', '2024-03-06', '2024-03-04', '2024-02-16']
+2026-02-08 16:24:28,361 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=75
+2026-02-08 16:24:28,361 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 16:24:28,362 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-08 16:25:45,708 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=75
+2026-02-08 16:25:45,709 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 16:25:45,710 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-14', '2024-03-08']
+2026-02-08 16:25:45,838 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=75
+2026-02-08 16:25:45,839 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 16:25:45,839 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 16:25:45,843 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=75
+2026-02-08 16:25:45,843 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2025-01-14', '2025-01-13', '2024-11-04', '2024-06-11', '2024-06-05']
+2026-02-08 16:25:45,844 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-10-07', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26', '2024-05-16', '2024-03-28', '2024-03-25', '2024-03-22', '2024-03-08', '2024-03-06', '2024-03-04', '2024-02-16']
+2026-02-08 16:25:45,848 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=75
+2026-02-08 16:25:45,848 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 16:25:45,849 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-08 16:35:28,555 - app.services.engine - INFO - Job 20260208163528: Status set to running
+2026-02-08 16:35:28,556 - app.services.engine - INFO - Started analysis job 20260208163528 for test.tab
+2026-02-08 16:35:28,557 - app.services.engine - INFO - Job 20260208163528: Calling analyze_stocks with file: /Users/cyancloud/git/WaveCatcher/backend/data/test.tab
+2026-02-08 16:35:28,570 - app.logic.stock_analyzer - INFO - Starting analysis for test.tab
+2026-02-08 16:35:28,840 - app.logic.stock_analyzer - INFO - Loaded 12 tickers from /Users/cyancloud/git/WaveCatcher/backend/data/test.tab (including indices)
+2026-02-08 16:35:28,840 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-08 16:35:54,450 - app.logic.stock_analyzer - INFO - Processed 5/12 tickers
+2026-02-08 16:36:07,477 - app.logic.stock_analyzer - INFO - Processed 10/12 tickers
+2026-02-08 16:36:26,839 - app.logic.stock_analyzer - INFO - Processed 12/12 tickers
+2026-02-08 16:36:26,882 - app.logic.stock_analyzer - INFO - All tickers processed. Aggregating results...
+2026-02-08 16:36:26,883 - app.logic.stock_analyzer - INFO - Aggregated 120 CD evaluation results and 120 MC evaluation results
+2026-02-08 16:36:27,425 - app.logic.stock_analyzer - INFO - Saving MC 1234 breakout results...
+2026-02-08 16:36:27,887 - app.logic.stock_analyzer - INFO - Saving MC 5230 breakout results...
+2026-02-08 16:36:28,120 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-08 16:36:28,512 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-08 16:36:28,859 - app.services.engine - INFO - Job 20260208163528: Completed successfully
+2026-02-08 16:36:31,496 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=75
+2026-02-08 16:36:31,496 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 16:36:31,497 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-14', '2024-03-08']
+2026-02-08 16:36:31,497 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=75
+2026-02-08 16:36:31,497 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 16:36:31,498 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 16:36:31,501 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=75
+2026-02-08 16:36:31,502 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2025-01-14', '2025-01-13', '2024-11-04', '2024-06-11', '2024-06-05']
+2026-02-08 16:36:31,503 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-10-07', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26', '2024-05-16', '2024-03-28', '2024-03-25', '2024-03-22', '2024-03-08', '2024-03-06', '2024-03-04', '2024-02-16']
+2026-02-08 16:36:31,506 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=75
+2026-02-08 16:36:31,507 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 16:36:31,507 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-08 16:40:12,206 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=75
+2026-02-08 16:40:12,207 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 16:40:12,207 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-14', '2024-03-08']
+2026-02-08 16:40:12,208 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=75
+2026-02-08 16:40:12,213 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 16:40:12,218 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 16:40:12,229 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=75
+2026-02-08 16:40:12,230 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2025-01-14', '2025-01-13', '2024-11-04', '2024-06-11', '2024-06-05']
+2026-02-08 16:40:12,230 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-10-07', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26', '2024-05-16', '2024-03-28', '2024-03-25', '2024-03-22', '2024-03-08', '2024-03-06', '2024-03-04', '2024-02-16']
+2026-02-08 16:40:12,230 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=75
+2026-02-08 16:40:12,231 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 16:40:12,231 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-08 16:41:42,684 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=75
+2026-02-08 16:41:42,685 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 16:41:42,686 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-14', '2024-03-08']
+2026-02-08 16:41:42,686 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=75
+2026-02-08 16:41:42,686 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 16:41:42,687 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 16:41:42,693 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=75
+2026-02-08 16:41:42,693 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2025-01-14', '2025-01-13', '2024-11-04', '2024-06-11', '2024-06-05']
+2026-02-08 16:41:42,693 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-10-07', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26', '2024-05-16', '2024-03-28', '2024-03-25', '2024-03-22', '2024-03-08', '2024-03-06', '2024-03-04', '2024-02-16']
+2026-02-08 16:41:42,695 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=75
+2026-02-08 16:41:42,701 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 16:41:42,706 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-08 16:54:28,529 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=75
+2026-02-08 16:54:28,538 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 16:54:28,547 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-14', '2024-03-08']
+2026-02-08 16:54:28,548 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=75
+2026-02-08 16:54:28,548 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 16:54:28,548 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 16:54:28,556 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=75
+2026-02-08 16:54:28,557 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2025-01-14', '2025-01-13', '2024-11-04', '2024-06-11', '2024-06-05']
+2026-02-08 16:54:28,557 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-10-07', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26', '2024-05-16', '2024-03-28', '2024-03-25', '2024-03-22', '2024-03-08', '2024-03-06', '2024-03-04', '2024-02-16']
+2026-02-08 16:54:28,559 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=75
+2026-02-08 16:54:28,560 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 16:54:28,560 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-08 16:55:20,079 - app.services.engine - INFO - Job 20260208165520: Status set to running
+2026-02-08 16:55:20,079 - app.services.engine - INFO - Started analysis job 20260208165520 for stocks_nasdaq100.tab
+2026-02-08 16:55:20,079 - app.services.engine - INFO - Job 20260208165520: Calling analyze_stocks with file: /Users/cyancloud/git/WaveCatcher/backend/data/stocks_nasdaq100.tab
+2026-02-08 16:55:20,080 - app.logic.stock_analyzer - INFO - Starting analysis for stocks_nasdaq100.tab
+2026-02-08 16:55:20,090 - app.logic.stock_analyzer - INFO - Loaded 105 tickers from /Users/cyancloud/git/WaveCatcher/backend/data/stocks_nasdaq100.tab (including indices)
+2026-02-08 16:55:20,091 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-08 16:56:09,212 - app.logic.stock_analyzer - INFO - Processed 5/105 tickers
+2026-02-08 16:56:09,214 - app.logic.stock_analyzer - INFO - Processed 10/105 tickers
+2026-02-08 16:56:10,142 - app.logic.stock_analyzer - INFO - Processed 15/105 tickers
+2026-02-08 16:56:55,546 - app.logic.stock_analyzer - INFO - Processed 20/105 tickers
+2026-02-08 16:56:57,990 - app.logic.stock_analyzer - INFO - Processed 25/105 tickers
+2026-02-08 16:56:58,461 - app.logic.stock_analyzer - INFO - Processed 30/105 tickers
+2026-02-08 16:56:58,836 - app.logic.stock_analyzer - INFO - Processed 35/105 tickers
+2026-02-08 16:57:40,658 - app.logic.stock_analyzer - INFO - Processed 40/105 tickers
+2026-02-08 16:57:43,491 - app.logic.stock_analyzer - INFO - Processed 45/105 tickers
+2026-02-08 16:57:44,148 - app.logic.stock_analyzer - INFO - Processed 50/105 tickers
+2026-02-08 16:58:24,065 - app.logic.stock_analyzer - INFO - Processed 55/105 tickers
+2026-02-08 16:58:25,499 - app.logic.stock_analyzer - INFO - Processed 60/105 tickers
+2026-02-08 16:58:28,744 - app.logic.stock_analyzer - INFO - Processed 65/105 tickers
+2026-02-08 16:58:30,112 - app.logic.stock_analyzer - INFO - Processed 70/105 tickers
+2026-02-08 16:59:12,083 - app.logic.stock_analyzer - INFO - Processed 75/105 tickers
+2026-02-08 16:59:12,905 - app.logic.stock_analyzer - INFO - Processed 80/105 tickers
+2026-02-08 16:59:16,153 - app.logic.stock_analyzer - INFO - Processed 85/105 tickers
+2026-02-08 16:59:18,429 - app.logic.stock_analyzer - INFO - Processed 90/105 tickers
+2026-02-08 16:59:54,526 - app.logic.stock_analyzer - INFO - Processed 95/105 tickers
+2026-02-08 16:59:55,265 - app.logic.stock_analyzer - INFO - Processed 100/105 tickers
+2026-02-08 16:59:56,838 - app.logic.stock_analyzer - INFO - Processed 105/105 tickers
+2026-02-08 16:59:56,877 - app.logic.stock_analyzer - INFO - All tickers processed. Aggregating results...
+2026-02-08 16:59:56,895 - app.logic.stock_analyzer - INFO - Aggregated 1050 CD evaluation results and 1050 MC evaluation results
+2026-02-08 17:00:00,984 - app.logic.stock_analyzer - INFO - Saving MC 1234 breakout results...
+2026-02-08 17:00:04,436 - app.logic.stock_analyzer - INFO - Saving MC 5230 breakout results...
+2026-02-08 17:00:06,113 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-08 17:00:08,207 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-08 17:00:10,649 - app.services.engine - INFO - Job 20260208165520: Completed successfully
+2026-02-08 17:00:12,852 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=76
+2026-02-08 17:00:12,855 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 17:00:12,858 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-14', '2024-03-08']
+2026-02-08 17:00:12,859 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=76
+2026-02-08 17:00:12,859 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 17:00:12,861 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 17:00:12,866 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=76
+2026-02-08 17:00:12,867 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2025-01-14', '2025-01-13', '2024-11-04', '2024-06-11', '2024-06-10', '2024-06-05']
+2026-02-08 17:00:12,869 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26', '2024-05-16', '2024-03-28', '2024-03-25', '2024-03-22', '2024-03-08', '2024-03-06', '2024-03-04', '2024-02-16']
+2026-02-08 17:00:12,873 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=76
+2026-02-08 17:00:12,875 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 17:00:12,877 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-08 17:01:17,518 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=76
+2026-02-08 17:01:17,521 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 17:01:17,523 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-14', '2024-03-08']
+2026-02-08 17:01:17,642 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=76
+2026-02-08 17:01:17,642 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 17:01:17,644 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 17:01:17,649 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=76
+2026-02-08 17:01:17,651 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2025-01-14', '2025-01-13', '2024-11-04', '2024-06-11', '2024-06-10', '2024-06-05']
+2026-02-08 17:01:17,652 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26', '2024-05-16', '2024-03-28', '2024-03-25', '2024-03-22', '2024-03-08', '2024-03-06', '2024-03-04', '2024-02-16']
+2026-02-08 17:01:17,655 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=76
+2026-02-08 17:01:17,656 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 17:01:17,658 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-08 17:08:57,862 - app.api.endpoints.analysis - INFO - No completed analysis run found for stock list: stocks_dowjones.tab
+2026-02-08 17:08:57,872 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=76
+2026-02-08 17:08:57,877 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 17:08:57,888 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-14', '2024-03-08']
+2026-02-08 17:08:57,888 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=76
+2026-02-08 17:08:57,889 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 17:08:57,891 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 17:08:57,892 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=76
+2026-02-08 17:08:57,893 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2025-01-14', '2025-01-13', '2024-11-04', '2024-06-11', '2024-06-10', '2024-06-05']
+2026-02-08 17:08:57,895 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26', '2024-05-16', '2024-03-28', '2024-03-25', '2024-03-22', '2024-03-08', '2024-03-06', '2024-03-04', '2024-02-16']
+2026-02-08 17:08:57,896 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=76
+2026-02-08 17:08:57,897 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 17:08:57,898 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-08 17:14:09,508 - app.services.engine - INFO - Job 20260208171409: Status set to running
+2026-02-08 17:14:09,508 - app.services.engine - INFO - Started analysis job 20260208171409 for stocks_dowjones.tab
+2026-02-08 17:14:09,508 - app.services.engine - INFO - Job 20260208171409: Calling analyze_stocks with file: /Users/cyancloud/git/WaveCatcher/backend/data/stocks_dowjones.tab
+2026-02-08 17:14:09,509 - app.logic.stock_analyzer - INFO - Starting analysis for stocks_dowjones.tab
+2026-02-08 17:14:09,520 - app.logic.stock_analyzer - INFO - Loaded 34 tickers from /Users/cyancloud/git/WaveCatcher/backend/data/stocks_dowjones.tab (including indices)
+2026-02-08 17:14:09,520 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-08 17:14:36,691 - app.logic.stock_analyzer - INFO - Processed 5/34 tickers
+2026-02-08 17:14:59,381 - app.logic.stock_analyzer - INFO - Processed 10/34 tickers
+2026-02-08 17:15:00,677 - app.logic.stock_analyzer - INFO - Processed 15/34 tickers
+2026-02-08 17:15:23,285 - app.logic.stock_analyzer - INFO - Processed 20/34 tickers
+2026-02-08 17:15:25,225 - app.logic.stock_analyzer - INFO - Processed 25/34 tickers
+2026-02-08 17:15:44,424 - app.logic.stock_analyzer - INFO - Processed 30/34 tickers
+2026-02-08 17:15:45,500 - app.logic.stock_analyzer - INFO - Processed 34/34 tickers
+2026-02-08 17:15:45,532 - app.logic.stock_analyzer - INFO - All tickers processed. Aggregating results...
+2026-02-08 17:15:45,534 - app.logic.stock_analyzer - INFO - Aggregated 340 CD evaluation results and 340 MC evaluation results
+2026-02-08 17:15:46,727 - app.logic.stock_analyzer - INFO - Saving MC 1234 breakout results...
+2026-02-08 17:15:47,971 - app.logic.stock_analyzer - INFO - Saving MC 5230 breakout results...
+2026-02-08 17:15:48,525 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-08 17:15:49,286 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-08 17:15:50,029 - app.services.engine - INFO - Job 20260208171409: Completed successfully
+2026-02-08 17:15:52,655 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=77
+2026-02-08 17:15:52,660 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 17:15:52,665 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-14', '2024-03-08']
+2026-02-08 17:15:52,665 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=77
+2026-02-08 17:15:52,666 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 17:15:52,667 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 17:15:52,667 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=77
+2026-02-08 17:15:52,667 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2025-01-14', '2025-01-13', '2024-11-04', '2024-06-11', '2024-06-10', '2024-06-05']
+2026-02-08 17:15:52,668 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26', '2024-05-16', '2024-03-28', '2024-03-25', '2024-03-22', '2024-03-08', '2024-03-06', '2024-03-04', '2024-02-16']
+2026-02-08 17:15:52,668 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=77
+2026-02-08 17:15:52,668 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 17:15:52,669 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-08 17:50:37,196 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=77
+2026-02-08 17:50:37,201 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 17:50:37,206 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 17:50:37,207 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=77
+2026-02-08 17:50:37,207 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 17:50:37,208 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-14', '2024-03-08']
+2026-02-08 17:50:37,208 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=77
+2026-02-08 17:50:37,209 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 17:50:37,211 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-08 17:50:37,211 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=77
+2026-02-08 17:50:37,211 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2025-01-14', '2025-01-13', '2024-11-04', '2024-06-11', '2024-06-10', '2024-06-05']
+2026-02-08 17:50:37,212 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26', '2024-05-16', '2024-03-28', '2024-03-25', '2024-03-22', '2024-03-08', '2024-03-06', '2024-03-04', '2024-02-16']
+2026-02-08 20:38:24,184 - app.services.engine - INFO - Job 20260208203824: Starting multi-index analysis for ['QQQ', 'DJI']
+2026-02-08 20:38:24,186 - app.services.engine - INFO - Started multi-index analysis job 20260208203824 for indices: ['QQQ', 'DJI']
+2026-02-08 20:38:24,214 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['QQQ', 'DJI']
+2026-02-08 20:38:24,215 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-08 20:38:24,216 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-08 20:38:24,216 - app.logic.stock_analyzer - INFO - Combined unique tickers: 125
+2026-02-08 20:38:24,216 - app.logic.stock_analyzer - INFO - Processing 125 combined tickers...
+2026-02-08 20:38:24,216 - app.logic.stock_analyzer - ERROR - Multi-index analysis failed: name 'process_ticker' is not defined
+2026-02-08 20:38:24,218 - app.services.engine - ERROR - Job 20260208203824: Multi-index analysis failed with error: name 'process_ticker' is not defined
+Traceback (most recent call last):
+  File "/Users/cyancloud/git/WaveCatcher/backend/app/services/engine.py", line 150, in _run_multi_index_analysis
+    analyze_multi_index(index_info, end_date=job.end_date, progress_callback=update_progress)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/cyancloud/git/WaveCatcher/backend/app/logic/stock_analyzer.py", line 788, in analyze_multi_index
+    raise e
+  File "/Users/cyancloud/git/WaveCatcher/backend/app/logic/stock_analyzer.py", line 697, in analyze_multi_index
+    ticker, cd_1234, mc_1234, cd_5230, mc_5230, cd_eval, mc_eval, ticker_data = process_ticker(ticker, end_date)
+                                                                                ^^^^^^^^^^^^^^
+NameError: name 'process_ticker' is not defined. Did you mean: 'process_ticker_all'?
+2026-02-08 20:38:52,979 - app.services.engine - INFO - Job 20260208203852: Starting multi-index analysis for ['QQQ', 'DJI']
+2026-02-08 20:38:52,980 - app.services.engine - INFO - Started multi-index analysis job 20260208203852 for indices: ['QQQ', 'DJI']
+2026-02-08 20:38:53,016 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['QQQ', 'DJI']
+2026-02-08 20:38:53,021 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-08 20:38:53,022 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-08 20:38:53,022 - app.logic.stock_analyzer - INFO - Combined unique tickers: 125
+2026-02-08 20:38:53,022 - app.logic.stock_analyzer - INFO - Processing 125 combined tickers...
+2026-02-08 20:38:53,022 - app.logic.stock_analyzer - ERROR - Multi-index analysis failed: name 'process_ticker' is not defined
+2026-02-08 20:38:53,023 - app.services.engine - ERROR - Job 20260208203852: Multi-index analysis failed with error: name 'process_ticker' is not defined
+Traceback (most recent call last):
+  File "/Users/cyancloud/git/WaveCatcher/backend/app/services/engine.py", line 150, in _run_multi_index_analysis
+    analyze_multi_index(index_info, end_date=job.end_date, progress_callback=update_progress)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/cyancloud/git/WaveCatcher/backend/app/logic/stock_analyzer.py", line 788, in analyze_multi_index
+    raise e
+  File "/Users/cyancloud/git/WaveCatcher/backend/app/logic/stock_analyzer.py", line 697, in analyze_multi_index
+    ticker, cd_1234, mc_1234, cd_5230, mc_5230, cd_eval, mc_eval, ticker_data = process_ticker(ticker, end_date)
+                                                                                ^^^^^^^^^^^^^^
+NameError: name 'process_ticker' is not defined. Did you mean: 'process_ticker_all'?
+2026-02-08 20:39:03,511 - app.services.engine - INFO - Job 20260208203903: Starting multi-index analysis for ['QQQ', 'DJI']
+2026-02-08 20:39:03,511 - app.services.engine - INFO - Started multi-index analysis job 20260208203903 for indices: ['QQQ', 'DJI']
+2026-02-08 20:39:03,530 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['QQQ', 'DJI']
+2026-02-08 20:39:03,530 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-08 20:39:03,531 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-08 20:39:03,531 - app.logic.stock_analyzer - INFO - Combined unique tickers: 125
+2026-02-08 20:39:03,531 - app.logic.stock_analyzer - INFO - Processing 125 combined tickers...
+2026-02-08 20:39:03,531 - app.logic.stock_analyzer - ERROR - Multi-index analysis failed: name 'process_ticker' is not defined
+2026-02-08 20:39:03,532 - app.services.engine - ERROR - Job 20260208203903: Multi-index analysis failed with error: name 'process_ticker' is not defined
+Traceback (most recent call last):
+  File "/Users/cyancloud/git/WaveCatcher/backend/app/services/engine.py", line 150, in _run_multi_index_analysis
+    analyze_multi_index(index_info, end_date=job.end_date, progress_callback=update_progress)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/cyancloud/git/WaveCatcher/backend/app/logic/stock_analyzer.py", line 788, in analyze_multi_index
+    raise e
+  File "/Users/cyancloud/git/WaveCatcher/backend/app/logic/stock_analyzer.py", line 697, in analyze_multi_index
+    ticker, cd_1234, mc_1234, cd_5230, mc_5230, cd_eval, mc_eval, ticker_data = process_ticker(ticker, end_date)
+                                                                                ^^^^^^^^^^^^^^
+NameError: name 'process_ticker' is not defined. Did you mean: 'process_ticker_all'?
+2026-02-08 21:12:03,988 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-08 21:12:03,994 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: []
+2026-02-08 21:12:03,999 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: []
+2026-02-08 21:12:04,000 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-08 21:12:04,000 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 21:12:04,000 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-08 21:12:04,000 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-08 21:12:04,001 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-08 21:12:04,001 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-08 21:12:04,001 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-08 21:12:04,002 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: []
+2026-02-08 21:12:04,002 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: []
+2026-02-08 21:22:31,503 - app.services.engine - INFO - Job 20260208212231: Starting multi-index analysis for ['QQQ', 'DJI']
+2026-02-08 21:22:31,503 - app.services.engine - INFO - Started multi-index analysis job 20260208212231 for indices: ['QQQ', 'DJI']
+2026-02-08 21:22:31,515 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['QQQ', 'DJI']
+2026-02-08 21:22:31,516 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-08 21:22:31,517 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-08 21:22:31,517 - app.logic.stock_analyzer - INFO - Combined unique tickers: 125
+2026-02-08 21:22:31,517 - app.logic.stock_analyzer - INFO - Processing 125 combined tickers...
+2026-02-08 21:51:29,705 - app.logic.stock_analyzer - INFO - Processed 125 tickers successfully
+2026-02-08 21:51:36,733 - app.logic.stock_analyzer - INFO - Computing breadth for QQQ with 101 tickers
+2026-02-08 21:51:36,738 - app.logic.stock_analyzer - INFO - Saved CD breadth for QQQ: 299 days
+2026-02-08 21:51:36,744 - app.logic.stock_analyzer - INFO - Saved MC breadth for QQQ: 370 days
+2026-02-08 21:51:36,744 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-08 21:51:36,747 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 155 days
+2026-02-08 21:51:36,753 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 232 days
+2026-02-08 21:51:36,754 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-08 21:51:36,951 - app.services.engine - INFO - Job 20260208212231: Multi-index analysis completed successfully
+2026-02-08 21:51:40,555 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-08 21:51:40,556 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-08 21:51:40,558 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-08 21:51:40,558 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-08 21:51:40,559 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 21:51:40,561 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-08 21:51:40,562 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-08 21:51:40,563 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 21:51:40,565 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 21:51:40,568 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-08 21:51:40,569 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 21:51:40,570 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-08 22:47:25,248 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-08 22:47:25,257 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 22:47:25,264 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-08 22:47:25,265 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-08 22:47:25,266 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 22:47:25,268 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 22:47:25,269 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-08 22:47:25,270 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-08 22:47:25,272 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-08 22:47:25,273 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-08 22:47:25,274 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 22:47:25,275 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-08 22:47:58,295 - app.services.engine - INFO - Job 20260208224758: Starting multi-index analysis for ['QQQ', 'DJI']
+2026-02-08 22:47:58,295 - app.services.engine - INFO - Started multi-index analysis job 20260208224758 for indices: ['QQQ', 'DJI']
+2026-02-08 22:47:58,306 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['QQQ', 'DJI']
+2026-02-08 22:47:58,307 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-08 22:47:58,308 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-08 22:47:58,308 - app.logic.stock_analyzer - INFO - Combined unique tickers: 125
+2026-02-08 22:47:58,308 - app.logic.stock_analyzer - INFO - Processing 125 combined tickers...
+2026-02-08 22:47:58,308 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-08 22:49:07,992 - app.logic.stock_analyzer - INFO - Processed 10/125 tickers
+2026-02-08 22:49:08,120 - app.logic.stock_analyzer - INFO - Processed 20/125 tickers
+2026-02-08 22:50:11,321 - app.logic.stock_analyzer - INFO - Processed 30/125 tickers
+2026-02-08 22:50:15,595 - app.logic.stock_analyzer - INFO - Processed 40/125 tickers
+2026-02-08 22:50:15,820 - app.logic.stock_analyzer - INFO - Processed 50/125 tickers
+2026-02-08 22:51:21,391 - app.logic.stock_analyzer - INFO - Processed 60/125 tickers
+2026-02-08 22:51:23,077 - app.logic.stock_analyzer - INFO - Processed 70/125 tickers
+2026-02-08 22:51:24,490 - app.logic.stock_analyzer - INFO - Processed 80/125 tickers
+2026-02-08 22:52:28,459 - app.logic.stock_analyzer - INFO - Processed 90/125 tickers
+2026-02-08 22:52:30,614 - app.logic.stock_analyzer - INFO - Processed 100/125 tickers
+2026-02-08 22:53:19,227 - app.logic.stock_analyzer - INFO - Processed 110/125 tickers
+2026-02-08 22:53:21,983 - app.logic.stock_analyzer - INFO - Processed 120/125 tickers
+2026-02-08 22:53:22,062 - app.logic.stock_analyzer - INFO - Processed 125/125 tickers
+2026-02-08 22:53:22,108 - app.logic.stock_analyzer - INFO - Processed 125 tickers successfully
+2026-02-08 22:53:28,860 - app.logic.stock_analyzer - INFO - Computing breadth for QQQ with 101 tickers
+2026-02-08 22:53:28,865 - app.logic.stock_analyzer - INFO - Saved CD breadth for QQQ: 299 days
+2026-02-08 22:53:28,869 - app.logic.stock_analyzer - INFO - Saved MC breadth for QQQ: 370 days
+2026-02-08 22:53:28,869 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-08 22:53:28,872 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 155 days
+2026-02-08 22:53:28,875 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 232 days
+2026-02-08 22:53:28,877 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-08 22:53:28,982 - app.services.engine - INFO - Job 20260208224758: Multi-index analysis completed successfully
+2026-02-08 22:53:31,979 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-08 22:53:31,980 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-08 22:53:31,982 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-08 22:53:31,982 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-08 22:53:31,983 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-08 22:53:31,985 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-08 22:53:31,986 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-08 22:53:31,987 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-08 22:53:31,988 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-08 22:53:31,989 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-08 22:53:31,990 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-08 22:53:31,991 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 09:02:02,865 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 09:02:02,874 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 09:02:02,882 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 09:02:02,883 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 09:02:02,884 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 09:02:02,885 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 09:02:02,885 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 09:02:02,886 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 09:02:02,888 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 09:02:02,889 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 09:02:02,891 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 09:02:02,893 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 09:02:12,962 - app.services.engine - INFO - Job 20260209090212: Starting multi-index analysis for ['QQQ', 'DJI']
+2026-02-09 09:02:12,962 - app.services.engine - INFO - Started multi-index analysis job 20260209090212 for indices: ['QQQ', 'DJI']
+2026-02-09 09:02:12,985 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['QQQ', 'DJI']
+2026-02-09 09:02:12,987 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-09 09:02:12,988 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-09 09:02:12,988 - app.logic.stock_analyzer - INFO - Combined unique tickers: 125
+2026-02-09 09:02:12,988 - app.logic.stock_analyzer - INFO - Processing 125 combined tickers...
+2026-02-09 09:02:12,988 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-09 09:03:26,366 - app.logic.stock_analyzer - INFO - Processed 10/125 tickers
+2026-02-09 09:03:26,400 - app.logic.stock_analyzer - INFO - Processed 20/125 tickers
+2026-02-09 09:04:31,685 - app.logic.stock_analyzer - INFO - Processed 30/125 tickers
+2026-02-09 09:04:33,265 - app.logic.stock_analyzer - INFO - Processed 40/125 tickers
+2026-02-09 09:04:35,687 - app.logic.stock_analyzer - INFO - Processed 50/125 tickers
+2026-02-09 09:05:39,603 - app.logic.stock_analyzer - INFO - Processed 60/125 tickers
+2026-02-09 09:05:44,325 - app.logic.stock_analyzer - INFO - Processed 70/125 tickers
+2026-02-09 09:05:45,869 - app.logic.stock_analyzer - INFO - Processed 80/125 tickers
+2026-02-09 09:06:49,600 - app.logic.stock_analyzer - INFO - Processed 90/125 tickers
+2026-02-09 09:06:54,200 - app.logic.stock_analyzer - INFO - Processed 100/125 tickers
+2026-02-09 09:07:41,835 - app.logic.stock_analyzer - INFO - Processed 110/125 tickers
+2026-02-09 09:07:43,304 - app.logic.stock_analyzer - INFO - Processed 120/125 tickers
+2026-02-09 09:07:44,328 - app.logic.stock_analyzer - INFO - Processed 125/125 tickers
+2026-02-09 09:07:44,358 - app.logic.stock_analyzer - INFO - Processed 125 tickers successfully
+2026-02-09 09:07:51,050 - app.logic.stock_analyzer - INFO - Saving MC 5230 breakout results...
+2026-02-09 09:07:53,166 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-09 09:07:55,597 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-09 09:07:58,153 - app.logic.stock_analyzer - INFO - Computing breadth for QQQ with 101 tickers
+2026-02-09 09:07:58,156 - app.logic.stock_analyzer - INFO - Saved CD breadth for QQQ: 302 days
+2026-02-09 09:07:58,159 - app.logic.stock_analyzer - INFO - Saved MC breadth for QQQ: 365 days
+2026-02-09 09:07:58,159 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-09 09:07:58,162 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 155 days
+2026-02-09 09:07:58,165 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 230 days
+2026-02-09 09:07:58,166 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-09 09:07:58,297 - app.services.engine - INFO - Job 20260209090212: Multi-index analysis completed successfully
+2026-02-09 09:08:01,779 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 09:08:01,780 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 09:08:01,782 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 09:08:01,782 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 09:08:01,783 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 09:08:01,785 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 09:08:01,785 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 09:08:01,786 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 09:08:01,788 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 09:08:01,788 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 09:08:01,789 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 09:08:01,790 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 09:37:06,641 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 09:37:06,649 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 09:37:06,657 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 09:37:06,658 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 09:37:06,660 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 09:37:06,661 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 09:37:06,662 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 09:37:06,663 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 09:37:06,665 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 09:37:06,665 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 09:37:06,666 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 09:37:06,668 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 09:43:27,113 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 09:43:27,121 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 09:43:27,127 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 09:43:27,128 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 09:43:27,129 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 09:43:27,130 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 09:43:27,131 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 09:43:27,132 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 09:43:27,133 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 09:43:27,134 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 09:43:27,135 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 09:43:27,136 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 09:44:49,658 - app.services.engine - INFO - Job 20260209094449: Starting multi-index analysis for ['DJI']
+2026-02-09 09:44:49,658 - app.services.engine - INFO - Started multi-index analysis job 20260209094449 for indices: ['DJI']
+2026-02-09 09:44:49,685 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['DJI']
+2026-02-09 09:44:49,685 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-09 09:44:49,685 - app.logic.stock_analyzer - INFO - Combined unique tickers: 31
+2026-02-09 09:44:49,685 - app.logic.stock_analyzer - INFO - Processing 31 combined tickers...
+2026-02-09 09:44:49,685 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-09 09:45:40,320 - app.logic.stock_analyzer - INFO - Processed 10/31 tickers
+2026-02-09 09:46:05,749 - app.logic.stock_analyzer - INFO - Processed 20/31 tickers
+2026-02-09 09:46:22,051 - app.logic.stock_analyzer - INFO - Processed 30/31 tickers
+2026-02-09 09:46:22,196 - app.logic.stock_analyzer - INFO - Processed 31/31 tickers
+2026-02-09 09:46:22,239 - app.logic.stock_analyzer - INFO - Processed 31 tickers successfully
+2026-02-09 09:46:24,092 - app.logic.stock_analyzer - INFO - Saving MC 5230 breakout results...
+2026-02-09 09:46:24,630 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-09 09:46:25,601 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-09 09:46:26,486 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-09 09:46:26,490 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 152 days
+2026-02-09 09:46:26,493 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 229 days
+2026-02-09 09:46:26,495 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-09 09:46:26,526 - app.services.engine - INFO - Job 20260209094449: Multi-index analysis completed successfully
+2026-02-09 09:46:30,540 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 09:46:30,546 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 09:46:30,550 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 09:46:30,551 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 09:46:30,551 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: []
+2026-02-09 09:46:30,552 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: []
+2026-02-09 09:46:30,552 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 09:46:30,553 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 09:46:30,553 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 09:46:30,553 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 09:46:30,554 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 09:46:30,555 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 10:10:50,016 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 10:10:50,024 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 10:10:50,030 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 10:10:50,031 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 10:10:50,033 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: []
+2026-02-09 10:10:50,033 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: []
+2026-02-09 10:10:50,036 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 10:10:50,037 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 10:10:50,038 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 10:10:50,038 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 10:10:50,039 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 10:10:50,041 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 10:16:18,917 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 10:16:18,923 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 10:16:18,924 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 10:16:18,925 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 10:16:18,926 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: []
+2026-02-09 10:16:18,930 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: []
+2026-02-09 10:16:18,932 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 10:16:18,932 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 10:16:18,933 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 10:16:18,933 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 10:16:18,934 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 10:16:18,934 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 10:21:11,767 - app.services.engine - INFO - Job 20260209102111: Starting multi-index analysis for ['DJI', 'QQQ']
+2026-02-09 10:21:11,767 - app.services.engine - INFO - Started multi-index analysis job 20260209102111 for indices: ['DJI', 'QQQ']
+2026-02-09 10:21:11,789 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['DJI', 'QQQ']
+2026-02-09 10:21:11,791 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-09 10:21:11,791 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-09 10:21:11,792 - app.logic.stock_analyzer - INFO - Combined unique tickers: 125
+2026-02-09 10:21:11,792 - app.logic.stock_analyzer - INFO - Processing 125 combined tickers...
+2026-02-09 10:21:11,792 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-09 10:22:26,421 - app.logic.stock_analyzer - INFO - Processed 10/125 tickers
+2026-02-09 10:22:26,554 - app.logic.stock_analyzer - INFO - Processed 20/125 tickers
+2026-02-09 10:23:32,457 - app.logic.stock_analyzer - INFO - Processed 30/125 tickers
+2026-02-09 10:23:34,721 - app.logic.stock_analyzer - INFO - Processed 40/125 tickers
+2026-02-09 10:23:36,604 - app.logic.stock_analyzer - INFO - Processed 50/125 tickers
+2026-02-09 10:24:42,419 - app.logic.stock_analyzer - INFO - Processed 60/125 tickers
+2026-02-09 10:24:45,326 - app.logic.stock_analyzer - INFO - Processed 70/125 tickers
+2026-02-09 10:24:45,840 - app.logic.stock_analyzer - INFO - Processed 80/125 tickers
+2026-02-09 10:25:51,229 - app.logic.stock_analyzer - INFO - Processed 90/125 tickers
+2026-02-09 10:25:55,782 - app.logic.stock_analyzer - INFO - Processed 100/125 tickers
+2026-02-09 10:26:43,225 - app.logic.stock_analyzer - INFO - Processed 110/125 tickers
+2026-02-09 10:26:45,410 - app.logic.stock_analyzer - INFO - Processed 120/125 tickers
+2026-02-09 10:26:45,481 - app.logic.stock_analyzer - INFO - Processed 125/125 tickers
+2026-02-09 10:26:45,527 - app.logic.stock_analyzer - INFO - Processed 125 tickers successfully
+2026-02-09 10:26:52,221 - app.logic.stock_analyzer - INFO - Saving MC 5230 breakout results...
+2026-02-09 10:26:54,365 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-09 10:26:57,157 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-09 10:27:00,021 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-09 10:27:00,024 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 155 days
+2026-02-09 10:27:00,027 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 230 days
+2026-02-09 10:27:00,027 - app.logic.stock_analyzer - INFO - Computing breadth for QQQ with 101 tickers
+2026-02-09 10:27:00,030 - app.logic.stock_analyzer - INFO - Saved CD breadth for QQQ: 302 days
+2026-02-09 10:27:00,034 - app.logic.stock_analyzer - INFO - Saved MC breadth for QQQ: 365 days
+2026-02-09 10:27:00,036 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-09 10:27:00,171 - app.services.engine - INFO - Job 20260209102111: Multi-index analysis completed successfully
+2026-02-09 10:27:02,979 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 10:27:02,983 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 10:27:02,986 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 10:27:02,986 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 10:27:02,987 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 10:27:02,989 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 10:27:02,992 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 10:27:02,993 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 10:27:02,995 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 10:27:02,995 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 10:27:03,000 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 10:27:03,002 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 10:51:31,910 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 10:51:31,942 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 10:51:31,949 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 10:51:31,950 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 10:51:31,952 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 10:51:31,955 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 10:51:31,956 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 10:51:31,957 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 10:51:31,959 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 10:51:31,960 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 10:51:31,963 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 10:51:31,974 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 19:39:39,354 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 19:39:39,358 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 19:39:39,362 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 19:39:39,363 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 19:39:39,366 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 19:39:39,368 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 19:39:39,370 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 19:39:39,381 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 19:39:39,391 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 19:39:39,396 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 19:39:39,397 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 19:39:39,399 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 19:48:17,437 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 19:48:17,451 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 19:48:17,457 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 19:48:17,458 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 19:48:17,459 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 19:48:17,460 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 19:48:17,461 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 19:48:17,462 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 19:48:17,464 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 19:48:17,471 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 19:48:17,473 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 19:48:17,475 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 20:58:20,265 - app.services.engine - INFO - Job 20260209205820: Starting multi-index analysis for ['DJI', 'QQQ']
+2026-02-09 20:58:20,265 - app.services.engine - INFO - Started multi-index analysis job 20260209205820 for indices: ['DJI', 'QQQ']
+2026-02-09 20:58:20,278 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['DJI', 'QQQ']
+2026-02-09 20:58:20,281 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-09 20:58:20,281 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-09 20:58:20,281 - app.logic.stock_analyzer - INFO - Combined unique tickers: 125
+2026-02-09 20:58:20,281 - app.logic.stock_analyzer - INFO - Processing 125 combined tickers...
+2026-02-09 20:58:20,282 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-09 20:59:34,770 - app.logic.stock_analyzer - INFO - Processed 10/125 tickers
+2026-02-09 20:59:34,772 - app.logic.stock_analyzer - INFO - Processed 20/125 tickers
+2026-02-09 21:00:38,932 - app.logic.stock_analyzer - INFO - Processed 30/125 tickers
+2026-02-09 21:00:41,994 - app.logic.stock_analyzer - INFO - Processed 40/125 tickers
+2026-02-09 21:00:44,749 - app.logic.stock_analyzer - INFO - Processed 50/125 tickers
+2026-02-09 21:01:49,797 - app.logic.stock_analyzer - INFO - Processed 60/125 tickers
+2026-02-09 21:01:50,031 - app.logic.stock_analyzer - INFO - Processed 70/125 tickers
+2026-02-09 21:01:54,348 - app.logic.stock_analyzer - INFO - Processed 80/125 tickers
+2026-02-09 21:02:57,265 - app.logic.stock_analyzer - INFO - Processed 90/125 tickers
+2026-02-09 21:03:03,491 - app.logic.stock_analyzer - INFO - Processed 100/125 tickers
+2026-02-09 21:03:48,006 - app.logic.stock_analyzer - INFO - Processed 110/125 tickers
+2026-02-09 21:03:52,076 - app.logic.stock_analyzer - INFO - Processed 120/125 tickers
+2026-02-09 21:03:52,095 - app.logic.stock_analyzer - INFO - Processed 125/125 tickers
+2026-02-09 21:03:52,131 - app.logic.stock_analyzer - INFO - Processed 125 tickers successfully
+2026-02-09 21:03:59,106 - app.logic.stock_analyzer - INFO - Saving MC 5230 breakout results...
+2026-02-09 21:04:01,178 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-09 21:04:04,283 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-09 21:04:07,333 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-09 21:04:07,339 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 155 days
+2026-02-09 21:04:07,342 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 231 days
+2026-02-09 21:04:07,342 - app.logic.stock_analyzer - INFO - Computing breadth for QQQ with 101 tickers
+2026-02-09 21:04:07,345 - app.logic.stock_analyzer - INFO - Saved CD breadth for QQQ: 300 days
+2026-02-09 21:04:07,348 - app.logic.stock_analyzer - INFO - Saved MC breadth for QQQ: 367 days
+2026-02-09 21:04:07,349 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-09 21:04:07,487 - app.services.engine - INFO - Job 20260209205820: Multi-index analysis completed successfully
+2026-02-09 21:04:11,033 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 21:04:11,035 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 21:04:11,037 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 21:04:11,037 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 21:04:11,041 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 21:04:11,044 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 21:04:11,045 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 21:04:11,046 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 21:04:11,048 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 21:04:11,049 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 21:04:11,050 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 21:04:11,051 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 21:53:06,252 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-09 21:53:06,255 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-09 21:53:06,261 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-09 21:53:06,261 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-09 21:53:06,263 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-09 21:53:06,265 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-09 21:53:06,265 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 21:53:06,268 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 21:53:06,271 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 21:53:06,273 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 21:53:06,276 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 21:53:06,278 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 22:32:53,563 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 22:32:53,574 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 22:32:53,582 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 22:32:53,584 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 22:32:53,585 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 22:32:53,588 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 22:50:43,673 - app.api.endpoints.analysis - INFO - No completed analysis run found for stock list: stocks_soxx.tab
+2026-02-09 22:50:43,674 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-09 22:50:43,686 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: []
+2026-02-09 22:50:43,695 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: []
+2026-02-09 22:50:49,236 - app.services.engine - INFO - Job 20260209225049: Starting multi-index analysis for ['DJI', 'QQQ', 'SOXX']
+2026-02-09 22:50:49,236 - app.services.engine - INFO - Started multi-index analysis job 20260209225049 for indices: ['DJI', 'QQQ', 'SOXX']
+2026-02-09 22:50:49,254 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['DJI', 'QQQ', 'SOXX']
+2026-02-09 22:50:49,255 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-09 22:50:49,256 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-09 22:50:49,256 - app.logic.stock_analyzer - WARNING - Stock list not found: /Users/cyancloud/git/WaveCatcher/backend/data/stocks_soxx.tab
+2026-02-09 22:50:49,256 - app.logic.stock_analyzer - INFO - Combined unique tickers: 125
+2026-02-09 22:50:49,256 - app.logic.stock_analyzer - INFO - Processing 125 combined tickers...
+2026-02-09 22:50:49,256 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-09 22:52:06,685 - app.logic.stock_analyzer - INFO - Processed 10/125 tickers
+2026-02-09 22:52:09,002 - app.logic.stock_analyzer - INFO - Processed 20/125 tickers
+2026-02-09 22:53:13,114 - app.logic.stock_analyzer - INFO - Processed 30/125 tickers
+2026-02-09 22:53:16,261 - app.logic.stock_analyzer - INFO - Processed 40/125 tickers
+2026-02-09 22:53:16,262 - app.logic.stock_analyzer - INFO - Processed 50/125 tickers
+2026-02-09 22:54:23,925 - app.logic.stock_analyzer - INFO - Processed 60/125 tickers
+2026-02-09 22:54:24,493 - app.logic.stock_analyzer - INFO - Processed 70/125 tickers
+2026-02-09 22:54:26,692 - app.logic.stock_analyzer - INFO - Processed 80/125 tickers
+2026-02-09 22:55:31,925 - app.logic.stock_analyzer - INFO - Processed 90/125 tickers
+2026-02-09 22:55:33,606 - app.logic.stock_analyzer - INFO - Processed 100/125 tickers
+2026-02-09 22:56:21,613 - app.logic.stock_analyzer - INFO - Processed 110/125 tickers
+2026-02-09 22:56:24,466 - app.logic.stock_analyzer - INFO - Processed 120/125 tickers
+2026-02-09 22:56:24,789 - app.logic.stock_analyzer - INFO - Processed 125/125 tickers
+2026-02-09 22:56:24,837 - app.logic.stock_analyzer - INFO - Processed 125 tickers successfully
+2026-02-09 22:56:31,803 - app.logic.stock_analyzer - INFO - Saving MC 5230 breakout results...
+2026-02-09 22:56:34,135 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-09 22:56:37,034 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-09 22:56:39,910 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-09 22:56:39,917 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 155 days
+2026-02-09 22:56:39,924 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 231 days
+2026-02-09 22:56:39,924 - app.logic.stock_analyzer - INFO - Computing breadth for QQQ with 101 tickers
+2026-02-09 22:56:39,927 - app.logic.stock_analyzer - INFO - Saved CD breadth for QQQ: 300 days
+2026-02-09 22:56:39,930 - app.logic.stock_analyzer - INFO - Saved MC breadth for QQQ: 367 days
+2026-02-09 22:56:39,931 - app.logic.stock_analyzer - INFO - Computing breadth for SOXX with 0 tickers
+2026-02-09 22:56:39,938 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-09 22:56:40,068 - app.services.engine - INFO - Job 20260209225049: Multi-index analysis completed successfully
+2026-02-09 22:56:42,447 - app.api.endpoints.analysis - INFO - No completed analysis run found for stock list: stocks_soxx.tab
+2026-02-09 22:56:42,449 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 22:56:42,450 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 22:56:42,453 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 22:56:42,454 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 22:56:42,455 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 22:56:42,457 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 22:56:42,457 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-09 22:56:42,458 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: []
+2026-02-09 22:56:42,460 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: []
+2026-02-09 22:57:12,093 - app.api.endpoints.analysis - INFO - No completed analysis run found for stock list: stocks_soxx.tab
+2026-02-09 22:57:12,096 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 22:57:12,097 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 22:57:12,098 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 22:57:12,100 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 22:57:12,107 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 22:57:12,115 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 22:57:12,117 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-09 22:57:12,120 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: []
+2026-02-09 22:57:12,125 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: []
+2026-02-09 22:58:12,550 - app.services.engine - INFO - Job 20260209225812: Starting multi-index analysis for ['DJI', 'QQQ', 'SOXX']
+2026-02-09 22:58:12,551 - app.services.engine - INFO - Started multi-index analysis job 20260209225812 for indices: ['DJI', 'QQQ', 'SOXX']
+2026-02-09 22:58:12,583 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['DJI', 'QQQ', 'SOXX']
+2026-02-09 22:58:12,583 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-09 22:58:12,583 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-09 22:58:12,583 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for SOXX
+2026-02-09 22:58:12,583 - app.logic.stock_analyzer - INFO - Combined unique tickers: 139
+2026-02-09 22:58:12,583 - app.logic.stock_analyzer - INFO - Processing 139 combined tickers...
+2026-02-09 22:58:12,583 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-09 22:59:29,926 - app.logic.stock_analyzer - INFO - Processed 10/139 tickers
+2026-02-09 22:59:29,927 - app.logic.stock_analyzer - INFO - Processed 20/139 tickers
+2026-02-09 23:00:35,514 - app.logic.stock_analyzer - INFO - Processed 30/139 tickers
+2026-02-09 23:00:38,275 - app.logic.stock_analyzer - INFO - Processed 40/139 tickers
+2026-02-09 23:00:39,235 - app.logic.stock_analyzer - INFO - Processed 50/139 tickers
+2026-02-09 23:01:43,939 - app.logic.stock_analyzer - INFO - Processed 60/139 tickers
+2026-02-09 23:01:45,734 - app.logic.stock_analyzer - INFO - Processed 70/139 tickers
+2026-02-09 23:01:48,888 - app.logic.stock_analyzer - INFO - Processed 80/139 tickers
+2026-02-09 23:02:56,563 - app.logic.stock_analyzer - INFO - Processed 90/139 tickers
+2026-02-09 23:02:58,623 - app.logic.stock_analyzer - INFO - Processed 100/139 tickers
+2026-02-09 23:04:06,140 - app.logic.stock_analyzer - INFO - Processed 110/139 tickers
+2026-02-09 23:04:08,855 - app.logic.stock_analyzer - INFO - Processed 120/139 tickers
+2026-02-09 23:04:10,284 - app.logic.stock_analyzer - INFO - Processed 130/139 tickers
+2026-02-09 23:04:49,519 - app.logic.stock_analyzer - INFO - Processed 139/139 tickers
+2026-02-09 23:04:49,575 - app.logic.stock_analyzer - INFO - Processed 139 tickers successfully
+2026-02-09 23:04:56,904 - app.logic.stock_analyzer - INFO - Saving MC 5230 breakout results...
+2026-02-09 23:04:59,456 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-09 23:05:02,678 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-09 23:05:05,848 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-09 23:05:05,852 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 155 days
+2026-02-09 23:05:05,855 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 231 days
+2026-02-09 23:05:05,855 - app.logic.stock_analyzer - INFO - Computing breadth for QQQ with 101 tickers
+2026-02-09 23:05:05,857 - app.logic.stock_analyzer - INFO - Saved CD breadth for QQQ: 300 days
+2026-02-09 23:05:05,860 - app.logic.stock_analyzer - INFO - Saved MC breadth for QQQ: 367 days
+2026-02-09 23:05:05,860 - app.logic.stock_analyzer - INFO - Computing breadth for SOXX with 30 tickers
+2026-02-09 23:05:05,863 - app.logic.stock_analyzer - INFO - Saved CD breadth for SOXX: 112 days
+2026-02-09 23:05:05,867 - app.logic.stock_analyzer - INFO - Saved MC breadth for SOXX: 173 days
+2026-02-09 23:05:05,868 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-09 23:05:06,021 - app.services.engine - INFO - Job 20260209225812: Multi-index analysis completed successfully
+2026-02-09 23:05:08,206 - app.api.endpoints.analysis - INFO - No completed analysis run found for stock list: stocks_soxx.tab
+2026-02-09 23:05:08,210 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 23:05:08,212 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 23:05:08,215 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 23:05:08,216 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 23:05:08,217 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 23:05:08,219 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 23:05:08,232 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-09 23:05:08,233 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-09 23:05:08,237 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-09 23:12:51,047 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-09 23:12:51,055 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-09 23:12:51,061 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-09 23:12:51,061 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-09 23:12:51,062 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-09 23:12:51,064 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-09 23:12:51,065 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-09 23:12:51,066 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-09 23:12:51,067 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']

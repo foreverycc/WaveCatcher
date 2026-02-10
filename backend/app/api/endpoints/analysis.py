@@ -223,36 +223,58 @@ async def get_market_breadth_by_stock_list(
     """
     Get market breadth data (CD/MC signal counts per day) for a specific stock list.
     Returns data from the latest completed analysis run for that stock list.
+    Also checks multi-index runs where breadth is stored per-index.
     """
-    # Find the latest completed run for this stock list
+    # First, try to find a dedicated run for this stock list
     latest_run = db.query(AnalysisRun).filter(
         AnalysisRun.stock_list_name == stock_list,
         AnalysisRun.status == "completed"
     ).order_by(desc(AnalysisRun.timestamp)).first()
     
-    if not latest_run:
-        logger.info(f"No completed analysis run found for stock list: {stock_list}")
-        return {"cd_breadth": [], "mc_breadth": [], "run_id": None}
+    run_id = latest_run.id if latest_run else None
     
-    run_id = latest_run.id
+    cd_breadth = []
+    mc_breadth = []
     
-    # Fetch CD market breadth 1234
-    cd_result = db.query(AnalysisResult).filter(
-        AnalysisResult.run_id == run_id,
-        AnalysisResult.result_type == "cd_market_breadth_1234",
-        AnalysisResult.ticker == "ALL"
-    ).first()
+    if run_id:
+        # Single stock-list run: breadth stored with ticker="ALL"
+        cd_result = db.query(AnalysisResult).filter(
+            AnalysisResult.run_id == run_id,
+            AnalysisResult.result_type == "cd_market_breadth_1234",
+            AnalysisResult.ticker == "ALL"
+        ).first()
+        cd_breadth = cd_result.data if cd_result and cd_result.data else []
+        
+        mc_result = db.query(AnalysisResult).filter(
+            AnalysisResult.run_id == run_id,
+            AnalysisResult.result_type == "mc_market_breadth_1234",
+            AnalysisResult.ticker == "ALL"
+        ).first()
+        mc_breadth = mc_result.data if mc_result and mc_result.data else []
     
-    cd_breadth = cd_result.data if cd_result and cd_result.data else []
-    
-    # Fetch MC market breadth 1234
-    mc_result = db.query(AnalysisResult).filter(
-        AnalysisResult.run_id == run_id,
-        AnalysisResult.result_type == "mc_market_breadth_1234",
-        AnalysisResult.ticker == "ALL"
-    ).first()
-    
-    mc_breadth = mc_result.data if mc_result and mc_result.data else []
+    if not cd_breadth and not mc_breadth:
+        # Fallback: check multi-index runs where breadth is stored with
+        # ticker=stock_list_name (e.g. "stocks_soxx.tab") and interval="ALL"
+        multi_run = db.query(AnalysisRun).filter(
+            AnalysisRun.stock_list_name == "multi_index",
+            AnalysisRun.status == "completed"
+        ).order_by(desc(AnalysisRun.timestamp)).first()
+        
+        if multi_run:
+            run_id = multi_run.id
+            cd_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == run_id,
+                AnalysisResult.result_type == "cd_market_breadth_1234",
+                AnalysisResult.ticker == stock_list
+            ).first()
+            cd_breadth = cd_result.data if cd_result and cd_result.data else []
+            
+            mc_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == run_id,
+                AnalysisResult.result_type == "mc_market_breadth_1234",
+                AnalysisResult.ticker == stock_list
+            ).first()
+            mc_breadth = mc_result.data if mc_result and mc_result.data else []
     
     return {
         "cd_breadth": cd_breadth,
