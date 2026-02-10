@@ -1,0 +1,26 @@
+{
+    "SPX": {
+        "symbol": "^SPX",
+        "stock_list": "stocks_sp500.tab"
+    },
+    "QQQ": {
+        "symbol": "QQQ",
+        "stock_list": "stocks_nasdaq100.tab"
+    },
+    "DJI": {
+        "symbol": "^DJI",
+        "stock_list": "stocks_dowjones.tab"
+    },
+    "IWM": {
+        "symbol": "IWM",
+        "stock_list": "stocks_russell2000.tab"
+    },
+    "SOXX": {
+        "symbol": "SOXX",
+        "stock_list": "stocks_soxx.tab"
+    },
+    "XBI": {
+        "symbol": "XBI",
+        "stock_list": "stocks_xbi.tab"
+    }
+}

@@ -16,15 +16,8 @@ from app.logic.stock_analyzer import analyze_stocks, analyze_multi_index
 
 logger = logging.getLogger(__name__)
 
-# Index configuration mapping (shared with analysis.py)
-INDEX_CONFIG = {
-    "SPX": {"symbol": "^SPX", "stock_list": "stocks_sp500.tab"},
-    "QQQ": {"symbol": "QQQ", "stock_list": "stocks_nasdaq100.tab"},
-    "DJI": {"symbol": "^DJI", "stock_list": "stocks_dowjones.tab"},
-    "IWM": {"symbol": "IWM", "stock_list": "stocks_russell2000.tab"},
-    "SOXX": {"symbol": "SOXX", "stock_list": "stocks_soxx.tab"},
-    "XBI": {"symbol": "XBI", "stock_list": "stocks_xbi.tab"},
-}
+# Index configuration - loaded dynamically from JSON file
+from app.services.index_config import load_index_config
 
 class AnalysisJob:
     def __init__(self, job_id: str, stock_list_file: str, end_date: Optional[str] = None, indices: Optional[List[str]] = None):
@@ -134,10 +127,11 @@ class JobManager:
             data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../data"))
             
             # Build index info list
+            index_config = load_index_config()
             index_info = []
             for idx_key in job.indices:
-                if idx_key in INDEX_CONFIG:
-                    config = INDEX_CONFIG[idx_key]
+                if idx_key in index_config:
+                    config = index_config[idx_key]
                     stock_list_path = os.path.join(data_dir, config["stock_list"])
                     index_info.append({
                         "key": idx_key,

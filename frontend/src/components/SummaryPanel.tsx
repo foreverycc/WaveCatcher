@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import { analysisApi } from '../services/api';
 import { IndexSummaryCard } from './IndexSummaryCard';
 import { cn } from '../utils/cn';
@@ -183,9 +183,10 @@ interface SummaryPanelProps {
     runId: number | undefined;
     onRowClick?: (row: any, type: 'bull' | 'bear') => void;
     selectedIndices?: string[];
+    availableIndices?: { key: string, symbol: string, stock_list: string }[];
 }
 
-export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [] }) => {
+export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [], availableIndices = [] }) => {
 
     // --- Data Fetching ---
 
@@ -217,80 +218,39 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
         }
     };
 
-    // 1. SPX Data
-    const { data: spxHistory } = useQuery({
-        queryKey: ['priceHistory', '^SPX', '1d'], // Daily resolution for high level chart
-        queryFn: () => analysisApi.getPriceHistory('^SPX', '1d'),
-        staleTime: 1000 * 60 * 60, // 1 hour
+    // Dynamic index data — driven by availableIndices config
+    const activeIndices = useMemo(() => {
+        if (selectedIndices.length > 0) {
+            return availableIndices.filter(idx => selectedIndices.includes(idx.key));
+        }
+        return availableIndices;
+    }, [availableIndices, selectedIndices]);
+
+    // 1. Price history for each index
+    const historyQueries = useQueries({
+        queries: activeIndices.map(idx => ({
+            queryKey: ['priceHistory', idx.symbol, '1d'],
+            queryFn: () => analysisApi.getPriceHistory(idx.symbol, '1d'),
+            staleTime: 1000 * 60 * 60,
+        }))
     });
 
-    // 1b. QQQ Data
-    const { data: qqqHistory } = useQuery({
-        queryKey: ['priceHistory', 'QQQ', '1d'],
-        queryFn: () => analysisApi.getPriceHistory('QQQ', '1d'),
-        staleTime: 1000 * 60 * 60, // 1 hour
+    // 2. Market breadth for each index
+    const breadthQueries = useQueries({
+        queries: activeIndices.map(idx => ({
+            queryKey: ['marketBreadth', idx.stock_list],
+            queryFn: () => analysisApi.getMarketBreadth(idx.stock_list),
+            staleTime: 1000 * 60 * 5,
+        }))
     });
 
-    // 1c. R2000 Data (using IWM)
-    const { data: iwmHistory } = useQuery({
-        queryKey: ['priceHistory', 'IWM', '1d'],
-        queryFn: () => analysisApi.getPriceHistory('IWM', '1d'),
-        staleTime: 1000 * 60 * 60, // 1 hour
-    });
-
-    // 1d. Dow Jones Data
-    const { data: djiHistory } = useQuery({
-        queryKey: ['priceHistory', '^DJI', '1d'],
-        queryFn: () => analysisApi.getPriceHistory('^DJI', '1d'),
-        staleTime: 1000 * 60 * 60, // 1 hour
-    });
-
-    // 2. Market Breadth Data - Index-specific queries
-    // SPX -> stocks_sp500.tab
-    const { data: spxBreadth } = useQuery({
-        queryKey: ['marketBreadth', 'stocks_sp500.tab'],
-        queryFn: () => analysisApi.getMarketBreadth('stocks_sp500.tab'),
-        staleTime: 1000 * 60 * 5, // 5 minutes
-    });
-    // QQQ -> stocks_nasdaq100.tab
-    const { data: qqqBreadth } = useQuery({
-        queryKey: ['marketBreadth', 'stocks_nasdaq100.tab'],
-        queryFn: () => analysisApi.getMarketBreadth('stocks_nasdaq100.tab'),
-        staleTime: 1000 * 60 * 5,
-    });
-    // Dow Jones -> stocks_dowjones.tab
-    const { data: djiBreadth } = useQuery({
-        queryKey: ['marketBreadth', 'stocks_dowjones.tab'],
-        queryFn: () => analysisApi.getMarketBreadth('stocks_dowjones.tab'),
-        staleTime: 1000 * 60 * 5,
-    });
-    // IWM -> stocks_russell2000.tab
-    const { data: iwmBreadth } = useQuery({
-        queryKey: ['marketBreadth', 'stocks_russell2000.tab'],
-        queryFn: () => analysisApi.getMarketBreadth('stocks_russell2000.tab'),
-        staleTime: 1000 * 60 * 5,
-    });
-
-    // 2b. 1234 Signals for each index (from analysis results)
-    const { data: spxSignals1234 } = useQuery({
-        queryKey: ['signals1234', '^SPX'],
-        queryFn: () => analysisApi.getSignals1234('^SPX'),
-        staleTime: 1000 * 60 * 60,
-    });
-    const { data: qqqSignals1234 } = useQuery({
-        queryKey: ['signals1234', 'QQQ'],
-        queryFn: () => analysisApi.getSignals1234('QQQ'),
-        staleTime: 1000 * 60 * 60,
-    });
-    const { data: iwmSignals1234 } = useQuery({
-        queryKey: ['signals1234', 'IWM'],
-        queryFn: () => analysisApi.getSignals1234('IWM'),
-        staleTime: 1000 * 60 * 60,
-    });
-    const { data: djiSignals1234 } = useQuery({
-        queryKey: ['signals1234', '^DJI'],
-        queryFn: () => analysisApi.getSignals1234('^DJI'),
-        staleTime: 1000 * 60 * 60,
+    // 3. 1234 signals for each index
+    const signalQueries = useQueries({
+        queries: activeIndices.map(idx => ({
+            queryKey: ['signals1234', idx.symbol],
+            queryFn: () => analysisApi.getSignals1234(idx.symbol),
+            staleTime: 1000 * 60 * 60,
+        }))
     });
 
     // 3. High Return Opportunities (using good_signals / High Return Intervals)
@@ -535,39 +495,27 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
         );
     };
 
-    // Map index keys to their data
-    const indexCardData: Record<string, { title: string, history: any[], breadth: any, signals1234: any }> = {
-        SPX: { title: 'SPX', history: spxHistory ?? [], breadth: spxBreadth, signals1234: spxSignals1234 },
-        QQQ: { title: 'QQQ', history: qqqHistory ?? [], breadth: qqqBreadth, signals1234: qqqSignals1234 },
-        DJI: { title: 'Dow Jones', history: djiHistory ?? [], breadth: djiBreadth, signals1234: djiSignals1234 },
-        IWM: { title: 'IWM', history: iwmHistory ?? [], breadth: iwmBreadth, signals1234: iwmSignals1234 },
-    };
-
-    // Determine which indices to show (default to all if none selected)
-    const visibleIndices = selectedIndices.length > 0
-        ? selectedIndices.filter(k => k in indexCardData)
-        : Object.keys(indexCardData);
-
     return (
         <div className="p-4 md:p-6 h-full overflow-y-auto space-y-6">
 
             {/* Market Index Summary Cards (click to flip to chart) */}
             <div className={cn(
                 "grid gap-4 w-full",
-                visibleIndices.length <= 2 ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1 xl:grid-cols-2 2xl:grid-cols-4"
+                activeIndices.length <= 2 ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1 xl:grid-cols-2 2xl:grid-cols-4"
             )}>
-                {visibleIndices.map(key => {
-                    const d = indexCardData[key];
-                    if (!d) return null;
+                {activeIndices.map((idx, i) => {
+                    const history = historyQueries[i]?.data ?? [];
+                    const breadth = breadthQueries[i]?.data;
+                    const signals = signalQueries[i]?.data;
                     return (
                         <IndexSummaryCard
-                            key={key}
-                            title={d.title}
-                            spxData={d.history}
-                            cdBreadth={d.breadth?.cd_breadth ?? []}
-                            mcBreadth={d.breadth?.mc_breadth ?? []}
+                            key={idx.key}
+                            title={idx.key}
+                            spxData={history}
+                            cdBreadth={breadth?.cd_breadth ?? []}
+                            mcBreadth={breadth?.mc_breadth ?? []}
                             minDate={oneYearAgo}
-                            signals1234={d.signals1234}
+                            signals1234={signals}
                         />
                     );
                 })}

@@ -112,6 +112,16 @@ export const analysisApi = {
         return response.data;
     },
 
+    upsertIndex: async (key: string, symbol: string, stock_list: string) => {
+        const response = await api.post(`/analysis/indices/${encodeURIComponent(key)}`, { symbol, stock_list });
+        return response.data;
+    },
+
+    deleteIndex: async (key: string) => {
+        const response = await api.delete(`/analysis/indices/${encodeURIComponent(key)}`);
+        return response.data;
+    },
+
     runMultiIndex: async (indices: string[], end_date?: string) => {
         const response = await api.post<JobStatus>('/analysis/run_multi_index', { indices, end_date });
         return response.data;

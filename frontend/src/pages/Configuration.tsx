@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stocksApi, analysisApi } from '../services/api';
-import { Save, Trash2, Plus, RefreshCw, FileText } from 'lucide-react';
+import { Save, Trash2, Plus, RefreshCw, FileText, Settings, Edit2, Check, X } from 'lucide-react';
 import { cn } from '../utils/cn';
 
 export const Configuration: React.FC = () => {
@@ -11,6 +11,15 @@ export const Configuration: React.FC = () => {
     const [newFileName, setNewFileName] = useState('');
     const [newFileContent, setNewFileContent] = useState('');
     const [isCreating, setIsCreating] = useState(false);
+
+    // --- Index config state ---
+    const [addingIndex, setAddingIndex] = useState(false);
+    const [newIdxKey, setNewIdxKey] = useState('');
+    const [newIdxSymbol, setNewIdxSymbol] = useState('');
+    const [newIdxStockList, setNewIdxStockList] = useState('');
+    const [editingIdx, setEditingIdx] = useState<string | null>(null);
+    const [editSymbol, setEditSymbol] = useState('');
+    const [editStockList, setEditStockList] = useState('');
 
     const { data: files, isLoading: isLoadingFiles } = useQuery({
         queryKey: ['stockFiles'],
@@ -23,12 +32,20 @@ export const Configuration: React.FC = () => {
         enabled: !!selectedFile
     });
 
+    // Fetch available indices
+    const { data: indicesData } = useQuery({
+        queryKey: ['availableIndices'],
+        queryFn: async () => {
+            const data = await analysisApi.getIndices();
+            return data.indices;
+        }
+    });
+
     useEffect(() => {
         if (selectedFileData) {
             if (selectedFileData.content) {
                 setFileContent(selectedFileData.content);
             } else {
-                // Fallback if content is not in the initial response (though we added it)
                 stocksApi.get(selectedFile!).then(data => {
                     if (data.content) setFileContent(data.content);
                 });
@@ -83,6 +100,29 @@ export const Configuration: React.FC = () => {
         onError: (error) => alert(`Error triggering update: ${error}`)
     });
 
+    // --- Index CRUD mutations ---
+    const upsertIndexMutation = useMutation({
+        mutationFn: ({ key, symbol, stock_list }: { key: string, symbol: string, stock_list: string }) =>
+            analysisApi.upsertIndex(key, symbol, stock_list),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['availableIndices'] });
+            setAddingIndex(false);
+            setEditingIdx(null);
+            setNewIdxKey('');
+            setNewIdxSymbol('');
+            setNewIdxStockList('');
+        },
+        onError: (error) => alert(`Error saving index: ${error}`)
+    });
+
+    const deleteIndexMutation = useMutation({
+        mutationFn: (key: string) => analysisApi.deleteIndex(key),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['availableIndices'] });
+        },
+        onError: (error) => alert(`Error deleting index: ${error}`)
+    });
+
     const handleSave = () => {
         if (selectedFile) {
             saveMutation.mutate({ filename: selectedFile, content: fileContent });
@@ -101,12 +141,169 @@ export const Configuration: React.FC = () => {
         }
     };
 
+    const startEdit = (idx: { key: string, symbol: string, stock_list: string }) => {
+        setEditingIdx(idx.key);
+        setEditSymbol(idx.symbol);
+        setEditStockList(idx.stock_list);
+    };
+
+    const saveEdit = () => {
+        if (editingIdx && editSymbol && editStockList) {
+            upsertIndexMutation.mutate({ key: editingIdx, symbol: editSymbol, stock_list: editStockList });
+        }
+    };
+
     return (
         <div className="p-8 max-w-6xl mx-auto space-y-8">
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-bold text-foreground">Configuration</h2>
             </div>
 
+            {/* === Index Configuration Section === */}
+            <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
+                    <h3 className="font-semibold flex items-center gap-2">
+                        <Settings className="w-4 h-4" /> Market Indices
+                    </h3>
+                    <button
+                        onClick={() => { setAddingIndex(!addingIndex); }}
+                        className="p-1 hover:bg-muted rounded-md transition-colors"
+                        title="Add Index"
+                    >
+                        <Plus className="w-5 h-5 text-primary" />
+                    </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead className="bg-muted/10 text-muted-foreground text-xs">
+                            <tr>
+                                <th className="p-3 text-left font-medium">Key</th>
+                                <th className="p-3 text-left font-medium">Symbol</th>
+                                <th className="p-3 text-left font-medium">Stock List</th>
+                                <th className="p-3 text-right font-medium w-24">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {indicesData?.map(idx => (
+                                <tr key={idx.key} className="border-b last:border-0 hover:bg-muted/5">
+                                    {editingIdx === idx.key ? (
+                                        <>
+                                            <td className="p-3 font-medium">{idx.key}</td>
+                                            <td className="p-3">
+                                                <input
+                                                    type="text"
+                                                    value={editSymbol}
+                                                    onChange={e => setEditSymbol(e.target.value)}
+                                                    className="w-full px-2 py-1 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                                                />
+                                            </td>
+                                            <td className="p-3">
+                                                <select
+                                                    value={editStockList}
+                                                    onChange={e => setEditStockList(e.target.value)}
+                                                    className="w-full px-2 py-1 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                                                >
+                                                    {files?.map(f => (
+                                                        <option key={f} value={f}>{f}</option>
+                                                    ))}
+                                                </select>
+                                            </td>
+                                            <td className="p-3 text-right">
+                                                <div className="flex justify-end gap-1">
+                                                    <button onClick={saveEdit} className="p-1 text-green-600 hover:bg-green-500/10 rounded" title="Save">
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={() => setEditingIdx(null)} className="p-1 text-muted-foreground hover:bg-muted rounded" title="Cancel">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <td className="p-3 font-medium">{idx.key}</td>
+                                            <td className="p-3 text-muted-foreground">{idx.symbol}</td>
+                                            <td className="p-3 text-muted-foreground">{idx.stock_list}</td>
+                                            <td className="p-3 text-right">
+                                                <div className="flex justify-end gap-1">
+                                                    <button onClick={() => startEdit(idx)} className="p-1 text-muted-foreground hover:bg-muted hover:text-foreground rounded" title="Edit">
+                                                        <Edit2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { if (confirm(`Delete index "${idx.key}"?`)) deleteIndexMutation.mutate(idx.key); }}
+                                                        className="p-1 text-muted-foreground hover:bg-red-500/10 hover:text-red-500 rounded"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </>
+                                    )}
+                                </tr>
+                            ))}
+
+                            {/* Add new row */}
+                            {addingIndex && (
+                                <tr className="border-b bg-primary/5">
+                                    <td className="p-3">
+                                        <input
+                                            type="text"
+                                            value={newIdxKey}
+                                            onChange={e => setNewIdxKey(e.target.value.toUpperCase())}
+                                            placeholder="e.g. SOXX"
+                                            className="w-full px-2 py-1 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </td>
+                                    <td className="p-3">
+                                        <input
+                                            type="text"
+                                            value={newIdxSymbol}
+                                            onChange={e => setNewIdxSymbol(e.target.value)}
+                                            placeholder="e.g. SOXX"
+                                            className="w-full px-2 py-1 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </td>
+                                    <td className="p-3">
+                                        <select
+                                            value={newIdxStockList}
+                                            onChange={e => setNewIdxStockList(e.target.value)}
+                                            className="w-full px-2 py-1 rounded border border-input bg-background text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                                        >
+                                            <option value="">Select stock list...</option>
+                                            {files?.map(f => (
+                                                <option key={f} value={f}>{f}</option>
+                                            ))}
+                                        </select>
+                                    </td>
+                                    <td className="p-3 text-right">
+                                        <div className="flex justify-end gap-1">
+                                            <button
+                                                onClick={() => {
+                                                    if (newIdxKey && newIdxSymbol && newIdxStockList) {
+                                                        upsertIndexMutation.mutate({ key: newIdxKey, symbol: newIdxSymbol, stock_list: newIdxStockList });
+                                                    }
+                                                }}
+                                                disabled={!newIdxKey || !newIdxSymbol || !newIdxStockList}
+                                                className="p-1 text-green-600 hover:bg-green-500/10 rounded disabled:opacity-30"
+                                                title="Add"
+                                            >
+                                                <Check className="w-4 h-4" />
+                                            </button>
+                                            <button onClick={() => setAddingIndex(false)} className="p-1 text-muted-foreground hover:bg-muted rounded" title="Cancel">
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* === Stock Lists Section === */}
             <div className="grid grid-cols-12 gap-8">
                 {/* Left Column */}
                 <div className="col-span-4 flex flex-col gap-6 h-[600px]">
@@ -187,7 +384,7 @@ export const Configuration: React.FC = () => {
                                         value={newFileContent}
                                         onChange={(e) => setNewFileContent(e.target.value)}
                                         className="flex-1 w-full px-3 py-2 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono text-sm resize-none h-64"
-                                        placeholder="AAPL&#10;MSFT&#10;GOOGL"
+                                        placeholder={"AAPL\nMSFT\nGOOGL"}
                                     />
                                 </div>
                                 <div className="flex justify-end gap-3">

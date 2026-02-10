@@ -69,15 +69,8 @@ def get_db():
     finally:
         db.close()
 
-# Index configuration mapping
-INDEX_CONFIG = {
-    "SPX": {"symbol": "^SPX", "stock_list": "stocks_sp500.tab"},
-    "QQQ": {"symbol": "QQQ", "stock_list": "stocks_nasdaq100.tab"},
-    "DJI": {"symbol": "^DJI", "stock_list": "stocks_dowjones.tab"},
-    "IWM": {"symbol": "IWM", "stock_list": "stocks_russell2000.tab"},
-    "SOXX": {"symbol": "SOXX", "stock_list": "stocks_soxx.tab"},
-    "XBI": {"symbol": "XBI", "stock_list": "stocks_xbi.tab"},
-}
+# Index configuration - loaded dynamically from JSON file
+from app.services.index_config import load_index_config, save_index_config
 
 class AnalysisRequest(BaseModel):
     stock_list_file: str
@@ -98,12 +91,51 @@ class JobStatus(BaseModel):
 @router.get("/indices")
 async def get_available_indices():
     """Get list of available indices for multi-index analysis."""
+    index_config = load_index_config()
     return {
         "indices": [
             {"key": key, "symbol": config["symbol"], "stock_list": config["stock_list"]}
-            for key, config in INDEX_CONFIG.items()
+            for key, config in index_config.items()
         ]
     }
+
+
+class IndexConfigEntry(BaseModel):
+    symbol: str
+    stock_list: str
+
+
+@router.put("/indices")
+async def update_all_indices(config: Dict[str, IndexConfigEntry]):
+    """Replace the entire index configuration."""
+    try:
+        save_index_config({k: v.dict() for k, v in config.items()})
+        return {"status": "success", "count": len(config)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/indices/{key}")
+async def upsert_index(key: str, entry: IndexConfigEntry):
+    """Add or update a single index entry."""
+    try:
+        config = load_index_config()
+        config[key] = entry.dict()
+        save_index_config(config)
+        return {"status": "success", "key": key}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/indices/{key}")
+async def delete_index(key: str):
+    """Remove an index entry."""
+    config = load_index_config()
+    if key not in config:
+        raise HTTPException(status_code=404, detail=f"Index '{key}' not found")
+    del config[key]
+    save_index_config(config)
+    return {"status": "success", "key": key}
 
 @router.post("/run", response_model=JobStatus)
 async def run_analysis(request: AnalysisRequest):
@@ -132,7 +164,8 @@ async def run_multi_index_analysis(request: MultiIndexRequest):
     """
     try:
         # Validate indices
-        invalid_indices = [idx for idx in request.indices if idx not in INDEX_CONFIG]
+        index_config = load_index_config()
+        invalid_indices = [idx for idx in request.indices if idx not in index_config]
         if invalid_indices:
             raise HTTPException(status_code=400, detail=f"Invalid indices: {invalid_indices}")
         

@@ -83,7 +83,7 @@ function AppContent() {
       const data = await analysisApi.getIndices();
       return data.indices;
     },
-    staleTime: Infinity
+    staleTime: 1000 * 30  // 30s — refreshes after config page changes
   });
 
   // Fetch job status
@@ -184,6 +184,7 @@ function AppContent() {
             setShowLogs={setShowLogs}
             dateRange={dateRange}
             selectedIndices={selectedIndices}
+            availableIndices={availableIndices}
           />
         ) : (
           <Configuration />
