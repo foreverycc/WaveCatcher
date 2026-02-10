@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { analysisApi } from '../services/api';
-import { MarketBreadthChart } from './MarketBreadthChart';
+import { IndexSummaryCard } from './IndexSummaryCard';
 import { cn } from '../utils/cn';
 import { subYears, subMonths, subDays, parseISO, isAfter, format } from 'date-fns';
 import { DetailedChartRow, InteractiveOptionChart } from '../pages/Dashboard';
@@ -537,9 +537,9 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId }) => {
     return (
         <div className="p-4 md:p-6 h-full overflow-y-auto space-y-6">
 
-            {/* Market Breadth Overview (Combined) */}
+            {/* Market Index Summary Cards (click to flip to chart) */}
             <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-4 gap-4 w-full">
-                <MarketBreadthChart
+                <IndexSummaryCard
                     title="SPX"
                     spxData={spxHistory ?? []}
                     cdBreadth={spxBreadth?.cd_breadth ?? []}
@@ -547,7 +547,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId }) => {
                     minDate={oneYearAgo}
                     signals1234={spxSignals1234}
                 />
-                <MarketBreadthChart
+                <IndexSummaryCard
                     title="QQQ"
                     spxData={qqqHistory ?? []}
                     cdBreadth={qqqBreadth?.cd_breadth ?? []}
@@ -555,7 +555,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId }) => {
                     minDate={oneYearAgo}
                     signals1234={qqqSignals1234}
                 />
-                <MarketBreadthChart
+                <IndexSummaryCard
                     title="Dow Jones"
                     spxData={djiHistory ?? []}
                     cdBreadth={djiBreadth?.cd_breadth ?? []}
@@ -563,7 +563,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId }) => {
                     minDate={oneYearAgo}
                     signals1234={djiSignals1234}
                 />
-                <MarketBreadthChart
+                <IndexSummaryCard
                     title="IWM"
                     spxData={iwmHistory ?? []}
                     cdBreadth={iwmBreadth?.cd_breadth ?? []}
