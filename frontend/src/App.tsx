@@ -183,6 +183,7 @@ function AppContent() {
             showLogs={showLogs}
             setShowLogs={setShowLogs}
             dateRange={dateRange}
+            selectedIndices={selectedIndices}
           />
         ) : (
           <Configuration />

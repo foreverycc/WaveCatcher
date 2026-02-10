@@ -182,9 +182,10 @@ const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 
 interface SummaryPanelProps {
     runId: number | undefined;
     onRowClick?: (row: any, type: 'bull' | 'bear') => void;
+    selectedIndices?: string[];
 }
 
-export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId }) => {
+export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [] }) => {
 
     // --- Data Fetching ---
 
@@ -534,43 +535,42 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId }) => {
         );
     };
 
+    // Map index keys to their data
+    const indexCardData: Record<string, { title: string, history: any[], breadth: any, signals1234: any }> = {
+        SPX: { title: 'SPX', history: spxHistory ?? [], breadth: spxBreadth, signals1234: spxSignals1234 },
+        QQQ: { title: 'QQQ', history: qqqHistory ?? [], breadth: qqqBreadth, signals1234: qqqSignals1234 },
+        DJI: { title: 'Dow Jones', history: djiHistory ?? [], breadth: djiBreadth, signals1234: djiSignals1234 },
+        IWM: { title: 'IWM', history: iwmHistory ?? [], breadth: iwmBreadth, signals1234: iwmSignals1234 },
+    };
+
+    // Determine which indices to show (default to all if none selected)
+    const visibleIndices = selectedIndices.length > 0
+        ? selectedIndices.filter(k => k in indexCardData)
+        : Object.keys(indexCardData);
+
     return (
         <div className="p-4 md:p-6 h-full overflow-y-auto space-y-6">
 
             {/* Market Index Summary Cards (click to flip to chart) */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-4 gap-4 w-full">
-                <IndexSummaryCard
-                    title="SPX"
-                    spxData={spxHistory ?? []}
-                    cdBreadth={spxBreadth?.cd_breadth ?? []}
-                    mcBreadth={spxBreadth?.mc_breadth ?? []}
-                    minDate={oneYearAgo}
-                    signals1234={spxSignals1234}
-                />
-                <IndexSummaryCard
-                    title="QQQ"
-                    spxData={qqqHistory ?? []}
-                    cdBreadth={qqqBreadth?.cd_breadth ?? []}
-                    mcBreadth={qqqBreadth?.mc_breadth ?? []}
-                    minDate={oneYearAgo}
-                    signals1234={qqqSignals1234}
-                />
-                <IndexSummaryCard
-                    title="Dow Jones"
-                    spxData={djiHistory ?? []}
-                    cdBreadth={djiBreadth?.cd_breadth ?? []}
-                    mcBreadth={djiBreadth?.mc_breadth ?? []}
-                    minDate={oneYearAgo}
-                    signals1234={djiSignals1234}
-                />
-                <IndexSummaryCard
-                    title="IWM"
-                    spxData={iwmHistory ?? []}
-                    cdBreadth={iwmBreadth?.cd_breadth ?? []}
-                    mcBreadth={iwmBreadth?.mc_breadth ?? []}
-                    minDate={oneYearAgo}
-                    signals1234={iwmSignals1234}
-                />
+            <div className={cn(
+                "grid gap-4 w-full",
+                visibleIndices.length <= 2 ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1 xl:grid-cols-2 2xl:grid-cols-4"
+            )}>
+                {visibleIndices.map(key => {
+                    const d = indexCardData[key];
+                    if (!d) return null;
+                    return (
+                        <IndexSummaryCard
+                            key={key}
+                            title={d.title}
+                            spxData={d.history}
+                            cdBreadth={d.breadth?.cd_breadth ?? []}
+                            mcBreadth={d.breadth?.mc_breadth ?? []}
+                            minDate={oneYearAgo}
+                            signals1234={d.signals1234}
+                        />
+                    );
+                })}
             </div>
 
             <div className="border-t border-border pt-6"></div>

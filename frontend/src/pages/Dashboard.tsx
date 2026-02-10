@@ -16,6 +16,7 @@ interface DashboardProps {
     showLogs: boolean;
     setShowLogs: (show: boolean) => void;
     dateRange: { start: string; end: string };
+    selectedIndices?: string[];
 }
 
 // Wrapper component to handle individual chart data fetching
@@ -80,7 +81,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
     selectedStockList,
     showLogs,
     setShowLogs,
-    dateRange
+    dateRange,
+    selectedIndices
 }) => {
     const [activeTab, setActiveTab] = useState<'summary' | 'cd' | 'mc' | 'option'>('summary');
     const [activeSubTab, setActiveSubTab] = useState<string>('best_intervals_50');
@@ -370,9 +372,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {activeTab === 'summary' ? (
                     <SummaryPanel
                         runId={currentRun?.id}
+                        selectedIndices={selectedIndices}
                         onRowClick={(row, type) => {
                             setActiveTab(type === 'bull' ? 'cd' : 'mc');
-                            setActiveSubTab('best_intervals_50'); // Summary uses 50-period data
+                            setActiveSubTab('best_intervals_50');
                             setSelectedRow(row);
                         }}
                     />
