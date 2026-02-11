@@ -112,8 +112,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     // Determine result type based on active tabs
     const transformResultType = (tab: string, subTab: string) => {
-        // Handle 1234 and 5230 resonance models
-        if (subTab === '1234' || subTab === '5230') {
+        // Handle 1234 resonance model
+        if (subTab === '1234') {
             const prefix = tab === 'cd' ? 'cd_breakout_candidates_summary_' : 'mc_breakout_candidates_summary_';
             return prefix + subTab;
         } else {
@@ -159,7 +159,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         // Filter valid data
         return tableData.filter((row: any) => {
-            // Check latest_signal or date (for 1234/5230 models)
+            // Check latest_signal or date (for 1234 model)
             const dateStr = row.latest_signal || row.date;
             if (!dateStr) return false;
 
@@ -217,21 +217,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
             };
         };
 
-        if (activeSubTab === '1234' || activeSubTab === '5230') {
+        if (activeSubTab === '1234') {
             const intervalsStr = selectedRow.intervals;
             if (!intervalsStr) return [];
 
             const intervalNumbers = intervalsStr.split(',').map((s: string) => s.trim());
-            const suffix = activeSubTab === '1234' ? 'h' : 'm';
-            let intervals = intervalNumbers.map((n: string) => n + suffix);
+            let intervals = intervalNumbers.map((n: string) => n + 'h');
 
-            // Add extra interval (1d for 1234, 1h for 5230)
-            const extraInterval = activeSubTab === '1234' ? '1d' : '1h';
-
-            // Explicitly add extra interval if not present (logic: show specific sequence requested)
-            // Requested: intervals... then extra
-            if (!intervals.includes(extraInterval)) {
-                intervals.push(extraInterval);
+            // Add 1d interval if not present
+            if (!intervals.includes('1d')) {
+                intervals.push('1d');
             }
 
             const results = intervals.map((interval: any) => {
@@ -395,7 +390,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 { value: 'good_signals', label: 'High Return Intervals' },
                                 { value: 'custom_detailed', label: 'Detailed Results' },
                                 { value: '1234', label: '1234 Model' },
-                                { value: '5230', label: '5230 Model' },
                             ].map((tab) => (
                                 <button
                                     key={tab.value}

@@ -89,68 +89,15 @@ def save_breakout_candidates_1234(df, file_path):
     # Handle empty DataFrame
     if df.empty:
         print("No 1234 breakout candidates to save")
-        # Create empty file with headers
-        empty_df = pd.DataFrame(columns=['ticker', 'date', 'intervals', 'signal_price', 'current_price', 'current_time', 'nx_1d_signal', 'nx_30m_signal', 'nx_1d', 'nx_1h', 'nx_30m'])
+        empty_df = pd.DataFrame(columns=['ticker', 'date', 'intervals', 'signal_price', 'current_price', 'current_time', 'nx_1d_signal', 'nx_1d', 'nx_1h'])
         empty_df.to_csv(output_path, sep='\t', index=False)
         return
     
     # Check which columns exist and save accordingly
     available_columns = ['ticker', 'date', 'intervals']
-    if 'signal_price' in df.columns:
-        available_columns.append('signal_price')
-    if 'current_price' in df.columns:
-        available_columns.append('current_price')
-    if 'current_time' in df.columns:
-        available_columns.append('current_time')
-    if 'nx_1d_signal' in df.columns:
-        available_columns.append('nx_1d_signal')
-    if 'nx_30m_signal' in df.columns:
-        available_columns.append('nx_30m_signal')
-    if 'nx_1d' in df.columns:
-        available_columns.append('nx_1d')
-    if 'nx_1h' in df.columns:
-        available_columns.append('nx_1h')
-    if 'nx_30m' in df.columns:
-        available_columns.append('nx_30m')
-    
-    df.to_csv(output_path, sep='\t', index=False, columns=available_columns)
-
-def save_breakout_candidates_5230(df, file_path):
-    # Extract base name and directory from the input file path
-    directory = os.path.dirname(file_path)
-    base_name = os.path.basename(file_path)
-    output_path = os.path.join(directory, base_name).replace("details", "summary")
-    
-    # Handle case where df might be a list (convert to empty DataFrame)
-    if isinstance(df, list):
-        df = pd.DataFrame()
-    
-    # Handle empty DataFrame
-    if df.empty:
-        print("No 5230 breakout candidates to save")
-        # Create empty file with headers
-        empty_df = pd.DataFrame(columns=['ticker', 'date', 'intervals', 'signal_price', 'current_price', 'current_time', 'nx_1h_signal', 'nx_5m_signal', 'nx_1d', 'nx_1h', 'nx_30m'])
-        empty_df.to_csv(output_path, sep='\t', index=False)
-        return
-    
-    # Check which columns exist and save accordingly
-    available_columns = ['ticker', 'date', 'intervals']
-    if 'signal_price' in df.columns:
-        available_columns.append('signal_price')
-    if 'current_price' in df.columns:
-        available_columns.append('current_price')
-    if 'current_time' in df.columns:
-        available_columns.append('current_time')
-    if 'nx_1h_signal' in df.columns:
-        available_columns.append('nx_1h_signal')
-    if 'nx_5m_signal' in df.columns:
-        available_columns.append('nx_5m_signal')
-    if 'nx_1d' in df.columns:
-        available_columns.append('nx_1d')
-    if 'nx_1h' in df.columns:
-        available_columns.append('nx_1h')
-    if 'nx_30m' in df.columns:
-        available_columns.append('nx_30m')
+    for col in ['signal_price', 'current_price', 'current_time', 'nx_1d_signal', 'nx_1d', 'nx_1h']:
+        if col in df.columns:
+            available_columns.append(col)
     
     df.to_csv(output_path, sep='\t', index=False, columns=available_columns)
 
@@ -168,71 +115,18 @@ def save_mc_breakout_candidates_1234(df, file_path):
     # Handle empty DataFrame
     if df.empty:
         print("No MC 1234 breakout candidates to save")
-        # Create empty file with headers
-        empty_df = pd.DataFrame(columns=['ticker', 'date', 'intervals', 'signal_price', 'current_price', 'current_time', 'nx_1d_signal', 'nx_30m_signal', 'nx_1d', 'nx_1h', 'nx_30m'])
+        empty_df = pd.DataFrame(columns=['ticker', 'date', 'intervals', 'signal_price', 'current_price', 'current_time', 'nx_1d_signal', 'nx_1d', 'nx_1h'])
         empty_df.to_csv(output_path, sep='\t', index=False)
         return
     
     # Check which columns exist and save accordingly
     available_columns = ['ticker', 'date', 'intervals']
-    if 'signal_price' in df.columns:
-        available_columns.append('signal_price')
-    if 'current_price' in df.columns:
-        available_columns.append('current_price')
-    if 'current_time' in df.columns:
-        available_columns.append('current_time')
-    if 'nx_1d_signal' in df.columns:
-        available_columns.append('nx_1d_signal')
-    if 'nx_30m_signal' in df.columns:
-        available_columns.append('nx_30m_signal')
-    if 'nx_1d' in df.columns:
-        available_columns.append('nx_1d')
-    if 'nx_1h' in df.columns:
-        available_columns.append('nx_1h')
-    if 'nx_30m' in df.columns:
-        available_columns.append('nx_30m')
+    for col in ['signal_price', 'current_price', 'current_time', 'nx_1d_signal', 'nx_1d', 'nx_1h']:
+        if col in df.columns:
+            available_columns.append(col)
     
     df.to_csv(output_path, sep='\t', index=False, columns=available_columns)
 
-def save_mc_breakout_candidates_5230(df, file_path):
-    """Save MC 5230 breakout candidates summary"""
-    # Extract base name and directory from the input file path
-    directory = os.path.dirname(file_path)
-    base_name = os.path.basename(file_path)
-    output_path = os.path.join(directory, base_name).replace("details", "summary")
-    
-    # Handle case where df might be a list (convert to empty DataFrame)
-    if isinstance(df, list):
-        df = pd.DataFrame()
-    
-    # Handle empty DataFrame
-    if df.empty:
-        print("No MC 5230 breakout candidates to save")
-        # Create empty file with headers
-        empty_df = pd.DataFrame(columns=['ticker', 'date', 'intervals', 'signal_price', 'current_price', 'current_time', 'nx_1h_signal', 'nx_5m_signal', 'nx_1d', 'nx_1h', 'nx_30m'])
-        empty_df.to_csv(output_path, sep='\t', index=False)
-        return
-    
-    # Check which columns exist and save accordingly
-    available_columns = ['ticker', 'date', 'intervals']
-    if 'signal_price' in df.columns:
-        available_columns.append('signal_price')
-    if 'current_price' in df.columns:
-        available_columns.append('current_price')
-    if 'current_time' in df.columns:
-        available_columns.append('current_time')
-    if 'nx_1h_signal' in df.columns:
-        available_columns.append('nx_1h_signal')
-    if 'nx_5m_signal' in df.columns:
-        available_columns.append('nx_5m_signal')
-    if 'nx_1d' in df.columns:
-        available_columns.append('nx_1d')
-    if 'nx_1h' in df.columns:
-        available_columns.append('nx_1h')
-    if 'nx_30m' in df.columns:
-        available_columns.append('nx_30m')
-    
-    df.to_csv(output_path, sep='\t', index=False, columns=available_columns)
 
 def calculate_current_nx_values(ticker, all_ticker_data, precomputed_series=None):
     """
@@ -245,13 +139,11 @@ def calculate_current_nx_values(ticker, all_ticker_data, precomputed_series=None
                            Format: {'1d': series, '1h': series, ...}
     
     Returns:
-        dict: Dictionary with 'nx_1d', 'nx_1h', 'nx_30m', 'nx_5m' boolean values
+        dict: Dictionary with 'nx_1d', 'nx_1h' boolean values
     """
     results = {
         'nx_1d': None,
         'nx_1h': None,
-        'nx_30m': None,
-        'nx_5m': None
     }
     
     if ticker not in all_ticker_data:
@@ -263,10 +155,6 @@ def calculate_current_nx_values(ticker, all_ticker_data, precomputed_series=None
     def get_nx_value(interval, key):
         # Try to use precomputed series logic
         if key in precomputed and precomputed[key] is not None:
-            # precomputed[key] is a dict {date: bool} or Series
-            # We want current status (latest available)
-            # This is tricky because precomputed used date keys.
-            # So fallback to recalculation is safer for "current status" unless dates align perfectly.
             pass
             
         if interval in all_ticker_data[ticker] and not all_ticker_data[ticker][interval].empty:
@@ -279,7 +167,5 @@ def calculate_current_nx_values(ticker, all_ticker_data, precomputed_series=None
 
     results['nx_1d'] = get_nx_value('1d', '1d')
     results['nx_1h'] = get_nx_value('1h', '1h')
-    results['nx_30m'] = get_nx_value('30m', '30m')
-    results['nx_5m'] = get_nx_value('5m', '5m')
     
     return results

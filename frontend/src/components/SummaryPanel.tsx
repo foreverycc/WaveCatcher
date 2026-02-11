@@ -462,7 +462,6 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                                 <th className="p-2 text-left">Intervals</th>
                                 <th className="p-2 text-right">Return</th>
                                 <th className="p-2 text-center">NX 1D</th>
-                                <th className="p-2 text-center">NX 30m</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -483,15 +482,12 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                                     <td className={cn("p-2 text-center", row.nx_1d ? "text-green-500" : "text-red-500")}>
                                         {row.nx_1d ? '▲' : '▼'}
                                     </td>
-                                    <td className={cn("p-2 text-center", row.nx_30m ? "text-green-500" : "text-red-500")}>
-                                        {row.nx_30m ? '▲' : '▼'}
-                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </div >
         );
     };
 

@@ -327,18 +327,14 @@ def evaluate_interval(ticker, interval, data=None):
             
             # Add NX values (both signal and current values)
             result['nx_1d_signal'] = None
-            result['nx_30m_signal'] = None  
             result['nx_1h_signal'] = None
-            result['nx_5m_signal'] = None
             result['nx_1d'] = None
-            result['nx_30m'] = None
             result['nx_1h'] = None
-            result['nx_5m'] = None
             result['nx_4h'] = None
             
             # Calculate current NX values using pre-downloaded data
             if data:
-                for timeframe in ['1d', '30m', '1h', '5m', '4h']:
+                for timeframe in ['1d', '1h', '4h']:
                     if timeframe in data and not data[timeframe].empty:
                         df_nx = data[timeframe]
                         if len(df_nx) >= 89:  # Need at least 89 periods for long EMA
@@ -548,15 +544,12 @@ def evaluate_interval(ticker, interval, data=None):
             result['min_return'] = 0
         
         # Add NX values (both signal and current values)
-        # Add NX values (both signal and current values)
         # Signal NX values (at signal dates) - using the latest signal date if available
         result['nx_1d_signal'] = None
-        result['nx_30m_signal'] = None  
         result['nx_1h_signal'] = None
-        result['nx_5m_signal'] = None
 
         if latest_signal_date and data:
-             for timeframe in ['1d', '30m', '1h', '5m']:
+             for timeframe in ['1d', '1h']:
                 if timeframe in data and not data[timeframe].empty:
                     df_nx = data[timeframe]
                     if len(df_nx) >= 89:
@@ -585,15 +578,13 @@ def evaluate_interval(ticker, interval, data=None):
         
         # Current NX values (at current time)
         result['nx_1d'] = None
-        result['nx_30m'] = None
         result['nx_1h'] = None
-        result['nx_5m'] = None
         result['nx_4h'] = None
         
         # Calculate current NX values using pre-downloaded data
         if data:
             # Calculate NX for different timeframes
-            for timeframe in ['1d', '30m', '1h', '5m', '4h']:
+            for timeframe in ['1d', '1h', '4h']:
                 if timeframe in data and not data[timeframe].empty:
                     df_nx = data[timeframe]
                     if len(df_nx) >= 89:  # Need at least 89 periods for long EMA

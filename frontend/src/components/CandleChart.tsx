@@ -318,7 +318,7 @@ export const CandleChart: React.FC<CandleChartProps> = ({ data, ticker, interval
     }, [handleMouseMove, handleMouseUp]);
 
     // Define intervals to show
-    const intervals = ['5m', '15m', '30m', '1h', '2h', '4h', '1d', '1w'];
+    const intervals = ['1h', '2h', '3h', '4h', '1d'];
 
     // Date format logic for XAxis
     const axisDateFormat = useMemo(() => {

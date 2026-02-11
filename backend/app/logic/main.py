@@ -5,7 +5,7 @@ if __name__ == '__main__':
     # Create output directory if it doesn't exist
     os.makedirs('./output', exist_ok=True)
     
-    print("Running comprehensive stock analysis: 1234, 5230, CD Signal Evaluation")
+    print("Running comprehensive stock analysis: 1234, CD Signal Evaluation")
     
     # Uncomment the file path you want to use:
     # analyze_stocks('/Users/foreverycc/git/stock_list/stocks_all_sel.txt')

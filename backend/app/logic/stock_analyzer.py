@@ -22,15 +22,11 @@ from app.logic.utils import (
 )
 from app.logic.get_resonance_signal_CD import (
     process_ticker_1234, 
-    process_ticker_5230, 
     identify_1234, 
-    identify_5230
 )
 from app.logic.get_resonance_signal_MC import (
     process_ticker_mc_1234, 
-    process_ticker_mc_5230, 
     identify_mc_1234, 
-    identify_mc_5230
 )
 from app.logic.get_best_CD_interval import evaluate_interval
 from app.logic.get_best_MC_interval import evaluate_interval as evaluate_mc_interval
@@ -45,8 +41,8 @@ best_intervals_columns = ['ticker', 'interval', 'hold_time',
                           'avg_return', 'latest_signal', 'latest_signal_price', 
                           'current_time', 'current_price', 'current_period',
                           'test_count', 'success_rate', 'best_period', 'signal_count',
-                          'nx_1d_signal', 'nx_30m_signal', 'nx_1h_signal', 'nx_5m_signal',
-                          'nx_1d', 'nx_30m', 'nx_1h', 'nx_5m', 'nx_4h',
+                          'nx_1d_signal', 'nx_1h_signal',
+                          'nx_1d', 'nx_1h', 'nx_4h',
                           'mc_signals_before_cd', 'mc_at_top_price_count', 'mc_at_top_price_rate',
                           'avg_mc_price_percentile', 'avg_mc_decline_after', 'avg_mc_criteria_met',
                           'latest_mc_date', 'latest_mc_price', 'latest_mc_at_top_price',
@@ -57,8 +53,8 @@ mc_best_intervals_columns = ['ticker', 'interval', 'hold_time',
                              'avg_return', 'latest_signal', 'latest_signal_price', 
                              'current_time', 'current_price', 'current_period',
                              'test_count', 'success_rate', 'best_period', 'signal_count',
-                             'nx_1d_signal', 'nx_30m_signal', 'nx_1h_signal', 'nx_5m_signal',
-                             'nx_1d', 'nx_30m', 'nx_1h', 'nx_5m', 'nx_4h',
+                             'nx_1d_signal', 'nx_1h_signal',
+                             'nx_1d', 'nx_1h', 'nx_4h',
                              'cd_signals_before_mc', 'cd_at_bottom_price_count', 'cd_at_bottom_price_rate',
                              'avg_cd_price_percentile', 'avg_cd_increase_after', 'avg_cd_criteria_met',
                              'latest_cd_date', 'latest_cd_price', 'latest_cd_at_bottom_price',
@@ -79,8 +75,8 @@ good_signals_columns = ['ticker', 'interval', 'hold_time',
                         'exp_return', 'latest_signal', 'latest_signal_price',
                         'current_time', 'current_price', 'current_period',
                         'test_count', 'success_rate', 'best_period', 'signal_count',
-                        'nx_1d_signal', 'nx_30m_signal', 'nx_1h_signal', 'nx_5m_signal',
-                        'nx_1d', 'nx_30m', 'nx_1h', 'nx_5m', 'nx_4h',
+                        'nx_1d_signal', 'nx_1h_signal',
+                        'nx_1d', 'nx_1h', 'nx_4h',
                         'mc_signals_before_cd', 'mc_at_top_price_count', 'mc_at_top_price_rate',
                         'avg_mc_price_percentile', 'avg_mc_decline_after', 'avg_mc_criteria_met',
                         'latest_mc_date', 'latest_mc_price', 'latest_mc_at_top_price',
@@ -160,7 +156,7 @@ def process_ticker_all(ticker, end_date=None):
         # Skip if no data available
         if all(df.empty for df in data.values()):
             print(f"No data available for {ticker}")
-            return ticker, None, None, [], [], [], [], None
+            return ticker, None, None, [], [], None
             
         # Save downloaded data to database (replacing cache files)
         for interval, df in data.items():
@@ -170,18 +166,12 @@ def process_ticker_all(ticker, end_date=None):
         # Process for 1234 breakout (CD signals)
         results_1234 = process_ticker_1234(ticker, data)
         
-        # Process for 5230 breakout (CD signals)
-        results_5230 = process_ticker_5230(ticker, data)
-        
         # Process for MC 1234 breakout (MC signals)
         mc_results_1234 = process_ticker_mc_1234(ticker, data)
         
-        # Process for MC 5230 breakout (MC signals)
-        mc_results_5230 = process_ticker_mc_5230(ticker, data)
-        
         # Process for CD signal evaluation
         cd_results = []
-        intervals = ['5m', '10m', '15m', '30m', '1h', '2h', '3h', '4h', '1d', '1w']
+        intervals = ['1h', '2h', '3h', '4h', '1d']
         for interval in intervals:
             result = evaluate_interval(ticker, interval, data=data)
             if result:
@@ -194,18 +184,17 @@ def process_ticker_all(ticker, end_date=None):
             if result:
                 mc_results.append(result)
         
-        return ticker, results_1234, results_5230, mc_results_1234, mc_results_5230, cd_results, mc_results, data
+        return ticker, results_1234, mc_results_1234, cd_results, mc_results, data
         
     except Exception as e:
         print(f"Error processing {ticker}: {e}")
-        return ticker, None, None, [], [], [], [], None
+        return ticker, None, None, [], [], None
 
 def analyze_stocks(file_path, end_date=None, progress_callback=None):
     """
-    Comprehensive stock analysis function that performs all three types of analysis:
-    - 1234 Breakout candidates
-    - 5230 Breakout candidates
-    - CD Signal Evaluation
+    Comprehensive stock analysis function that performs all analysis types:
+    - 1234 Breakout candidates (CD & MC)
+    - CD/MC Signal Evaluation
     
     Args:
         file_path: Path to the file containing stock ticker symbols
@@ -286,12 +275,8 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         logger.info("All tickers processed. Aggregating results...")
         
         # Separate results
-        cd_results = []
-        mc_results = []
         mc_results_1234 = []
-        mc_results_5230 = []
         cd_results_1234 = []
-        cd_results_5230 = []
         cd_eval_results = []
         mc_eval_results = []
         all_ticker_data = {}
@@ -301,16 +286,14 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
             if res is None:
                 continue
                 
-            ticker, r_1234, r_5230, mc_r_1234, mc_r_5230, cd_res, mc_res, data = res
+            ticker, r_1234, mc_r_1234, cd_res, mc_res, data = res
             
-            if r_1234 is None and r_5230 is None and not cd_res and not mc_res:
+            if r_1234 is None and not cd_res and not mc_res:
                  failed_tickers.append(ticker)
                  continue
                  
             if r_1234: cd_results_1234.extend(r_1234)
-            if r_5230: cd_results_5230.extend(r_5230)
             if mc_r_1234: mc_results_1234.extend(mc_r_1234)
-            if mc_r_5230: mc_results_5230.extend(mc_r_5230)
             if cd_res: cd_eval_results.extend(cd_res)
             if mc_res: mc_eval_results.extend(mc_res)
             if data: all_ticker_data[ticker] = data
@@ -357,19 +340,7 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
             if breadth_cd_1234:
                 save_analysis_result(run_id, "ALL", "ALL", 'cd_market_breadth_1234', breadth_cd_1234)
         
-        # 2. Save 5230 results and identify breakout candidates
-        print("Saving 5230 breakout results...")
-        save_analysis_result(run_id, "ALL", "ALL", 'cd_breakout_candidates_details_5230', cd_results_5230)
-        df_breakout_5230 = identify_5230(cd_results_5230, all_ticker_data)
-        if not df_breakout_5230.empty:
-            save_analysis_result(run_id, "ALL", "ALL", 'cd_breakout_candidates_summary_5230', df_breakout_5230.to_dict(orient='records'))
-
-            # Aggregate Breadth for CD 5230
-            breadth_cd_5230 = aggregate_signals(df_breakout_5230, 'CD 5230')
-            if breadth_cd_5230:
-                save_analysis_result(run_id, "ALL", "ALL", 'cd_market_breadth_5230', breadth_cd_5230)
-
-        # 3. Save MC 1234 results and identify breakout candidates
+        # 2. Save MC 1234 results and identify breakout candidates
         logger.info("Saving MC 1234 breakout results...")
         save_analysis_result(run_id, "ALL", "ALL", 'mc_breakout_candidates_details_1234', mc_results_1234)
         df_mc_breakout_1234 = identify_mc_1234(mc_results_1234, all_ticker_data)
@@ -380,18 +351,6 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
             breadth_mc_1234 = aggregate_signals(df_mc_breakout_1234, 'MC 1234')
             if breadth_mc_1234:
                 save_analysis_result(run_id, "ALL", "ALL", 'mc_market_breadth_1234', breadth_mc_1234)
-        
-        # 4. Save MC 5230 results and identify breakout candidates
-        logger.info("Saving MC 5230 breakout results...")
-        save_analysis_result(run_id, "ALL", "ALL", 'mc_breakout_candidates_details_5230', mc_results_5230)
-        df_mc_breakout_5230 = identify_mc_5230(mc_results_5230, all_ticker_data)
-        if not df_mc_breakout_5230.empty:
-            save_analysis_result(run_id, "ALL", "ALL", 'mc_breakout_candidates_summary_5230', df_mc_breakout_5230.to_dict(orient='records'))
-
-            # Aggregate Breadth for MC 5230
-            breadth_mc_5230 = aggregate_signals(df_mc_breakout_5230, 'MC 5230')
-            if breadth_mc_5230:
-                save_analysis_result(run_id, "ALL", "ALL", 'mc_market_breadth_5230', breadth_mc_5230)
 
         # 5. Save CD evaluation results
         logger.info("Saving CD evaluation results...")
@@ -681,8 +640,6 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
         total = len(tickers)
         cd_results_1234 = []
         mc_results_1234 = []
-        cd_results_5230 = []
-        mc_results_5230 = []
         cd_eval_results = []
         mc_eval_results = []
         all_ticker_data = {}
@@ -707,7 +664,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                 progress_callback(0)
             
             for result in pool.imap(process_func, tickers, chunksize=chunk_size):
-                ticker, cd_1234, cd_5230, mc_1234, mc_5230, cd_eval, mc_eval, ticker_data = result
+                ticker, cd_1234, mc_1234, cd_eval, mc_eval, ticker_data = result
                 
                 if ticker_data is not None:
                     all_ticker_data[ticker] = ticker_data
@@ -715,10 +672,6 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                         cd_results_1234.extend(cd_1234)
                     if mc_1234:
                         mc_results_1234.extend(mc_1234)
-                    if cd_5230:
-                        cd_results_5230.extend(cd_5230)
-                    if mc_5230:
-                        mc_results_5230.extend(mc_5230)
                     if cd_eval:
                         cd_eval_results.extend(cd_eval)
                     if mc_eval:
@@ -745,32 +698,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
         save_analysis_result(run_id, "ALL", "ALL", 'mc_breakout_candidates_summary_1234',
                            df_mc_breakout_1234.to_dict(orient='records') if not df_mc_breakout_1234.empty else [])
         
-        # 3b. Save MC 5230 results and identify breakout candidates
-        logger.info("Saving MC 5230 breakout results...")
-        save_analysis_result(run_id, "ALL", "ALL", 'mc_breakout_candidates_details_5230', mc_results_5230)
-        df_mc_breakout_5230 = identify_mc_5230(mc_results_5230, all_ticker_data)
-        if not df_mc_breakout_5230.empty:
-            save_analysis_result(run_id, "ALL", "ALL", 'mc_breakout_candidates_summary_5230', df_mc_breakout_5230.to_dict(orient='records'))
-
-            # Aggregate Breadth for MC 5230
-            def aggregate_signals_simple(df, metric_name):
-                if df.empty: return []
-                try:
-                    df = df.copy()
-                    if 'date' not in df.columns: return []
-                    df['date'] = pd.to_datetime(df['date'])
-                    daily_counts = df.groupby('date')['ticker'].nunique().reset_index()
-                    daily_counts.columns = ['date', 'count']
-                    daily_counts = daily_counts.sort_values('date')
-                    daily_counts['date'] = daily_counts['date'].astype(str)
-                    return daily_counts.to_dict(orient='records')
-                except Exception: return []
-
-            breadth_mc_5230 = aggregate_signals_simple(df_mc_breakout_5230, 'MC 5230')
-            if breadth_mc_5230:
-                save_analysis_result(run_id, "ALL", "ALL", 'mc_market_breadth_5230', breadth_mc_5230)
-
-        # 3c. Save CD evaluation results
+        # 3b. Save CD evaluation results
         logger.info("Saving CD evaluation results...")
         if cd_eval_results:
             df_cd_eval = pd.DataFrame(cd_eval_results)
