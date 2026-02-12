@@ -328,6 +328,34 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                 logger.error(f"Error aggregating {metric_name}: {e}")
                 return []
 
+        # Helper: aggregate raw signal details by date and interval
+        def aggregate_signals_by_interval(raw_details, metric_name):
+            """Aggregate raw signal details by date and interval.
+            Returns list of {date, count_1h, count_2h, count_3h, count_4h, count_1d}."""
+            if not raw_details:
+                return []
+            try:
+                df = pd.DataFrame(raw_details)
+                if df.empty or 'signal_date' not in df.columns or 'interval' not in df.columns:
+                    return []
+                df['date'] = pd.to_datetime(df['signal_date']).dt.strftime('%Y-%m-%d')
+                # Count unique tickers per (date, interval)
+                counts = df.groupby(['date', 'interval'])['ticker'].nunique().reset_index()
+                counts.columns = ['date', 'interval', 'count']
+                # Pivot to get one column per interval
+                pivot = counts.pivot_table(index='date', columns='interval', values='count', fill_value=0).reset_index()
+                # Standardize column names
+                result = []
+                for _, row in pivot.iterrows():
+                    entry = {'date': str(row['date'])}
+                    for intv in ['1h', '2h', '3h', '4h', '1d']:
+                        entry[f'count_{intv}'] = int(row.get(intv, 0))
+                    result.append(entry)
+                return sorted(result, key=lambda x: x['date'])
+            except Exception as e:
+                logger.error(f"Error aggregating {metric_name} by interval: {e}")
+                return []
+
         # 1. Save 1234 results and identify breakout candidates
         print("Saving 1234 breakout results...")
         save_analysis_result(run_id, "ALL", "ALL", 'cd_breakout_candidates_details_1234', cd_results_1234)
@@ -340,6 +368,11 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
             if breadth_cd_1234:
                 save_analysis_result(run_id, "ALL", "ALL", 'cd_market_breadth_1234', breadth_cd_1234)
         
+        # Aggregate CD signals by interval (from raw details)
+        cd_signal_by_interval = aggregate_signals_by_interval(cd_results_1234, 'CD signals')
+        if cd_signal_by_interval:
+            save_analysis_result(run_id, "ALL", "ALL", 'cd_signal_breadth_by_interval', cd_signal_by_interval)
+
         # 2. Save MC 1234 results and identify breakout candidates
         logger.info("Saving MC 1234 breakout results...")
         save_analysis_result(run_id, "ALL", "ALL", 'mc_breakout_candidates_details_1234', mc_results_1234)
@@ -351,6 +384,11 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
             breadth_mc_1234 = aggregate_signals(df_mc_breakout_1234, 'MC 1234')
             if breadth_mc_1234:
                 save_analysis_result(run_id, "ALL", "ALL", 'mc_market_breadth_1234', breadth_mc_1234)
+
+        # Aggregate MC signals by interval (from raw details)
+        mc_signal_by_interval = aggregate_signals_by_interval(mc_results_1234, 'MC signals')
+        if mc_signal_by_interval:
+            save_analysis_result(run_id, "ALL", "ALL", 'mc_signal_breadth_by_interval', mc_signal_by_interval)
 
         # 5. Save CD evaluation results
         logger.info("Saving CD evaluation results...")
@@ -688,6 +726,35 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
         
         logger.info(f"Processed {len(all_ticker_data)} tickers successfully")
         
+        # Helper: aggregate raw signal details by date and interval
+        def aggregate_signals_by_interval(raw_details, metric_name, ticker_list=None):
+            """Aggregate raw signal details by date and interval.
+            Returns list of {date, count_1h, count_2h, count_3h, count_4h, count_1d}."""
+            if not raw_details:
+                return []
+            try:
+                df = pd.DataFrame(raw_details)
+                if df.empty or 'signal_date' not in df.columns or 'interval' not in df.columns:
+                    return []
+                if ticker_list is not None:
+                    df = df[df['ticker'].isin(ticker_list)]
+                    if df.empty:
+                        return []
+                df['date'] = pd.to_datetime(df['signal_date']).dt.strftime('%Y-%m-%d')
+                counts = df.groupby(['date', 'interval'])['ticker'].nunique().reset_index()
+                counts.columns = ['date', 'interval', 'count']
+                pivot = counts.pivot_table(index='date', columns='interval', values='count', fill_value=0).reset_index()
+                result = []
+                for _, row in pivot.iterrows():
+                    entry = {'date': str(row['date'])}
+                    for intv in ['1h', '2h', '3h', '4h', '1d']:
+                        entry[f'count_{intv}'] = int(row.get(intv, 0))
+                    result.append(entry)
+                return sorted(result, key=lambda x: x['date'])
+            except Exception as e:
+                logger.error(f"Error aggregating {metric_name} by interval: {e}")
+                return []
+
         # 3. Identify breakouts and save results
         df_breakout_1234 = identify_1234(cd_results_1234, all_ticker_data)
         df_mc_breakout_1234 = identify_mc_1234(mc_results_1234, all_ticker_data)
@@ -972,6 +1039,18 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
             if mc_breadth:
                 save_analysis_result(run_id, stock_list_name, "ALL", 'mc_market_breadth_1234', mc_breadth)
                 logger.info(f"Saved MC breadth for {idx_key}: {len(mc_breadth)} days")
+            
+            # CD signal breadth by interval for this index
+            cd_sig_by_intv = aggregate_signals_by_interval(cd_results_1234, f'CD signals {idx_key}', ticker_list=idx_tickers)
+            if cd_sig_by_intv:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'cd_signal_breadth_by_interval', cd_sig_by_intv)
+                logger.info(f"Saved CD signal breadth by interval for {idx_key}: {len(cd_sig_by_intv)} days")
+            
+            # MC signal breadth by interval for this index
+            mc_sig_by_intv = aggregate_signals_by_interval(mc_results_1234, f'MC signals {idx_key}', ticker_list=idx_tickers)
+            if mc_sig_by_intv:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'mc_signal_breadth_by_interval', mc_sig_by_intv)
+                logger.info(f"Saved MC signal breadth by interval for {idx_key}: {len(mc_sig_by_intv)} days")
         
         if progress_callback:
             progress_callback(100)

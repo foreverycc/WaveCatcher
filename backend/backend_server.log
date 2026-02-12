@@ -6483,3 +6483,1373 @@ NameError: name 'process_ticker' is not defined. Did you mean: 'process_ticker_a
 2026-02-09 23:12:51,065 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
 2026-02-09 23:12:51,066 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
 2026-02-09 23:12:51,067 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-10 19:30:12,275 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-10 19:30:12,286 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-10 19:30:12,295 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-10 19:30:12,295 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-10 19:30:12,296 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-10 19:30:12,298 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-10 19:30:12,299 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-10 19:30:12,300 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-10 19:30:12,301 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-10 19:30:12,302 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-10 19:30:12,303 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-10 19:30:12,305 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-10 19:30:25,369 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-10 19:30:25,373 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-10 19:30:25,375 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-10 19:30:30,062 - app.services.engine - INFO - Job 20260210193030: Starting multi-index analysis for ['QQQ', 'DJI', 'SOXX']
+2026-02-10 19:30:30,062 - app.services.engine - INFO - Started multi-index analysis job 20260210193030 for indices: ['QQQ', 'DJI', 'SOXX']
+2026-02-10 19:30:30,073 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['QQQ', 'DJI', 'SOXX']
+2026-02-10 19:30:30,074 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-10 19:30:30,074 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-10 19:30:30,074 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for SOXX
+2026-02-10 19:30:30,074 - app.logic.stock_analyzer - INFO - Combined unique tickers: 139
+2026-02-10 19:30:30,074 - app.logic.stock_analyzer - INFO - Processing 139 combined tickers...
+2026-02-10 19:30:30,074 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-10 19:31:39,653 - app.logic.stock_analyzer - INFO - Processed 10/139 tickers
+2026-02-10 19:31:39,654 - app.logic.stock_analyzer - INFO - Processed 20/139 tickers
+2026-02-10 19:32:39,170 - app.logic.stock_analyzer - INFO - Processed 30/139 tickers
+2026-02-10 19:32:42,232 - app.logic.stock_analyzer - INFO - Processed 40/139 tickers
+2026-02-10 19:32:43,895 - app.logic.stock_analyzer - INFO - Processed 50/139 tickers
+2026-02-10 19:33:42,350 - app.logic.stock_analyzer - INFO - Processed 60/139 tickers
+2026-02-10 19:33:46,201 - app.logic.stock_analyzer - INFO - Processed 70/139 tickers
+2026-02-10 19:33:46,922 - app.logic.stock_analyzer - INFO - Processed 80/139 tickers
+2026-02-10 19:34:45,385 - app.logic.stock_analyzer - INFO - Processed 90/139 tickers
+2026-02-10 19:34:49,639 - app.logic.stock_analyzer - INFO - Processed 100/139 tickers
+2026-02-10 19:35:46,505 - app.logic.stock_analyzer - INFO - Processed 110/139 tickers
+2026-02-10 19:35:48,680 - app.logic.stock_analyzer - INFO - Processed 120/139 tickers
+2026-02-10 19:35:51,323 - app.logic.stock_analyzer - INFO - Processed 130/139 tickers
+2026-02-10 19:36:26,440 - app.logic.stock_analyzer - INFO - Processed 139/139 tickers
+2026-02-10 19:36:26,490 - app.logic.stock_analyzer - INFO - Processed 139 tickers successfully
+2026-02-10 19:36:33,919 - app.logic.stock_analyzer - INFO - Saving MC 5230 breakout results...
+2026-02-10 19:36:36,403 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-10 19:36:39,735 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-10 19:36:42,652 - app.logic.stock_analyzer - INFO - Computing breadth for QQQ with 101 tickers
+2026-02-10 19:36:42,656 - app.logic.stock_analyzer - INFO - Saved CD breadth for QQQ: 301 days
+2026-02-10 19:36:42,658 - app.logic.stock_analyzer - INFO - Saved MC breadth for QQQ: 368 days
+2026-02-10 19:36:42,658 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-10 19:36:42,661 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 155 days
+2026-02-10 19:36:42,663 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 231 days
+2026-02-10 19:36:42,663 - app.logic.stock_analyzer - INFO - Computing breadth for SOXX with 30 tickers
+2026-02-10 19:36:42,666 - app.logic.stock_analyzer - INFO - Saved CD breadth for SOXX: 112 days
+2026-02-10 19:36:42,668 - app.logic.stock_analyzer - INFO - Saved MC breadth for SOXX: 174 days
+2026-02-10 19:36:42,670 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-10 19:36:42,817 - app.services.engine - INFO - Job 20260210193030: Multi-index analysis completed successfully
+2026-02-10 19:36:49,334 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-10 19:36:49,335 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-10 19:36:49,337 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-10 19:36:49,338 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-10 19:36:49,339 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-10 19:36:49,341 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-10 19:36:49,348 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-10 19:36:49,349 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-10 19:36:49,351 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-10 20:00:57,575 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-10 20:00:57,576 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-10 20:00:57,578 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-10 20:00:57,646 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-10 20:00:57,653 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-10 20:00:57,660 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-10 20:00:57,660 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-10 20:00:57,661 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-10 20:00:57,663 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-10 21:28:00,670 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-10 21:28:00,680 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-10 21:28:00,699 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-10 21:28:00,700 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-10 21:28:00,702 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-10 21:28:00,704 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-10 21:28:00,705 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-10 21:28:00,708 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-10 21:28:00,710 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-10 21:32:01,984 - app.services.engine - INFO - Job 20260210213201: Starting multi-index analysis for ['DJI', 'SOXX']
+2026-02-10 21:32:01,985 - app.services.engine - INFO - Started multi-index analysis job 20260210213201 for indices: ['DJI', 'SOXX']
+2026-02-10 21:32:02,027 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['DJI', 'SOXX']
+2026-02-10 21:32:02,028 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-10 21:32:02,028 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for SOXX
+2026-02-10 21:32:02,028 - app.logic.stock_analyzer - INFO - Combined unique tickers: 61
+2026-02-10 21:32:02,028 - app.logic.stock_analyzer - INFO - Processing 61 combined tickers...
+2026-02-10 21:32:02,028 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-10 21:32:27,762 - app.logic.stock_analyzer - INFO - Processed 10/61 tickers
+2026-02-10 21:32:42,379 - app.logic.stock_analyzer - INFO - Processed 20/61 tickers
+2026-02-10 21:32:54,663 - app.logic.stock_analyzer - INFO - Processed 30/61 tickers
+2026-02-10 21:33:07,075 - app.logic.stock_analyzer - INFO - Processed 40/61 tickers
+2026-02-10 21:33:19,867 - app.logic.stock_analyzer - INFO - Processed 50/61 tickers
+2026-02-10 21:33:31,100 - app.logic.stock_analyzer - INFO - Processed 60/61 tickers
+2026-02-10 21:33:31,102 - app.logic.stock_analyzer - INFO - Processed 61/61 tickers
+2026-02-10 21:33:31,155 - app.logic.stock_analyzer - INFO - Processed 61 tickers successfully
+2026-02-10 21:33:34,260 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-10 21:33:35,238 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-10 21:33:36,186 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-10 21:33:36,190 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 154 days
+2026-02-10 21:33:36,192 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 231 days
+2026-02-10 21:33:36,192 - app.logic.stock_analyzer - INFO - Computing breadth for SOXX with 30 tickers
+2026-02-10 21:33:36,195 - app.logic.stock_analyzer - INFO - Saved CD breadth for SOXX: 110 days
+2026-02-10 21:33:36,199 - app.logic.stock_analyzer - INFO - Saved MC breadth for SOXX: 174 days
+2026-02-10 21:33:36,200 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-10 21:33:36,229 - app.services.engine - INFO - Job 20260210213201: Multi-index analysis completed successfully
+2026-02-10 21:33:38,088 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-10 21:33:38,089 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-10 21:33:38,090 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-10 21:33:38,090 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-10 21:33:38,090 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-10 21:33:38,091 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-10 21:42:24,316 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-10 21:42:24,322 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-10 21:42:24,323 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-10 21:42:24,324 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-10 21:42:24,325 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-10 21:42:24,330 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-10 23:45:26,563 - app.services.engine - INFO - Job 20260210234526: Starting multi-index analysis for ['DJI', 'SOXX', 'XBI', 'SPACE', 'CRYPTO', 'QUANTUM', 'QQQ', 'SPX']
+2026-02-10 23:45:26,564 - app.services.engine - INFO - Started multi-index analysis job 20260210234526 for indices: ['DJI', 'SOXX', 'XBI', 'SPACE', 'CRYPTO', 'QUANTUM', 'QQQ', 'SPX']
+2026-02-10 23:45:26,626 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['DJI', 'SOXX', 'XBI', 'SPACE', 'CRYPTO', 'QUANTUM', 'QQQ', 'SPX']
+2026-02-10 23:45:26,626 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-10 23:45:26,627 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for SOXX
+2026-02-10 23:45:26,627 - app.logic.stock_analyzer - INFO - Loaded 145 tickers for XBI
+2026-02-10 23:45:26,628 - app.logic.stock_analyzer - INFO - Loaded 25 tickers for SPACE
+2026-02-10 23:45:26,628 - app.logic.stock_analyzer - INFO - Loaded 27 tickers for CRYPTO
+2026-02-10 23:45:26,628 - app.logic.stock_analyzer - INFO - Loaded 16 tickers for QUANTUM
+2026-02-10 23:45:26,629 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-10 23:45:26,631 - app.logic.stock_analyzer - INFO - Loaded 503 tickers for SPX
+2026-02-10 23:45:26,631 - app.logic.stock_analyzer - INFO - Combined unique tickers: 716
+2026-02-10 23:45:26,631 - app.logic.stock_analyzer - INFO - Processing 716 combined tickers...
+2026-02-10 23:45:26,631 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-10 23:45:29,632 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-10 23:45:29,677 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-10 23:45:29,705 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-02-10 23:45:29,706 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-10 23:45:29,707 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: []
+2026-02-10 23:45:29,714 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: []
+2026-02-10 23:45:29,727 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-10 23:45:29,729 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-10 23:45:29,730 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-10 23:45:29,732 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-10 23:45:29,732 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-10 23:45:29,734 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-10 23:45:29,756 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-10 23:45:29,758 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: []
+2026-02-10 23:45:29,760 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: []
+2026-02-10 23:45:29,769 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-10 23:45:29,770 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: []
+2026-02-10 23:45:29,777 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: []
+2026-02-10 23:45:29,779 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-10 23:45:29,781 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: []
+2026-02-10 23:45:29,785 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: []
+2026-02-10 23:45:29,786 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-10 23:45:29,787 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: []
+2026-02-10 23:45:29,788 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: []
+2026-02-10 23:49:14,024 - yfinance - ERROR - $BITE: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-10 23:49:14,333 - yfinance - ERROR - $BITE: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-10 23:49:21,737 - app.logic.stock_analyzer - INFO - Processed 10/716 tickers
+2026-02-10 23:49:21,738 - app.logic.stock_analyzer - INFO - Processed 20/716 tickers
+2026-02-10 23:49:21,738 - app.logic.stock_analyzer - INFO - Processed 30/716 tickers
+2026-02-10 23:49:27,294 - app.logic.stock_analyzer - INFO - Processed 40/716 tickers
+2026-02-10 23:49:27,294 - app.logic.stock_analyzer - INFO - Processed 50/716 tickers
+2026-02-10 23:49:27,294 - app.logic.stock_analyzer - INFO - Processed 60/716 tickers
+2026-02-10 23:49:27,294 - app.logic.stock_analyzer - INFO - Processed 70/716 tickers
+2026-02-10 23:49:27,295 - app.logic.stock_analyzer - INFO - Processed 80/716 tickers
+2026-02-10 23:49:27,295 - app.logic.stock_analyzer - INFO - Processed 90/716 tickers
+2026-02-10 23:49:27,295 - app.logic.stock_analyzer - INFO - Processed 100/716 tickers
+2026-02-10 23:49:27,296 - app.logic.stock_analyzer - INFO - Processed 110/716 tickers
+2026-02-10 23:49:27,298 - app.logic.stock_analyzer - INFO - Processed 120/716 tickers
+2026-02-10 23:49:27,299 - app.logic.stock_analyzer - INFO - Processed 130/716 tickers
+2026-02-10 23:49:27,299 - app.logic.stock_analyzer - INFO - Processed 140/716 tickers
+2026-02-10 23:49:27,299 - app.logic.stock_analyzer - INFO - Processed 150/716 tickers
+2026-02-10 23:49:27,299 - app.logic.stock_analyzer - INFO - Processed 160/716 tickers
+2026-02-10 23:49:27,299 - app.logic.stock_analyzer - INFO - Processed 170/716 tickers
+2026-02-10 23:52:43,498 - app.logic.stock_analyzer - INFO - Processed 180/716 tickers
+2026-02-10 23:52:43,499 - app.logic.stock_analyzer - INFO - Processed 190/716 tickers
+2026-02-10 23:52:43,722 - app.logic.stock_analyzer - INFO - Processed 200/716 tickers
+2026-02-10 23:53:09,086 - app.logic.stock_analyzer - INFO - Processed 210/716 tickers
+2026-02-10 23:53:09,087 - app.logic.stock_analyzer - INFO - Processed 220/716 tickers
+2026-02-10 23:53:09,087 - app.logic.stock_analyzer - INFO - Processed 230/716 tickers
+2026-02-10 23:53:09,088 - app.logic.stock_analyzer - INFO - Processed 240/716 tickers
+2026-02-10 23:53:09,088 - app.logic.stock_analyzer - INFO - Processed 250/716 tickers
+2026-02-10 23:53:09,088 - app.logic.stock_analyzer - INFO - Processed 260/716 tickers
+2026-02-10 23:53:09,089 - app.logic.stock_analyzer - INFO - Processed 270/716 tickers
+2026-02-10 23:53:09,089 - app.logic.stock_analyzer - INFO - Processed 280/716 tickers
+2026-02-10 23:53:09,089 - app.logic.stock_analyzer - INFO - Processed 290/716 tickers
+2026-02-10 23:53:09,089 - app.logic.stock_analyzer - INFO - Processed 300/716 tickers
+2026-02-10 23:53:09,090 - app.logic.stock_analyzer - INFO - Processed 310/716 tickers
+2026-02-10 23:53:09,090 - app.logic.stock_analyzer - INFO - Processed 320/716 tickers
+2026-02-10 23:53:09,090 - app.logic.stock_analyzer - INFO - Processed 330/716 tickers
+2026-02-10 23:53:09,092 - app.logic.stock_analyzer - INFO - Processed 340/716 tickers
+2026-02-10 23:56:12,515 - app.logic.stock_analyzer - INFO - Processed 350/716 tickers
+2026-02-10 23:56:12,520 - app.logic.stock_analyzer - INFO - Processed 360/716 tickers
+2026-02-10 23:56:12,521 - app.logic.stock_analyzer - INFO - Processed 370/716 tickers
+2026-02-10 23:56:12,521 - app.logic.stock_analyzer - INFO - Processed 380/716 tickers
+2026-02-10 23:56:16,940 - app.logic.stock_analyzer - INFO - Processed 390/716 tickers
+2026-02-10 23:56:22,970 - app.logic.stock_analyzer - INFO - Processed 400/716 tickers
+2026-02-10 23:56:22,971 - app.logic.stock_analyzer - INFO - Processed 410/716 tickers
+2026-02-10 23:56:29,393 - app.logic.stock_analyzer - INFO - Processed 420/716 tickers
+2026-02-10 23:56:29,394 - app.logic.stock_analyzer - INFO - Processed 430/716 tickers
+2026-02-10 23:56:29,856 - app.logic.stock_analyzer - INFO - Processed 440/716 tickers
+2026-02-10 23:56:29,857 - app.logic.stock_analyzer - INFO - Processed 450/716 tickers
+2026-02-10 23:56:30,374 - app.logic.stock_analyzer - INFO - Processed 460/716 tickers
+2026-02-10 23:56:30,375 - app.logic.stock_analyzer - INFO - Processed 470/716 tickers
+2026-02-10 23:56:30,375 - app.logic.stock_analyzer - INFO - Processed 480/716 tickers
+2026-02-10 23:56:30,376 - app.logic.stock_analyzer - INFO - Processed 490/716 tickers
+2026-02-10 23:56:30,376 - app.logic.stock_analyzer - INFO - Processed 500/716 tickers
+2026-02-10 23:56:30,377 - app.logic.stock_analyzer - INFO - Processed 510/716 tickers
+2026-02-11 00:00:05,269 - app.logic.stock_analyzer - INFO - Processed 520/716 tickers
+2026-02-11 00:00:05,274 - app.logic.stock_analyzer - INFO - Processed 530/716 tickers
+2026-02-11 00:00:05,274 - app.logic.stock_analyzer - INFO - Processed 540/716 tickers
+2026-02-11 00:00:05,276 - app.logic.stock_analyzer - INFO - Processed 550/716 tickers
+2026-02-11 00:00:05,278 - app.logic.stock_analyzer - INFO - Processed 560/716 tickers
+2026-02-11 00:00:05,279 - app.logic.stock_analyzer - INFO - Processed 570/716 tickers
+2026-02-11 00:00:05,279 - app.logic.stock_analyzer - INFO - Processed 580/716 tickers
+2026-02-11 00:00:05,280 - app.logic.stock_analyzer - INFO - Processed 590/716 tickers
+2026-02-11 00:00:05,280 - app.logic.stock_analyzer - INFO - Processed 600/716 tickers
+2026-02-11 00:00:05,280 - app.logic.stock_analyzer - INFO - Processed 610/716 tickers
+2026-02-11 00:00:05,280 - app.logic.stock_analyzer - INFO - Processed 620/716 tickers
+2026-02-11 00:00:13,301 - app.logic.stock_analyzer - INFO - Processed 630/716 tickers
+2026-02-11 00:00:13,302 - app.logic.stock_analyzer - INFO - Processed 640/716 tickers
+2026-02-11 00:00:13,303 - app.logic.stock_analyzer - INFO - Processed 650/716 tickers
+2026-02-11 00:00:13,304 - app.logic.stock_analyzer - INFO - Processed 660/716 tickers
+2026-02-11 00:00:13,305 - app.logic.stock_analyzer - INFO - Processed 670/716 tickers
+2026-02-11 00:00:13,305 - app.logic.stock_analyzer - INFO - Processed 680/716 tickers
+2026-02-11 00:01:53,607 - app.logic.stock_analyzer - INFO - Processed 690/716 tickers
+2026-02-11 00:01:53,608 - app.logic.stock_analyzer - INFO - Processed 700/716 tickers
+2026-02-11 00:01:53,608 - app.logic.stock_analyzer - INFO - Processed 710/716 tickers
+2026-02-11 00:01:53,608 - app.logic.stock_analyzer - INFO - Processed 716/716 tickers
+2026-02-11 00:01:53,679 - app.logic.stock_analyzer - INFO - Processed 715 tickers successfully
+2026-02-11 00:02:43,005 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-11 00:02:51,543 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-11 00:02:59,875 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-11 00:02:59,892 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 160 days
+2026-02-11 00:02:59,901 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 241 days
+2026-02-11 00:02:59,901 - app.logic.stock_analyzer - INFO - Computing breadth for SOXX with 30 tickers
+2026-02-11 00:02:59,903 - app.logic.stock_analyzer - INFO - Saved CD breadth for SOXX: 117 days
+2026-02-11 00:02:59,906 - app.logic.stock_analyzer - INFO - Saved MC breadth for SOXX: 184 days
+2026-02-11 00:02:59,906 - app.logic.stock_analyzer - INFO - Computing breadth for XBI with 145 tickers
+2026-02-11 00:02:59,909 - app.logic.stock_analyzer - INFO - Saved CD breadth for XBI: 366 days
+2026-02-11 00:02:59,923 - app.logic.stock_analyzer - INFO - Saved MC breadth for XBI: 372 days
+2026-02-11 00:02:59,923 - app.logic.stock_analyzer - INFO - Computing breadth for SPACE with 25 tickers
+2026-02-11 00:02:59,925 - app.logic.stock_analyzer - INFO - Saved CD breadth for SPACE: 146 days
+2026-02-11 00:02:59,935 - app.logic.stock_analyzer - INFO - Saved MC breadth for SPACE: 195 days
+2026-02-11 00:02:59,936 - app.logic.stock_analyzer - INFO - Computing breadth for CRYPTO with 27 tickers
+2026-02-11 00:02:59,943 - app.logic.stock_analyzer - INFO - Saved CD breadth for CRYPTO: 122 days
+2026-02-11 00:02:59,946 - app.logic.stock_analyzer - INFO - Saved MC breadth for CRYPTO: 136 days
+2026-02-11 00:02:59,946 - app.logic.stock_analyzer - INFO - Computing breadth for QUANTUM with 16 tickers
+2026-02-11 00:02:59,948 - app.logic.stock_analyzer - INFO - Saved CD breadth for QUANTUM: 151 days
+2026-02-11 00:02:59,951 - app.logic.stock_analyzer - INFO - Saved MC breadth for QUANTUM: 121 days
+2026-02-11 00:02:59,951 - app.logic.stock_analyzer - INFO - Computing breadth for QQQ with 101 tickers
+2026-02-11 00:02:59,955 - app.logic.stock_analyzer - INFO - Saved CD breadth for QQQ: 307 days
+2026-02-11 00:02:59,958 - app.logic.stock_analyzer - INFO - Saved MC breadth for QQQ: 380 days
+2026-02-11 00:02:59,958 - app.logic.stock_analyzer - INFO - Computing breadth for SPX with 503 tickers
+2026-02-11 00:02:59,962 - app.logic.stock_analyzer - INFO - Saved CD breadth for SPX: 454 days
+2026-02-11 00:02:59,966 - app.logic.stock_analyzer - INFO - Saved MC breadth for SPX: 472 days
+2026-02-11 00:02:59,969 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-11 00:02:59,969 - app.logic.stock_analyzer - WARNING - Failed tickers: BITE
+2026-02-11 00:03:00,613 - app.services.engine - INFO - Job 20260210234526: Multi-index analysis completed successfully
+2026-02-11 00:03:04,888 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-11 00:03:04,900 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-11 00:03:04,917 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-11 00:03:04,919 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-11 00:03:04,923 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-11 00:03:04,930 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-11 00:03:04,935 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-11 00:03:04,941 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-11 00:03:04,948 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-11 00:03:04,949 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-11 00:03:04,955 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-11 00:03:04,962 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-11 00:03:04,965 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-11 00:03:04,970 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-11 00:03:04,976 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-11 00:03:04,978 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-11 00:03:04,982 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-11 00:03:04,990 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-11 00:03:04,991 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-11 00:03:04,996 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-11 00:03:05,002 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-11 00:03:05,004 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-11 00:03:05,008 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: ['2025-11-24', '2024-04-18', '2024-03-18', '2024-03-15']
+2026-02-11 00:03:05,015 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: ['2026-01-20', '2025-10-14', '2025-10-10', '2025-10-08', '2025-07-21', '2025-05-21', '2025-05-09', '2025-05-05', '2025-01-08', '2024-12-23', '2024-12-09', '2024-11-25', '2024-09-23', '2024-05-07']
+2026-02-11 00:08:07,483 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-11 00:08:07,488 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-11 00:08:07,497 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-11 00:08:07,499 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-11 00:08:07,504 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-11 00:08:07,510 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-11 00:08:07,511 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-11 00:08:07,515 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-11 00:08:07,521 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-11 00:08:07,524 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-11 00:08:07,529 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-11 00:08:07,534 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-11 00:08:17,228 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-11 00:08:17,235 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-11 00:08:17,245 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-11 00:08:17,248 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-11 00:08:17,253 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-11 00:08:17,261 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-11 00:08:17,262 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-11 00:08:17,267 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-11 00:08:17,273 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-11 00:08:17,305 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-11 00:08:17,309 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-11 00:08:17,315 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-11 00:08:57,061 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-11 00:08:57,066 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-11 00:08:57,074 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-11 00:09:00,583 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-11 00:09:00,588 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-11 00:09:00,594 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-11 00:09:03,382 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-11 00:09:03,386 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-11 00:09:03,393 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-11 00:09:07,791 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-11 00:09:07,796 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-11 00:09:07,803 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-11 00:09:17,732 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-11 00:09:17,737 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: ['2025-11-24', '2024-04-18', '2024-03-18', '2024-03-15']
+2026-02-11 00:09:17,744 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: ['2026-01-20', '2025-10-14', '2025-10-10', '2025-10-08', '2025-07-21', '2025-05-21', '2025-05-09', '2025-05-05', '2025-01-08', '2024-12-23', '2024-12-09', '2024-11-25', '2024-09-23', '2024-05-07']
+2026-02-11 00:24:20,566 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-11 00:24:20,573 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-11 00:24:20,586 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-11 00:24:20,588 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-11 00:24:20,593 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-11 00:24:20,600 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-11 00:24:20,602 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-11 00:24:20,607 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-11 00:24:20,613 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-11 00:24:20,614 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-11 00:24:20,619 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-11 00:24:20,625 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-11 00:24:20,627 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-11 00:24:20,631 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-11 00:24:20,636 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-11 00:24:20,638 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-11 00:24:20,642 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-11 00:24:20,648 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-11 00:24:20,649 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-11 00:24:20,653 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-11 00:24:20,659 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-11 00:24:20,660 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-11 00:24:20,664 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: ['2025-11-24', '2024-04-18', '2024-03-18', '2024-03-15']
+2026-02-11 00:24:20,669 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: ['2026-01-20', '2025-10-14', '2025-10-10', '2025-10-08', '2025-07-21', '2025-05-21', '2025-05-09', '2025-05-05', '2025-01-08', '2024-12-23', '2024-12-09', '2024-11-25', '2024-09-23', '2024-05-07']
+2026-02-11 05:37:35,251 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-11 05:37:35,258 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-11 05:37:35,274 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-11 05:37:35,277 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-11 05:37:35,281 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-11 05:37:35,287 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-11 05:37:35,289 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-11 05:37:35,294 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-11 05:37:35,300 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-11 05:37:35,301 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-11 05:37:35,305 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-11 05:37:35,311 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-11 05:37:35,312 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-11 05:37:35,316 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-11 05:37:35,322 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-11 05:37:35,323 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-11 05:37:35,327 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-11 05:37:35,333 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-11 05:37:35,336 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-11 05:37:35,340 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-11 05:37:35,346 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-11 05:37:35,350 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-11 05:37:35,354 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: ['2025-11-24', '2024-04-18', '2024-03-18', '2024-03-15']
+2026-02-11 05:37:35,360 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: ['2026-01-20', '2025-10-14', '2025-10-10', '2025-10-08', '2025-07-21', '2025-05-21', '2025-05-09', '2025-05-05', '2025-01-08', '2024-12-23', '2024-12-09', '2024-11-25', '2024-09-23', '2024-05-07']
+2026-02-11 16:51:06,123 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-11 16:51:06,142 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-11 16:51:06,173 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-11 16:51:06,176 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-11 16:51:06,180 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-11 16:51:06,186 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-11 16:51:06,241 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-11 16:51:06,245 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-11 16:51:06,252 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-11 16:51:16,094 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-11 16:51:16,098 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-11 16:51:16,106 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-11 16:51:16,131 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-11 16:51:16,140 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-11 16:51:16,150 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-11 16:51:16,224 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-11 16:51:16,228 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-11 16:51:16,234 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-11 16:51:25,113 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-11 16:51:25,122 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-11 16:51:25,134 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-11 16:51:25,411 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-11 16:51:25,415 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-11 16:51:25,421 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-11 16:51:28,752 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-11 16:51:28,756 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-11 16:51:28,762 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-11 16:51:36,656 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-11 16:51:36,661 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: ['2025-11-24', '2024-04-18', '2024-03-18', '2024-03-15']
+2026-02-11 16:51:36,669 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: ['2026-01-20', '2025-10-14', '2025-10-10', '2025-10-08', '2025-07-21', '2025-05-21', '2025-05-09', '2025-05-05', '2025-01-08', '2024-12-23', '2024-12-09', '2024-11-25', '2024-09-23', '2024-05-07']
+2026-02-11 16:52:06,369 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-11 16:52:06,376 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-11 16:52:06,384 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-11 16:52:11,673 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-11 16:52:11,678 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-11 16:52:11,685 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-11 16:52:11,687 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-11 16:52:11,692 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-11 16:52:11,698 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-11 16:52:11,699 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-11 16:52:11,703 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-11 16:52:11,711 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-11 16:52:11,723 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-11 16:52:11,727 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-11 16:52:11,734 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-11 16:52:11,738 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-11 16:52:11,742 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-11 16:52:11,748 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-11 16:52:11,749 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-11 16:52:11,753 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-11 16:52:11,759 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-11 16:52:11,763 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-11 16:52:11,767 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-11 16:52:11,772 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-11 16:53:23,300 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-11 16:53:23,309 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-11 16:53:23,319 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-11 16:53:23,321 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-11 16:53:23,325 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-11 16:53:23,332 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-11 16:53:23,335 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-11 16:53:23,339 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-11 16:53:23,345 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-11 16:53:23,346 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-11 16:53:23,350 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-11 16:53:23,356 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-11 16:53:23,357 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-11 16:53:23,361 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-11 16:53:23,367 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-11 16:53:23,368 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-11 16:53:23,372 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-11 16:53:23,378 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-11 16:53:23,380 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-11 16:53:23,384 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-11 16:53:23,390 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-11 16:53:23,391 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-11 16:53:23,395 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: ['2025-11-24', '2024-04-18', '2024-03-18', '2024-03-15']
+2026-02-11 16:53:23,400 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: ['2026-01-20', '2025-10-14', '2025-10-10', '2025-10-08', '2025-07-21', '2025-05-21', '2025-05-09', '2025-05-05', '2025-01-08', '2024-12-23', '2024-12-09', '2024-11-25', '2024-09-23', '2024-05-07']
+2026-02-11 16:53:32,460 - app.services.engine - INFO - Job 20260211165332: Starting multi-index analysis for ['SPX', 'QQQ', 'DJI', 'SOXX', 'SPACE', 'CRYPTO', 'XBI', 'QUANTUM']
+2026-02-11 16:53:32,460 - app.services.engine - INFO - Started multi-index analysis job 20260211165332 for indices: ['SPX', 'QQQ', 'DJI', 'SOXX', 'SPACE', 'CRYPTO', 'XBI', 'QUANTUM']
+2026-02-11 16:53:32,466 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['SPX', 'QQQ', 'DJI', 'SOXX', 'SPACE', 'CRYPTO', 'XBI', 'QUANTUM']
+2026-02-11 16:53:32,466 - app.logic.stock_analyzer - INFO - Loaded 503 tickers for SPX
+2026-02-11 16:53:32,466 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-11 16:53:32,467 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-11 16:53:32,467 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for SOXX
+2026-02-11 16:53:32,468 - app.logic.stock_analyzer - INFO - Loaded 25 tickers for SPACE
+2026-02-11 16:53:32,468 - app.logic.stock_analyzer - INFO - Loaded 27 tickers for CRYPTO
+2026-02-11 16:53:32,468 - app.logic.stock_analyzer - INFO - Loaded 145 tickers for XBI
+2026-02-11 16:53:32,469 - app.logic.stock_analyzer - INFO - Loaded 16 tickers for QUANTUM
+2026-02-11 16:53:32,469 - app.logic.stock_analyzer - INFO - Combined unique tickers: 716
+2026-02-11 16:53:32,469 - app.logic.stock_analyzer - INFO - Processing 716 combined tickers...
+2026-02-11 16:53:32,469 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-11 16:56:59,816 - yfinance - ERROR - $BITE: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-11 16:57:00,060 - yfinance - ERROR - $BITE: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-11 16:57:07,376 - app.logic.stock_analyzer - INFO - Processed 10/716 tickers
+2026-02-11 16:57:07,377 - app.logic.stock_analyzer - INFO - Processed 20/716 tickers
+2026-02-11 16:57:07,377 - app.logic.stock_analyzer - INFO - Processed 30/716 tickers
+2026-02-11 16:57:12,637 - app.logic.stock_analyzer - INFO - Processed 40/716 tickers
+2026-02-11 16:57:12,637 - app.logic.stock_analyzer - INFO - Processed 50/716 tickers
+2026-02-11 16:57:12,637 - app.logic.stock_analyzer - INFO - Processed 60/716 tickers
+2026-02-11 16:57:12,637 - app.logic.stock_analyzer - INFO - Processed 70/716 tickers
+2026-02-11 16:57:12,638 - app.logic.stock_analyzer - INFO - Processed 80/716 tickers
+2026-02-11 16:57:12,638 - app.logic.stock_analyzer - INFO - Processed 90/716 tickers
+2026-02-11 16:57:12,638 - app.logic.stock_analyzer - INFO - Processed 100/716 tickers
+2026-02-11 16:57:12,638 - app.logic.stock_analyzer - INFO - Processed 110/716 tickers
+2026-02-11 16:57:12,638 - app.logic.stock_analyzer - INFO - Processed 120/716 tickers
+2026-02-11 16:57:12,638 - app.logic.stock_analyzer - INFO - Processed 130/716 tickers
+2026-02-11 16:57:12,639 - app.logic.stock_analyzer - INFO - Processed 140/716 tickers
+2026-02-11 16:57:12,639 - app.logic.stock_analyzer - INFO - Processed 150/716 tickers
+2026-02-11 16:57:12,639 - app.logic.stock_analyzer - INFO - Processed 160/716 tickers
+2026-02-11 16:57:12,639 - app.logic.stock_analyzer - INFO - Processed 170/716 tickers
+2026-02-11 17:00:20,255 - app.logic.stock_analyzer - INFO - Processed 180/716 tickers
+2026-02-11 17:00:20,256 - app.logic.stock_analyzer - INFO - Processed 190/716 tickers
+2026-02-11 17:00:23,014 - app.logic.stock_analyzer - INFO - Processed 200/716 tickers
+2026-02-11 17:00:43,594 - app.logic.stock_analyzer - INFO - Processed 210/716 tickers
+2026-02-11 17:00:43,595 - app.logic.stock_analyzer - INFO - Processed 220/716 tickers
+2026-02-11 17:00:43,595 - app.logic.stock_analyzer - INFO - Processed 230/716 tickers
+2026-02-11 17:00:43,596 - app.logic.stock_analyzer - INFO - Processed 240/716 tickers
+2026-02-11 17:00:43,596 - app.logic.stock_analyzer - INFO - Processed 250/716 tickers
+2026-02-11 17:00:43,596 - app.logic.stock_analyzer - INFO - Processed 260/716 tickers
+2026-02-11 17:00:43,597 - app.logic.stock_analyzer - INFO - Processed 270/716 tickers
+2026-02-11 17:00:43,597 - app.logic.stock_analyzer - INFO - Processed 280/716 tickers
+2026-02-11 17:00:43,597 - app.logic.stock_analyzer - INFO - Processed 290/716 tickers
+2026-02-11 17:00:43,597 - app.logic.stock_analyzer - INFO - Processed 300/716 tickers
+2026-02-11 17:00:43,597 - app.logic.stock_analyzer - INFO - Processed 310/716 tickers
+2026-02-11 17:00:43,597 - app.logic.stock_analyzer - INFO - Processed 320/716 tickers
+2026-02-11 17:00:43,597 - app.logic.stock_analyzer - INFO - Processed 330/716 tickers
+2026-02-11 17:00:43,598 - app.logic.stock_analyzer - INFO - Processed 340/716 tickers
+2026-02-11 17:03:38,026 - app.logic.stock_analyzer - INFO - Processed 350/716 tickers
+2026-02-11 17:03:38,027 - app.logic.stock_analyzer - INFO - Processed 360/716 tickers
+2026-02-11 17:03:38,027 - app.logic.stock_analyzer - INFO - Processed 370/716 tickers
+2026-02-11 17:03:38,027 - app.logic.stock_analyzer - INFO - Processed 380/716 tickers
+2026-02-11 17:03:44,494 - app.logic.stock_analyzer - INFO - Processed 390/716 tickers
+2026-02-11 17:03:47,642 - app.logic.stock_analyzer - INFO - Processed 400/716 tickers
+2026-02-11 17:03:47,642 - app.logic.stock_analyzer - INFO - Processed 410/716 tickers
+2026-02-11 17:03:47,731 - app.logic.stock_analyzer - INFO - Processed 420/716 tickers
+2026-02-11 17:03:47,731 - app.logic.stock_analyzer - INFO - Processed 430/716 tickers
+2026-02-11 17:03:49,465 - app.logic.stock_analyzer - INFO - Processed 440/716 tickers
+2026-02-11 17:03:49,466 - app.logic.stock_analyzer - INFO - Processed 450/716 tickers
+2026-02-11 17:03:52,004 - app.logic.stock_analyzer - INFO - Processed 460/716 tickers
+2026-02-11 17:03:52,004 - app.logic.stock_analyzer - INFO - Processed 470/716 tickers
+2026-02-11 17:03:52,004 - app.logic.stock_analyzer - INFO - Processed 480/716 tickers
+2026-02-11 17:03:52,004 - app.logic.stock_analyzer - INFO - Processed 490/716 tickers
+2026-02-11 17:03:53,322 - app.logic.stock_analyzer - INFO - Processed 500/716 tickers
+2026-02-11 17:03:53,322 - app.logic.stock_analyzer - INFO - Processed 510/716 tickers
+2026-02-11 17:07:13,111 - app.logic.stock_analyzer - INFO - Processed 520/716 tickers
+2026-02-11 17:07:13,113 - app.logic.stock_analyzer - INFO - Processed 530/716 tickers
+2026-02-11 17:07:13,113 - app.logic.stock_analyzer - INFO - Processed 540/716 tickers
+2026-02-11 17:07:13,113 - app.logic.stock_analyzer - INFO - Processed 550/716 tickers
+2026-02-11 17:07:13,113 - app.logic.stock_analyzer - INFO - Processed 560/716 tickers
+2026-02-11 17:07:13,113 - app.logic.stock_analyzer - INFO - Processed 570/716 tickers
+2026-02-11 17:07:13,113 - app.logic.stock_analyzer - INFO - Processed 580/716 tickers
+2026-02-11 17:07:13,113 - app.logic.stock_analyzer - INFO - Processed 590/716 tickers
+2026-02-11 17:07:13,113 - app.logic.stock_analyzer - INFO - Processed 600/716 tickers
+2026-02-11 17:07:13,113 - app.logic.stock_analyzer - INFO - Processed 610/716 tickers
+2026-02-11 17:07:13,113 - app.logic.stock_analyzer - INFO - Processed 620/716 tickers
+2026-02-11 17:07:22,443 - app.logic.stock_analyzer - INFO - Processed 630/716 tickers
+2026-02-11 17:07:22,444 - app.logic.stock_analyzer - INFO - Processed 640/716 tickers
+2026-02-11 17:07:22,445 - app.logic.stock_analyzer - INFO - Processed 650/716 tickers
+2026-02-11 17:07:22,446 - app.logic.stock_analyzer - INFO - Processed 660/716 tickers
+2026-02-11 17:07:22,446 - app.logic.stock_analyzer - INFO - Processed 670/716 tickers
+2026-02-11 17:07:22,447 - app.logic.stock_analyzer - INFO - Processed 680/716 tickers
+2026-02-11 17:08:59,387 - app.logic.stock_analyzer - INFO - Processed 690/716 tickers
+2026-02-11 17:08:59,387 - app.logic.stock_analyzer - INFO - Processed 700/716 tickers
+2026-02-11 17:08:59,388 - app.logic.stock_analyzer - INFO - Processed 710/716 tickers
+2026-02-11 17:08:59,388 - app.logic.stock_analyzer - INFO - Processed 716/716 tickers
+2026-02-11 17:08:59,491 - app.logic.stock_analyzer - INFO - Processed 715 tickers successfully
+2026-02-11 17:09:46,944 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-11 17:09:55,985 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-11 17:10:05,084 - app.logic.stock_analyzer - INFO - Computing breadth for SPX with 503 tickers
+2026-02-11 17:10:05,101 - app.logic.stock_analyzer - INFO - Saved CD breadth for SPX: 455 days
+2026-02-11 17:10:05,106 - app.logic.stock_analyzer - INFO - Saved MC breadth for SPX: 473 days
+2026-02-11 17:10:05,106 - app.logic.stock_analyzer - INFO - Computing breadth for QQQ with 101 tickers
+2026-02-11 17:10:05,109 - app.logic.stock_analyzer - INFO - Saved CD breadth for QQQ: 308 days
+2026-02-11 17:10:05,112 - app.logic.stock_analyzer - INFO - Saved MC breadth for QQQ: 381 days
+2026-02-11 17:10:05,112 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-11 17:10:05,115 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 160 days
+2026-02-11 17:10:05,117 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 242 days
+2026-02-11 17:10:05,117 - app.logic.stock_analyzer - INFO - Computing breadth for SOXX with 30 tickers
+2026-02-11 17:10:05,120 - app.logic.stock_analyzer - INFO - Saved CD breadth for SOXX: 117 days
+2026-02-11 17:10:05,123 - app.logic.stock_analyzer - INFO - Saved MC breadth for SOXX: 184 days
+2026-02-11 17:10:05,123 - app.logic.stock_analyzer - INFO - Computing breadth for SPACE with 25 tickers
+2026-02-11 17:10:05,126 - app.logic.stock_analyzer - INFO - Saved CD breadth for SPACE: 146 days
+2026-02-11 17:10:05,128 - app.logic.stock_analyzer - INFO - Saved MC breadth for SPACE: 195 days
+2026-02-11 17:10:05,128 - app.logic.stock_analyzer - INFO - Computing breadth for CRYPTO with 27 tickers
+2026-02-11 17:10:05,131 - app.logic.stock_analyzer - INFO - Saved CD breadth for CRYPTO: 122 days
+2026-02-11 17:10:05,134 - app.logic.stock_analyzer - INFO - Saved MC breadth for CRYPTO: 136 days
+2026-02-11 17:10:05,134 - app.logic.stock_analyzer - INFO - Computing breadth for XBI with 145 tickers
+2026-02-11 17:10:05,137 - app.logic.stock_analyzer - INFO - Saved CD breadth for XBI: 367 days
+2026-02-11 17:10:05,140 - app.logic.stock_analyzer - INFO - Saved MC breadth for XBI: 373 days
+2026-02-11 17:10:05,140 - app.logic.stock_analyzer - INFO - Computing breadth for QUANTUM with 16 tickers
+2026-02-11 17:10:05,143 - app.logic.stock_analyzer - INFO - Saved CD breadth for QUANTUM: 151 days
+2026-02-11 17:10:05,145 - app.logic.stock_analyzer - INFO - Saved MC breadth for QUANTUM: 121 days
+2026-02-11 17:10:05,146 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-11 17:10:05,146 - app.logic.stock_analyzer - WARNING - Failed tickers: BITE
+2026-02-11 17:10:05,758 - app.services.engine - INFO - Job 20260211165332: Multi-index analysis completed successfully
+2026-02-11 20:05:18,797 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-11 20:05:18,810 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-11 20:05:18,832 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-11 20:05:18,834 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-11 20:05:18,839 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-11 20:05:18,845 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-11 20:05:18,846 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-11 20:05:18,850 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-11 20:05:18,856 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-11 20:05:18,857 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-11 20:05:18,861 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-11 20:05:18,868 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-11 20:05:18,869 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-11 20:05:18,873 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-11 20:05:18,878 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-11 20:05:18,879 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-11 20:05:18,883 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-11 20:05:18,889 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-11 20:05:18,941 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-11 20:05:18,946 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-11 20:05:18,953 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-11 20:05:19,030 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-11 20:05:19,035 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: ['2025-11-24', '2024-04-18', '2024-03-18', '2024-03-15']
+2026-02-11 20:05:19,041 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: ['2026-01-20', '2025-10-14', '2025-10-10', '2025-10-08', '2025-07-21', '2025-05-21', '2025-05-09', '2025-05-05', '2025-01-08', '2024-12-23', '2024-12-09', '2024-11-25', '2024-09-23', '2024-05-07']
+2026-02-12 09:18:02,672 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-12 09:18:02,717 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-12 09:18:02,759 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-12 09:25:03,008 - app.services.engine - INFO - Job 20260212092503: Starting multi-index analysis for ['DJI', 'SOXX', 'XBI', 'SPACE', 'CRYPTO', 'QUANTUM', 'QQQ', 'SPX', 'IWM', 'KWEB']
+2026-02-12 09:25:03,008 - app.services.engine - INFO - Started multi-index analysis job 20260212092503 for indices: ['DJI', 'SOXX', 'XBI', 'SPACE', 'CRYPTO', 'QUANTUM', 'QQQ', 'SPX', 'IWM', 'KWEB']
+2026-02-12 09:25:03,054 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['DJI', 'SOXX', 'XBI', 'SPACE', 'CRYPTO', 'QUANTUM', 'QQQ', 'SPX', 'IWM', 'KWEB']
+2026-02-12 09:25:03,055 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-12 09:25:03,056 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for SOXX
+2026-02-12 09:25:03,056 - app.logic.stock_analyzer - INFO - Loaded 145 tickers for XBI
+2026-02-12 09:25:03,057 - app.logic.stock_analyzer - INFO - Loaded 25 tickers for SPACE
+2026-02-12 09:25:03,057 - app.logic.stock_analyzer - INFO - Loaded 27 tickers for CRYPTO
+2026-02-12 09:25:03,057 - app.logic.stock_analyzer - INFO - Loaded 16 tickers for QUANTUM
+2026-02-12 09:25:03,058 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-02-12 09:25:03,058 - app.logic.stock_analyzer - INFO - Loaded 503 tickers for SPX
+2026-02-12 09:25:03,059 - app.logic.stock_analyzer - INFO - Loaded 1956 tickers for IWM
+2026-02-12 09:25:03,059 - app.logic.stock_analyzer - INFO - Loaded 37 tickers for KWEB
+2026-02-12 09:25:03,060 - app.logic.stock_analyzer - INFO - Combined unique tickers: 2569
+2026-02-12 09:25:03,060 - app.logic.stock_analyzer - INFO - Processing 2569 combined tickers...
+2026-02-12 09:25:03,060 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-12 09:27:25,938 - yfinance - ERROR - $CRDA: possibly delisted; no price data found  (period=2y)
+2026-02-12 09:27:26,005 - yfinance - ERROR - $CRDA: possibly delisted; no price data found  (period=2y)
+2026-02-12 09:30:00,488 - yfinance - ERROR - $BITE: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:30:00,698 - yfinance - ERROR - $BITE: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:31:44,547 - yfinance - ERROR - $INH: possibly delisted; no price data found  (period=2y)
+2026-02-12 09:31:44,596 - yfinance - ERROR - $INH: possibly delisted; no price data found  (period=2y)
+2026-02-12 09:36:19,168 - yfinance - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: RTYH6"}}}
+2026-02-12 09:36:19,468 - yfinance - ERROR - $RTYH6: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:36:19,634 - yfinance - ERROR - $RTYH6: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:39:06,769 - app.logic.stock_analyzer - INFO - Processed 10/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 20/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 30/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 40/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 50/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 60/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 70/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 80/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 90/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 100/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 110/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 120/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 130/2569 tickers
+2026-02-12 09:39:06,770 - app.logic.stock_analyzer - INFO - Processed 140/2569 tickers
+2026-02-12 09:39:11,296 - app.logic.stock_analyzer - INFO - Processed 150/2569 tickers
+2026-02-12 09:39:11,296 - app.logic.stock_analyzer - INFO - Processed 160/2569 tickers
+2026-02-12 09:39:11,296 - app.logic.stock_analyzer - INFO - Processed 170/2569 tickers
+2026-02-12 09:39:11,296 - app.logic.stock_analyzer - INFO - Processed 180/2569 tickers
+2026-02-12 09:39:11,296 - app.logic.stock_analyzer - INFO - Processed 190/2569 tickers
+2026-02-12 09:39:11,296 - app.logic.stock_analyzer - INFO - Processed 200/2569 tickers
+2026-02-12 09:39:11,297 - app.logic.stock_analyzer - INFO - Processed 210/2569 tickers
+2026-02-12 09:39:11,297 - app.logic.stock_analyzer - INFO - Processed 220/2569 tickers
+2026-02-12 09:39:11,297 - app.logic.stock_analyzer - INFO - Processed 230/2569 tickers
+2026-02-12 09:39:11,297 - app.logic.stock_analyzer - INFO - Processed 240/2569 tickers
+2026-02-12 09:39:11,297 - app.logic.stock_analyzer - INFO - Processed 250/2569 tickers
+2026-02-12 09:39:11,297 - app.logic.stock_analyzer - INFO - Processed 260/2569 tickers
+2026-02-12 09:39:11,297 - app.logic.stock_analyzer - INFO - Processed 270/2569 tickers
+2026-02-12 09:39:11,298 - app.logic.stock_analyzer - INFO - Processed 280/2569 tickers
+2026-02-12 09:39:16,141 - yfinance - ERROR - $CAD: possibly delisted; no price data found  (period=2y)
+2026-02-12 09:39:16,200 - yfinance - ERROR - $CAD: possibly delisted; no price data found  (period=2y)
+2026-02-12 09:39:16,621 - app.logic.stock_analyzer - INFO - Processed 290/2569 tickers
+2026-02-12 09:39:16,621 - app.logic.stock_analyzer - INFO - Processed 300/2569 tickers
+2026-02-12 09:39:16,622 - app.logic.stock_analyzer - INFO - Processed 310/2569 tickers
+2026-02-12 09:39:16,623 - app.logic.stock_analyzer - INFO - Processed 320/2569 tickers
+2026-02-12 09:39:16,623 - app.logic.stock_analyzer - INFO - Processed 330/2569 tickers
+2026-02-12 09:39:16,623 - app.logic.stock_analyzer - INFO - Processed 340/2569 tickers
+2026-02-12 09:39:16,623 - app.logic.stock_analyzer - INFO - Processed 350/2569 tickers
+2026-02-12 09:39:16,624 - app.logic.stock_analyzer - INFO - Processed 360/2569 tickers
+2026-02-12 09:39:16,624 - app.logic.stock_analyzer - INFO - Processed 370/2569 tickers
+2026-02-12 09:39:16,624 - app.logic.stock_analyzer - INFO - Processed 380/2569 tickers
+2026-02-12 09:39:16,624 - app.logic.stock_analyzer - INFO - Processed 390/2569 tickers
+2026-02-12 09:39:16,624 - app.logic.stock_analyzer - INFO - Processed 400/2569 tickers
+2026-02-12 09:39:16,624 - app.logic.stock_analyzer - INFO - Processed 410/2569 tickers
+2026-02-12 09:39:16,624 - app.logic.stock_analyzer - INFO - Processed 420/2569 tickers
+2026-02-12 09:39:16,626 - app.logic.stock_analyzer - INFO - Processed 430/2569 tickers
+2026-02-12 09:39:16,626 - app.logic.stock_analyzer - INFO - Processed 440/2569 tickers
+2026-02-12 09:39:16,626 - app.logic.stock_analyzer - INFO - Processed 450/2569 tickers
+2026-02-12 09:39:16,626 - app.logic.stock_analyzer - INFO - Processed 460/2569 tickers
+2026-02-12 09:39:16,626 - app.logic.stock_analyzer - INFO - Processed 470/2569 tickers
+2026-02-12 09:39:16,626 - app.logic.stock_analyzer - INFO - Processed 480/2569 tickers
+2026-02-12 09:39:16,626 - app.logic.stock_analyzer - INFO - Processed 490/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 500/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 510/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 520/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 530/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 540/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 550/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 560/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 570/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 580/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 590/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 600/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 610/2569 tickers
+2026-02-12 09:39:16,627 - app.logic.stock_analyzer - INFO - Processed 620/2569 tickers
+2026-02-12 09:39:16,628 - app.logic.stock_analyzer - INFO - Processed 630/2569 tickers
+2026-02-12 09:40:23,782 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-12 09:40:23,799 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-12 09:40:23,821 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-12 09:40:23,824 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-12 09:40:23,830 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-12 09:40:23,843 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-12 09:40:23,848 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-12 09:40:23,859 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-12 09:40:23,872 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-12 09:40:23,877 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-12 09:40:23,883 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-12 09:40:23,891 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-12 09:40:23,893 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-12 09:40:23,907 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-12 09:40:23,918 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-12 09:40:23,921 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-12 09:40:23,935 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-12 09:40:23,944 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-12 09:40:23,953 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-12 09:40:23,964 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-12 09:40:23,972 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-12 09:40:23,974 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-12 09:40:23,982 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: ['2025-11-24', '2024-04-18', '2024-03-18', '2024-03-15']
+2026-02-12 09:40:23,990 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: ['2026-01-20', '2025-10-14', '2025-10-10', '2025-10-08', '2025-07-21', '2025-05-21', '2025-05-09', '2025-05-05', '2025-01-08', '2024-12-23', '2024-12-09', '2024-11-25', '2024-09-23', '2024-05-07']
+2026-02-12 09:41:59,365 - yfinance - ERROR - $MOGA: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:41:59,707 - yfinance - ERROR - $MOGA: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:43:05,807 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-12 09:43:05,826 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-12 09:43:05,884 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-12 09:43:05,889 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-12 09:43:05,895 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-12 09:43:05,913 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-12 09:43:05,917 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-12 09:43:05,924 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-12 09:43:05,936 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-12 09:43:05,946 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-12 09:43:05,971 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-12 09:43:05,978 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-12 09:43:17,062 - yfinance - ERROR - $AKE: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:43:17,314 - yfinance - ERROR - $AKE: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:44:14,831 - yfinance - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: HOLDINGS SUBJECT TO CHANGE- SEE WWW-ISHARES-COM FOR THE MOST RECENT FUNDS HOLDINGS-"}}}
+2026-02-12 09:44:15,159 - yfinance - ERROR - $HOLDINGS SUBJECT TO CHANGE- SEE WWW-ISHARES-COM FOR THE MOST RECENT FUNDS HOLDINGS-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:44:15,332 - yfinance - ERROR - $HOLDINGS SUBJECT TO CHANGE- SEE WWW-ISHARES-COM FOR THE MOST RECENT FUNDS HOLDINGS-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:44:58,261 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-12 09:44:58,280 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-12 09:44:58,317 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-12 09:44:58,325 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-12 09:44:58,332 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-12 09:44:58,342 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-12 09:44:58,345 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-12 09:44:58,375 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-12 09:44:58,396 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-12 09:44:58,406 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-12 09:44:58,427 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-02-12 09:44:58,460 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-02-12 09:44:58,490 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-12 09:44:58,502 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-12 09:44:58,515 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-12 09:44:58,532 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-12 09:44:58,540 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-12 09:44:58,556 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-12 09:44:58,563 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-12 09:44:58,568 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: ['2025-11-24', '2024-04-18', '2024-03-18', '2024-03-15']
+2026-02-12 09:44:58,598 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: ['2026-01-20', '2025-10-14', '2025-10-10', '2025-10-08', '2025-07-21', '2025-05-21', '2025-05-09', '2025-05-05', '2025-01-08', '2024-12-23', '2024-12-09', '2024-11-25', '2024-09-23', '2024-05-07']
+2026-02-12 09:44:58,603 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=KWEB, run_id=78
+2026-02-12 09:44:58,615 - app.api.endpoints.analysis - INFO - ticker=KWEB CD 1234 dates: []
+2026-02-12 09:44:58,633 - app.api.endpoints.analysis - INFO - ticker=KWEB MC 1234 dates: []
+2026-02-12 09:44:58,638 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-12 09:44:58,648 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-12 09:44:58,668 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-12 09:44:58,672 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-12 09:44:58,683 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-12 09:44:58,694 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-12 09:53:09,428 - app.logic.stock_analyzer - INFO - Processed 640/2569 tickers
+2026-02-12 09:53:09,428 - app.logic.stock_analyzer - INFO - Processed 650/2569 tickers
+2026-02-12 09:53:09,428 - app.logic.stock_analyzer - INFO - Processed 660/2569 tickers
+2026-02-12 09:53:09,428 - app.logic.stock_analyzer - INFO - Processed 670/2569 tickers
+2026-02-12 09:53:09,428 - app.logic.stock_analyzer - INFO - Processed 680/2569 tickers
+2026-02-12 09:53:09,428 - app.logic.stock_analyzer - INFO - Processed 690/2569 tickers
+2026-02-12 09:53:09,428 - app.logic.stock_analyzer - INFO - Processed 700/2569 tickers
+2026-02-12 09:53:09,428 - app.logic.stock_analyzer - INFO - Processed 710/2569 tickers
+2026-02-12 09:53:30,224 - app.logic.stock_analyzer - INFO - Processed 720/2569 tickers
+2026-02-12 09:53:30,225 - app.logic.stock_analyzer - INFO - Processed 730/2569 tickers
+2026-02-12 09:53:30,225 - app.logic.stock_analyzer - INFO - Processed 740/2569 tickers
+2026-02-12 09:53:30,225 - app.logic.stock_analyzer - INFO - Processed 750/2569 tickers
+2026-02-12 09:53:30,225 - app.logic.stock_analyzer - INFO - Processed 760/2569 tickers
+2026-02-12 09:53:30,225 - app.logic.stock_analyzer - INFO - Processed 770/2569 tickers
+2026-02-12 09:53:30,225 - app.logic.stock_analyzer - INFO - Processed 780/2569 tickers
+2026-02-12 09:54:06,256 - app.logic.stock_analyzer - INFO - Processed 790/2569 tickers
+2026-02-12 09:54:06,256 - app.logic.stock_analyzer - INFO - Processed 800/2569 tickers
+2026-02-12 09:54:06,256 - app.logic.stock_analyzer - INFO - Processed 810/2569 tickers
+2026-02-12 09:54:06,256 - app.logic.stock_analyzer - INFO - Processed 820/2569 tickers
+2026-02-12 09:54:06,256 - app.logic.stock_analyzer - INFO - Processed 830/2569 tickers
+2026-02-12 09:54:06,256 - app.logic.stock_analyzer - INFO - Processed 840/2569 tickers
+2026-02-12 09:54:06,256 - app.logic.stock_analyzer - INFO - Processed 850/2569 tickers
+2026-02-12 09:54:06,257 - app.logic.stock_analyzer - INFO - Processed 860/2569 tickers
+2026-02-12 09:54:06,257 - app.logic.stock_analyzer - INFO - Processed 870/2569 tickers
+2026-02-12 09:54:06,257 - app.logic.stock_analyzer - INFO - Processed 880/2569 tickers
+2026-02-12 09:54:06,257 - app.logic.stock_analyzer - INFO - Processed 890/2569 tickers
+2026-02-12 09:54:06,257 - app.logic.stock_analyzer - INFO - Processed 900/2569 tickers
+2026-02-12 09:54:06,257 - app.logic.stock_analyzer - INFO - Processed 910/2569 tickers
+2026-02-12 09:54:06,257 - app.logic.stock_analyzer - INFO - Processed 920/2569 tickers
+2026-02-12 09:54:06,257 - app.logic.stock_analyzer - INFO - Processed 930/2569 tickers
+2026-02-12 09:54:06,257 - app.logic.stock_analyzer - INFO - Processed 940/2569 tickers
+2026-02-12 09:54:06,257 - app.logic.stock_analyzer - INFO - Processed 950/2569 tickers
+2026-02-12 09:54:06,258 - app.logic.stock_analyzer - INFO - Processed 960/2569 tickers
+2026-02-12 09:54:06,258 - app.logic.stock_analyzer - INFO - Processed 970/2569 tickers
+2026-02-12 09:54:06,258 - app.logic.stock_analyzer - INFO - Processed 980/2569 tickers
+2026-02-12 09:54:06,258 - app.logic.stock_analyzer - INFO - Processed 990/2569 tickers
+2026-02-12 09:54:06,258 - app.logic.stock_analyzer - INFO - Processed 1000/2569 tickers
+2026-02-12 09:54:06,259 - app.logic.stock_analyzer - INFO - Processed 1010/2569 tickers
+2026-02-12 09:54:06,259 - app.logic.stock_analyzer - INFO - Processed 1020/2569 tickers
+2026-02-12 09:54:06,259 - app.logic.stock_analyzer - INFO - Processed 1030/2569 tickers
+2026-02-12 09:54:06,259 - app.logic.stock_analyzer - INFO - Processed 1040/2569 tickers
+2026-02-12 09:54:06,259 - app.logic.stock_analyzer - INFO - Processed 1050/2569 tickers
+2026-02-12 09:54:06,259 - app.logic.stock_analyzer - INFO - Processed 1060/2569 tickers
+2026-02-12 09:54:17,155 - app.logic.stock_analyzer - INFO - Processed 1070/2569 tickers
+2026-02-12 09:54:17,156 - app.logic.stock_analyzer - INFO - Processed 1080/2569 tickers
+2026-02-12 09:54:17,156 - app.logic.stock_analyzer - INFO - Processed 1090/2569 tickers
+2026-02-12 09:54:17,156 - app.logic.stock_analyzer - INFO - Processed 1100/2569 tickers
+2026-02-12 09:54:17,156 - app.logic.stock_analyzer - INFO - Processed 1110/2569 tickers
+2026-02-12 09:54:17,156 - app.logic.stock_analyzer - INFO - Processed 1120/2569 tickers
+2026-02-12 09:54:17,156 - app.logic.stock_analyzer - INFO - Processed 1130/2569 tickers
+2026-02-12 09:54:17,156 - app.logic.stock_analyzer - INFO - Processed 1140/2569 tickers
+2026-02-12 09:54:17,157 - app.logic.stock_analyzer - INFO - Processed 1150/2569 tickers
+2026-02-12 09:54:17,157 - app.logic.stock_analyzer - INFO - Processed 1160/2569 tickers
+2026-02-12 09:54:17,158 - app.logic.stock_analyzer - INFO - Processed 1170/2569 tickers
+2026-02-12 09:54:17,158 - app.logic.stock_analyzer - INFO - Processed 1180/2569 tickers
+2026-02-12 09:54:17,159 - app.logic.stock_analyzer - INFO - Processed 1190/2569 tickers
+2026-02-12 09:54:17,159 - app.logic.stock_analyzer - INFO - Processed 1200/2569 tickers
+2026-02-12 09:54:17,160 - app.logic.stock_analyzer - INFO - Processed 1210/2569 tickers
+2026-02-12 09:54:17,160 - app.logic.stock_analyzer - INFO - Processed 1220/2569 tickers
+2026-02-12 09:54:17,160 - app.logic.stock_analyzer - INFO - Processed 1230/2569 tickers
+2026-02-12 09:54:17,161 - app.logic.stock_analyzer - INFO - Processed 1240/2569 tickers
+2026-02-12 09:54:17,161 - app.logic.stock_analyzer - INFO - Processed 1250/2569 tickers
+2026-02-12 09:54:17,162 - app.logic.stock_analyzer - INFO - Processed 1260/2569 tickers
+2026-02-12 09:54:17,162 - app.logic.stock_analyzer - INFO - Processed 1270/2569 tickers
+2026-02-12 09:55:35,569 - yfinance - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: THIS INFORMATION SHOULD NOT BE RELIED UPON AS RESEARCH, INVESTMENT ADVICE, OR A RECOMMENDATION REGARDING ANY PRODUCTS, STRATEGIES, OR ANY SECURITY IN PARTICULAR-"}}}
+2026-02-12 09:55:35,890 - yfinance - ERROR - $THIS INFORMATION SHOULD NOT BE RELIED UPON AS RESEARCH, INVESTMENT ADVICE, OR A RECOMMENDATION REGARDING ANY PRODUCTS, STRATEGIES, OR ANY SECURITY IN PARTICULAR-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:55:36,099 - yfinance - ERROR - $THIS INFORMATION SHOULD NOT BE RELIED UPON AS RESEARCH, INVESTMENT ADVICE, OR A RECOMMENDATION REGARDING ANY PRODUCTS, STRATEGIES, OR ANY SECURITY IN PARTICULAR-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:59:43,082 - yfinance - ERROR - $THRD: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 09:59:43,316 - yfinance - ERROR - $THRD: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:00:08,473 - yfinance - ERROR - $PDLI: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:00:08,630 - yfinance - ERROR - $PDLI: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:03:01,151 - yfinance - ERROR - $ADRO: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:03:01,409 - yfinance - ERROR - $ADRO: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:03:41,394 - yfinance - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: PLEASE SEE THE “DETERMINATION OF NET ASSET VALUE” SECTION OF EACH FUND’S PROSPECTUS FOR ADDITIONAL INFORMATION ON THE FUND’S VALUATION POLICIES AND PROCEDURES-"}}}
+2026-02-12 10:03:41,891 - yfinance - ERROR - $PLEASE SEE THE “DETERMINATION OF NET ASSET VALUE” SECTION OF EACH FUND’S PROSPECTUS FOR ADDITIONAL INFORMATION ON THE FUND’S VALUATION POLICIES AND PROCEDURES-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:03:42,099 - yfinance - ERROR - $PLEASE SEE THE “DETERMINATION OF NET ASSET VALUE” SECTION OF EACH FUND’S PROSPECTUS FOR ADDITIONAL INFORMATION ON THE FUND’S VALUATION POLICIES AND PROCEDURES-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:04:20,203 - yfinance - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: SBT"}}}
+2026-02-12 10:04:20,566 - yfinance - ERROR - $SBT: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:04:20,756 - yfinance - ERROR - $SBT: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:05:22,471 - yfinance - ERROR - $THE VALUES FOR “PRICE” SHOWN HEREIN GENERALLY REPRESENT A PRICE PROVIDED BY A THIRD-PARTY PRICING VENDOR FOR THE PORTFOLIO HOLDING AND DO NOT REFLECT THE IMPACT OF SYSTEMATIC FAIR VALUATION (“THE VENDOR PRICE”)- THE VENDOR PRICE IS NOT NECESSARILY THE PRICE AT WHICH THE FUND VALUES THE PORTFOLIO HOLDING FOR THE PURPOSES OF DETERMINING ITS NET ASSET VALUE (THE “VALUATION PRICE”)- ADDITIONALLY, WHERE APPLICABLE, FOREIGN CURRENCY EXCHANGE RATES WITH RESPECT TO THE PORTFOLIO HOLDINGS DENOMINATED IN NON-U-S- CURRENCIES FOR THE VALUATION PRICE WILL BE GENERALLY DETERMINED AS OF THE CLOSE OF BUSINESS ON THE NEW YORK STOCK EXCHANGE, WHEREAS FOR THE VENDOR PRICE WILL BE GENERALLY DETERMINED AS OF 4 P-M- LONDON- THE VALUES SHOWN HEREIN FOR “MARKET VALUE,” “WEIGHT,” AND “NOTIONAL VALUE” (THE “CALCULATED VALUES”) ARE BASED OFF OF THE VENDOR PRICE AND MAY HAVE BEEN DIFFERENT IF THE VALUATION PRICE WERE TO HAVE BEEN USED TO CALCULATE SUCH VALUES- THE VENDOR PRICE IS AS OF THE MOST RECENT PRACTICABLE DATE AND MAY NOT NECESSARILY BE AS OF THE DATE SHOWN ABOVE-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:05:22,690 - yfinance - ERROR - $THE VALUES FOR “PRICE” SHOWN HEREIN GENERALLY REPRESENT A PRICE PROVIDED BY A THIRD-PARTY PRICING VENDOR FOR THE PORTFOLIO HOLDING AND DO NOT REFLECT THE IMPACT OF SYSTEMATIC FAIR VALUATION (“THE VENDOR PRICE”)- THE VENDOR PRICE IS NOT NECESSARILY THE PRICE AT WHICH THE FUND VALUES THE PORTFOLIO HOLDING FOR THE PURPOSES OF DETERMINING ITS NET ASSET VALUE (THE “VALUATION PRICE”)- ADDITIONALLY, WHERE APPLICABLE, FOREIGN CURRENCY EXCHANGE RATES WITH RESPECT TO THE PORTFOLIO HOLDINGS DENOMINATED IN NON-U-S- CURRENCIES FOR THE VALUATION PRICE WILL BE GENERALLY DETERMINED AS OF THE CLOSE OF BUSINESS ON THE NEW YORK STOCK EXCHANGE, WHEREAS FOR THE VENDOR PRICE WILL BE GENERALLY DETERMINED AS OF 4 P-M- LONDON- THE VALUES SHOWN HEREIN FOR “MARKET VALUE,” “WEIGHT,” AND “NOTIONAL VALUE” (THE “CALCULATED VALUES”) ARE BASED OFF OF THE VENDOR PRICE AND MAY HAVE BEEN DIFFERENT IF THE VALUATION PRICE WERE TO HAVE BEEN USED TO CALCULATE SUCH VALUES- THE VENDOR PRICE IS AS OF THE MOST RECENT PRACTICABLE DATE AND MAY NOT NECESSARILY BE AS OF THE DATE SHOWN ABOVE-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:06:32,713 - yfinance - ERROR - Failed to get ticker 'THE CONTENT CONTAINED HEREIN IS OWNED OR LICENSED BY BLACKROCK AND/OR ITS THIRD-PARTY INFORMATION PROVIDERS AND IS PROTECTED BY APPLICABLE COPYRIGHTS, TRADEMARKS, SERVICE MARKS, AND/OR OTHER INTELLECTUAL PROPERTY RIGHTS- SUCH CONTENT IS SOLELY FOR YOUR PERSONAL, NON-COMMERCIAL USE- ACCORDINGLY, YOU MAY NOT COPY, DISTRIBUTE, MODIFY, POST, FRAME OR DEEP LINK THIS CONTENT- YOU MAY DOWNLOAD MATERIAL DISPLAYED ON THIS WEBSITE FOR YOUR PERSONAL USE PROVIDED YOU ALSO RETAIN ALL COPYRIGHT AND OTHER PROPRIETARY NOTICES CONTAINED ON THE MATERIALS- MODIFICATION OR USE OF THE MATERIALS FOR ANY OTHER PURPOSE VIOLATES BLACKROCK'S INTELLECTUAL PROPERTY RIGHTS-' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-12 10:06:33,261 - yfinance - ERROR - HTTP Error 500: <!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Yahoo</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimal-ui">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <style>
+      html {
+          height: 100%;
+      }
+      body {
+          background: #fafafc url(https://s.yimg.com/nn/img/sad-panda-201402200631.png) 50% 50%;
+          background-size: cover;
+          height: 100%;
+          text-align: center;
+          font: 300 18px "helvetica neue", helvetica, verdana, tahoma, arial, sans-serif;
+          margin: 0;
+      }
+      table {
+          height: 100%;
+          width: 100%;
+          table-layout: fixed;
+          border-collapse: collapse;
+          border-spacing: 0;
+          border: none;
+      }
+      h1 {
+          font-size: 42px;
+          font-weight: 400;
+          color: #400090;
+      }
+      p {
+          color: #1A1A1A;
+      }
+      #message-1 {
+          font-weight: bold;
+          margin: 0;
+      }
+      #message-2 {
+          display: inline-block;
+          *display: inline;
+          zoom: 1;
+          max-width: 17em;
+          _width: 17em;
+      }
+      </style>
+      <script>
+      
+      </script>
+  </head>
+  <body>
+  <!-- status code : 500 -->
+  <!-- Unknown Host -->
+  <!-- host machine: ats-ncache-api--production-gq1-775b88b6c8-79572 -->
+  <!-- timestamp: 1770919593.185 -->
+  <!-- url: https://default.finance-yql-production.finance-k8s.omega.yahoo.com/v10/finance/quoteSummary/THE%20CONTENT%20CONTAINED%20HEREIN%20IS%20OWNED%20OR%20LICENSED%20BY%20BLACKROCK%20AND/OR%20ITS%20THIRD-PARTY%20INFORMATION%20PROVIDERS%20AND%20IS%20PROTECTED%20BY%20APPLICABLE%20COPYRIGHTS,%20TRADEMARKS,%20SERVICE%20MARKS,%20AND/OR%20OTHER%20INTELLECTUAL%20PROPERTY%20RIGHTS-%20SUCH%20CONTENT%20IS%20SOLELY%20FOR%20YOUR%20PERSONAL,%20NON-COMMERCIAL%20USE-%20ACCORDINGLY,%20YOU%20MAY%20NOT%20COPY,%20DISTRIBUTE,%20MODIFY,%20POST,%20FRAME%20OR%20DEEP%20LINK%20THIS%20CONTENT-%20YOU%20MAY%20DOWNLOAD%20MATERIAL%20DISPLAYED%20ON%20THIS%20WEBSITE%20FOR%20YOUR%20PERSONAL%20USE%20PROVIDED%20YOU%20ALSO%20RETAIN%20ALL%20COPYRIGHT%20AND%20OTHER%20PROPRIETARY%20NOTICES%20CONTAINED%20ON%20THE%20MATERIALS-%20MODIFICATION%20OR%20USE%20OF%20THE%20MATERIALS%20FOR%20ANY%20OTHER%20PURPOSE%20VIOLATES%20BLACKROCK'S%20INTELLECTUAL%20PROPERTY%20RIGHTS-?modules=financialData%2CquoteType%2CdefaultKeyStatistics%2CassetProfile%2CsummaryDetail&corsDomain=finance.yahoo.com&formatted=false&symbol=THE+CONTENT+CONTAINED+HEREIN+IS+OWNED+OR+LICENSED+BY+BLACKROCK+AND%2FOR+ITS+THIRD-PARTY+INFORMATION+PROVIDERS+AND+IS+PROTECTED+BY+APPLICABLE+COPYRIGHTS%2C+TRADEMARKS%2C+SERVICE+MARKS%2C+AND%2FOR+OTHER+INTELLECTUAL+PROPERTY+RIGHTS-+SUCH+CONTENT+IS+SOLELY+FOR+YOUR+PERSONAL%2C+NON-COMMERCIAL+USE-+ACCORDINGLY%2C+YOU+MAY+NOT+COPY%2C+DISTRIBUTE%2C+MODIFY%2C+POST%2C+FRAME+OR+DEEP+LINK+THIS+CONTENT-+YOU+MAY+DOWNLOAD+MATERIAL+DISPLAYED+ON+THIS+WEBSITE+FOR+YOUR+PERSONAL+USE+PROVIDED+YOU+ALSO+RETAIN+ALL+COPYRIGHT+AND+OTHER+PROPRIETARY+NOTICES+CONTAINED+ON+THE+MATERIALS-+MODIFICATION+OR+USE+OF+THE+MATERIALS+FOR+ANY+OTHER+PURPOSE+VIOLATES+BLACKROCK%27S+INTELLECTUAL+PROPERTY+RIGHTS-&crumb=iCRh4OJhCjD-->
+  <script type="text/javascript">
+    function buildUrl(url, parameters){
+      var qs = [];
+      for(var key in parameters) {
+        var value = parameters[key];
+        qs.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
+      }
+      url = url + "?" + qs.join('&');
+      return url;
+    }
+
+    function generateBRBMarkup(site) {
+      params.source = 'brb';
+      generateBeaconMarkup(params);
+      var englishHeader = 'Will be right back...';
+      var englishMessage1 = 'Thank you for your patience.';
+      var englishMessage2 = 'Our engineers are working quickly to resolve the issue.';
+      var defaultLogoStyle = '';
+      var siteDataMap = {
+        'default': {
+          logo: 'https://s.yimg.com/rz/p/yahoo_frontpage_en-US_s_f_p_205x58_frontpage.png',
+          logoAlt: 'Yahoo Logo',
+          logoStyle: defaultLogoStyle,
+          header: englishHeader,
+          message1: englishMessage1,
+          message2: englishMessage2
+        }
+      };
+
+      var siteDetails = siteDataMap['default'];
+
+      document.write('<table><tbody><tr><td>');
+      document.write('<div id="content">');
+      document.write('<img src="' + siteDetails['logo'] + '" alt="' + siteDetails['logoAlt'] + '" style="' + siteDetails['logoStyle'] + '">');
+      document.write('<h1 style="margin-top:20px;">' + siteDetails['header'] + '</h1>');
+      document.write('<p id="message-1">' + siteDetails['message1'] + '</p>');
+      document.write('<p id="message-2">' + siteDetails['message2'] + '</p>');
+      document.write('</div>');
+      document.write('</td></tr></tbody></table>');
+    }
+
+    function generateBeaconMarkup(params) {
+        document.write('<img src="' + buildUrl('//geo.yahoo.com/b', params) + '" style="display:none;" width="0px" height="0px"/>');
+        var beacon = new Image();
+        beacon.src = buildUrl('//bcn.fp.yahoo.com/p', params);
+    }
+
+    var hostname = window.location.hostname;
+    var device = 'desktop';
+    var ynet = ('-' === '1');
+    var time = new Date().getTime();
+    var params = {
+        s: '1197757129',
+        t: time,
+        err_url: document.URL,
+        err: '500',
+        test: '-',
+        ats_host: 'ats-ncache-api--production-gq1-775b88b6c8-79572',
+        rid: '-',
+        message: 'Unknown Host'
+    };
+
+    if(ynet) {
+        document.write('<div style="height: 5px; background-color: red;"></div>');
+    }
+    generateBRBMarkup(hostname, params);
+
+  </script>
+  <noscript>
+  <table>
+    <tbody>
+      <tr>
+        <td>
+          <div id="englishContent">
+            <h1 style="margin-top:20px;">Will be right back...</h1>
+            <p id="message-1">Thank you for your patience.</p>
+            <p id="message-2">Our engineers are working quickly to resolve the issue.</p>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  </noscript>
+  </body>
+</html>
+
+2026-02-12 10:06:33,751 - yfinance - ERROR - Failed to get ticker 'THE CONTENT CONTAINED HEREIN IS OWNED OR LICENSED BY BLACKROCK AND/OR ITS THIRD-PARTY INFORMATION PROVIDERS AND IS PROTECTED BY APPLICABLE COPYRIGHTS, TRADEMARKS, SERVICE MARKS, AND/OR OTHER INTELLECTUAL PROPERTY RIGHTS- SUCH CONTENT IS SOLELY FOR YOUR PERSONAL, NON-COMMERCIAL USE- ACCORDINGLY, YOU MAY NOT COPY, DISTRIBUTE, MODIFY, POST, FRAME OR DEEP LINK THIS CONTENT- YOU MAY DOWNLOAD MATERIAL DISPLAYED ON THIS WEBSITE FOR YOUR PERSONAL USE PROVIDED YOU ALSO RETAIN ALL COPYRIGHT AND OTHER PROPRIETARY NOTICES CONTAINED ON THE MATERIALS- MODIFICATION OR USE OF THE MATERIALS FOR ANY OTHER PURPOSE VIOLATES BLACKROCK'S INTELLECTUAL PROPERTY RIGHTS-' reason: Expecting value: line 1 column 1 (char 0)
+2026-02-12 10:06:34,108 - yfinance - ERROR - $THE CONTENT CONTAINED HEREIN IS OWNED OR LICENSED BY BLACKROCK AND/OR ITS THIRD-PARTY INFORMATION PROVIDERS AND IS PROTECTED BY APPLICABLE COPYRIGHTS, TRADEMARKS, SERVICE MARKS, AND/OR OTHER INTELLECTUAL PROPERTY RIGHTS- SUCH CONTENT IS SOLELY FOR YOUR PERSONAL, NON-COMMERCIAL USE- ACCORDINGLY, YOU MAY NOT COPY, DISTRIBUTE, MODIFY, POST, FRAME OR DEEP LINK THIS CONTENT- YOU MAY DOWNLOAD MATERIAL DISPLAYED ON THIS WEBSITE FOR YOUR PERSONAL USE PROVIDED YOU ALSO RETAIN ALL COPYRIGHT AND OTHER PROPRIETARY NOTICES CONTAINED ON THE MATERIALS- MODIFICATION OR USE OF THE MATERIALS FOR ANY OTHER PURPOSE VIOLATES BLACKROCK'S INTELLECTUAL PROPERTY RIGHTS-: possibly delisted; no price data found  (period=2y)
+2026-02-12 10:07:52,534 - yfinance - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: THE ISHARES FUNDS ARE NOT SPONSORED, ENDORSED, ISSUED, SOLD OR PROMOTED BY BLOOMBERG, BLACKROCK INDEX SERVICES, LLC, CBOE GLOBAL INDICES, LLC, COHEN & STEERS, EUROPEAN PUBLIC REAL ESTATE ASSOCIATION (“EPRA® ”), FTSE INTERNATIONAL LIMITED (“FTSE”), ICE DATA INDICES, LLC, NSE INDICES LTD, JPMORGAN, JPX GROUP, LONDON STOCK EXCHANGE GROUP (“LSEG”), MSCI INC-, MARKIT INDICES LIMITED, MORNINGSTAR, INC-, NASDAQ, INC-, NATIONAL ASSOCIATION OF REAL ESTATE INVESTMENT TRUSTS (“NAREIT”), NIKKEI, INC-, RUSSELL, S&P DOW JONES INDICES LLC OR STOXX LTD- NONE OF THESE COMPANIES MAKE ANY REPRESENTATION REGARDING THE ADVISABILITY OF INVESTING IN THE FUNDS- WITH THE EXCEPTION OF BLACKROCK INDEX SERVICES, LLC, WHO IS AN AFFILIATE, BLACKROCK INVESTMENTS, LLC IS NOT AFFILIATED WITH THE COMPANIES LISTED ABOVE- NEITHER FTSE, LSEG, NOR NAREIT MAKES ANY WARRANTY REGARDING THE FTSE NAREIT EQUITY REITS INDEX, FTSE NAREIT ALL RESIDENTIAL CAPPED INDEX OR FTSE NAREIT ALL MORTGAGE CAPPED INDEX- NEITHER FTSE, EPRA, LSEG, NOR NAREIT MAKES ANY WARRANTY REGARDING THE FTSE EPRA NAREIT DEVELOPED EX-U-S- INDEX, FTSE EPRA NAREIT DEVELOPED GREEN TARGET INDEX OR FTSE EPRA NAREIT GLOBAL REITS INDEX- “FTSE®” IS A TRADEMARK OF LONDON STOCK EXCHANGE GROUP COMPANIES AND IS USED BY FTSE UNDER LICENSE-"}}}
+2026-02-12 10:07:53,169 - yfinance - ERROR - $THE ISHARES FUNDS ARE NOT SPONSORED, ENDORSED, ISSUED, SOLD OR PROMOTED BY BLOOMBERG, BLACKROCK INDEX SERVICES, LLC, CBOE GLOBAL INDICES, LLC, COHEN & STEERS, EUROPEAN PUBLIC REAL ESTATE ASSOCIATION (“EPRA® ”), FTSE INTERNATIONAL LIMITED (“FTSE”), ICE DATA INDICES, LLC, NSE INDICES LTD, JPMORGAN, JPX GROUP, LONDON STOCK EXCHANGE GROUP (“LSEG”), MSCI INC-, MARKIT INDICES LIMITED, MORNINGSTAR, INC-, NASDAQ, INC-, NATIONAL ASSOCIATION OF REAL ESTATE INVESTMENT TRUSTS (“NAREIT”), NIKKEI, INC-, RUSSELL, S&P DOW JONES INDICES LLC OR STOXX LTD- NONE OF THESE COMPANIES MAKE ANY REPRESENTATION REGARDING THE ADVISABILITY OF INVESTING IN THE FUNDS- WITH THE EXCEPTION OF BLACKROCK INDEX SERVICES, LLC, WHO IS AN AFFILIATE, BLACKROCK INVESTMENTS, LLC IS NOT AFFILIATED WITH THE COMPANIES LISTED ABOVE- NEITHER FTSE, LSEG, NOR NAREIT MAKES ANY WARRANTY REGARDING THE FTSE NAREIT EQUITY REITS INDEX, FTSE NAREIT ALL RESIDENTIAL CAPPED INDEX OR FTSE NAREIT ALL MORTGAGE CAPPED INDEX- NEITHER FTSE, EPRA, LSEG, NOR NAREIT MAKES ANY WARRANTY REGARDING THE FTSE EPRA NAREIT DEVELOPED EX-U-S- INDEX, FTSE EPRA NAREIT DEVELOPED GREEN TARGET INDEX OR FTSE EPRA NAREIT GLOBAL REITS INDEX- “FTSE®” IS A TRADEMARK OF LONDON STOCK EXCHANGE GROUP COMPANIES AND IS USED BY FTSE UNDER LICENSE-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:07:53,430 - yfinance - ERROR - $THE ISHARES FUNDS ARE NOT SPONSORED, ENDORSED, ISSUED, SOLD OR PROMOTED BY BLOOMBERG, BLACKROCK INDEX SERVICES, LLC, CBOE GLOBAL INDICES, LLC, COHEN & STEERS, EUROPEAN PUBLIC REAL ESTATE ASSOCIATION (“EPRA® ”), FTSE INTERNATIONAL LIMITED (“FTSE”), ICE DATA INDICES, LLC, NSE INDICES LTD, JPMORGAN, JPX GROUP, LONDON STOCK EXCHANGE GROUP (“LSEG”), MSCI INC-, MARKIT INDICES LIMITED, MORNINGSTAR, INC-, NASDAQ, INC-, NATIONAL ASSOCIATION OF REAL ESTATE INVESTMENT TRUSTS (“NAREIT”), NIKKEI, INC-, RUSSELL, S&P DOW JONES INDICES LLC OR STOXX LTD- NONE OF THESE COMPANIES MAKE ANY REPRESENTATION REGARDING THE ADVISABILITY OF INVESTING IN THE FUNDS- WITH THE EXCEPTION OF BLACKROCK INDEX SERVICES, LLC, WHO IS AN AFFILIATE, BLACKROCK INVESTMENTS, LLC IS NOT AFFILIATED WITH THE COMPANIES LISTED ABOVE- NEITHER FTSE, LSEG, NOR NAREIT MAKES ANY WARRANTY REGARDING THE FTSE NAREIT EQUITY REITS INDEX, FTSE NAREIT ALL RESIDENTIAL CAPPED INDEX OR FTSE NAREIT ALL MORTGAGE CAPPED INDEX- NEITHER FTSE, EPRA, LSEG, NOR NAREIT MAKES ANY WARRANTY REGARDING THE FTSE EPRA NAREIT DEVELOPED EX-U-S- INDEX, FTSE EPRA NAREIT DEVELOPED GREEN TARGET INDEX OR FTSE EPRA NAREIT GLOBAL REITS INDEX- “FTSE®” IS A TRADEMARK OF LONDON STOCK EXCHANGE GROUP COMPANIES AND IS USED BY FTSE UNDER LICENSE-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:08:48,012 - app.logic.stock_analyzer - INFO - Processed 1280/2569 tickers
+2026-02-12 10:08:48,013 - app.logic.stock_analyzer - INFO - Processed 1290/2569 tickers
+2026-02-12 10:08:48,013 - app.logic.stock_analyzer - INFO - Processed 1300/2569 tickers
+2026-02-12 10:08:48,013 - app.logic.stock_analyzer - INFO - Processed 1310/2569 tickers
+2026-02-12 10:08:48,013 - app.logic.stock_analyzer - INFO - Processed 1320/2569 tickers
+2026-02-12 10:08:48,013 - app.logic.stock_analyzer - INFO - Processed 1330/2569 tickers
+2026-02-12 10:08:48,013 - app.logic.stock_analyzer - INFO - Processed 1340/2569 tickers
+2026-02-12 10:09:00,942 - app.logic.stock_analyzer - INFO - Processed 1350/2569 tickers
+2026-02-12 10:09:00,944 - app.logic.stock_analyzer - INFO - Processed 1360/2569 tickers
+2026-02-12 10:09:00,944 - app.logic.stock_analyzer - INFO - Processed 1370/2569 tickers
+2026-02-12 10:09:00,945 - app.logic.stock_analyzer - INFO - Processed 1380/2569 tickers
+2026-02-12 10:09:00,945 - app.logic.stock_analyzer - INFO - Processed 1390/2569 tickers
+2026-02-12 10:09:00,945 - app.logic.stock_analyzer - INFO - Processed 1400/2569 tickers
+2026-02-12 10:09:00,945 - app.logic.stock_analyzer - INFO - Processed 1410/2569 tickers
+2026-02-12 10:09:00,945 - app.logic.stock_analyzer - INFO - Processed 1420/2569 tickers
+2026-02-12 10:09:00,946 - app.logic.stock_analyzer - INFO - Processed 1430/2569 tickers
+2026-02-12 10:09:00,947 - app.logic.stock_analyzer - INFO - Processed 1440/2569 tickers
+2026-02-12 10:09:00,948 - app.logic.stock_analyzer - INFO - Processed 1450/2569 tickers
+2026-02-12 10:09:00,949 - app.logic.stock_analyzer - INFO - Processed 1460/2569 tickers
+2026-02-12 10:09:00,949 - app.logic.stock_analyzer - INFO - Processed 1470/2569 tickers
+2026-02-12 10:09:00,950 - app.logic.stock_analyzer - INFO - Processed 1480/2569 tickers
+2026-02-12 10:09:00,951 - app.logic.stock_analyzer - INFO - Processed 1490/2569 tickers
+2026-02-12 10:09:00,951 - app.logic.stock_analyzer - INFO - Processed 1500/2569 tickers
+2026-02-12 10:09:00,952 - app.logic.stock_analyzer - INFO - Processed 1510/2569 tickers
+2026-02-12 10:09:00,952 - app.logic.stock_analyzer - INFO - Processed 1520/2569 tickers
+2026-02-12 10:09:00,952 - app.logic.stock_analyzer - INFO - Processed 1530/2569 tickers
+2026-02-12 10:09:00,952 - app.logic.stock_analyzer - INFO - Processed 1540/2569 tickers
+2026-02-12 10:09:00,952 - app.logic.stock_analyzer - INFO - Processed 1550/2569 tickers
+2026-02-12 10:09:00,952 - app.logic.stock_analyzer - INFO - Processed 1560/2569 tickers
+2026-02-12 10:09:11,635 - app.logic.stock_analyzer - INFO - Processed 1570/2569 tickers
+2026-02-12 10:09:11,635 - app.logic.stock_analyzer - INFO - Processed 1580/2569 tickers
+2026-02-12 10:09:11,635 - app.logic.stock_analyzer - INFO - Processed 1590/2569 tickers
+2026-02-12 10:09:11,635 - app.logic.stock_analyzer - INFO - Processed 1600/2569 tickers
+2026-02-12 10:09:11,635 - app.logic.stock_analyzer - INFO - Processed 1610/2569 tickers
+2026-02-12 10:09:11,636 - app.logic.stock_analyzer - INFO - Processed 1620/2569 tickers
+2026-02-12 10:09:11,636 - app.logic.stock_analyzer - INFO - Processed 1630/2569 tickers
+2026-02-12 10:09:11,636 - app.logic.stock_analyzer - INFO - Processed 1640/2569 tickers
+2026-02-12 10:09:11,636 - app.logic.stock_analyzer - INFO - Processed 1650/2569 tickers
+2026-02-12 10:09:11,636 - app.logic.stock_analyzer - INFO - Processed 1660/2569 tickers
+2026-02-12 10:09:11,636 - app.logic.stock_analyzer - INFO - Processed 1670/2569 tickers
+2026-02-12 10:09:11,636 - app.logic.stock_analyzer - INFO - Processed 1680/2569 tickers
+2026-02-12 10:09:11,636 - app.logic.stock_analyzer - INFO - Processed 1690/2569 tickers
+2026-02-12 10:09:11,637 - app.logic.stock_analyzer - INFO - Processed 1700/2569 tickers
+2026-02-12 10:09:54,446 - app.logic.stock_analyzer - INFO - Processed 1710/2569 tickers
+2026-02-12 10:09:54,447 - app.logic.stock_analyzer - INFO - Processed 1720/2569 tickers
+2026-02-12 10:09:54,447 - app.logic.stock_analyzer - INFO - Processed 1730/2569 tickers
+2026-02-12 10:09:54,447 - app.logic.stock_analyzer - INFO - Processed 1740/2569 tickers
+2026-02-12 10:09:54,447 - app.logic.stock_analyzer - INFO - Processed 1750/2569 tickers
+2026-02-12 10:09:54,447 - app.logic.stock_analyzer - INFO - Processed 1760/2569 tickers
+2026-02-12 10:09:54,447 - app.logic.stock_analyzer - INFO - Processed 1770/2569 tickers
+2026-02-12 10:09:54,447 - app.logic.stock_analyzer - INFO - Processed 1780/2569 tickers
+2026-02-12 10:09:54,447 - app.logic.stock_analyzer - INFO - Processed 1790/2569 tickers
+2026-02-12 10:09:54,448 - app.logic.stock_analyzer - INFO - Processed 1800/2569 tickers
+2026-02-12 10:09:54,448 - app.logic.stock_analyzer - INFO - Processed 1810/2569 tickers
+2026-02-12 10:09:54,448 - app.logic.stock_analyzer - INFO - Processed 1820/2569 tickers
+2026-02-12 10:09:54,448 - app.logic.stock_analyzer - INFO - Processed 1830/2569 tickers
+2026-02-12 10:09:54,448 - app.logic.stock_analyzer - INFO - Processed 1840/2569 tickers
+2026-02-12 10:09:54,449 - app.logic.stock_analyzer - INFO - Processed 1850/2569 tickers
+2026-02-12 10:09:54,450 - app.logic.stock_analyzer - INFO - Processed 1860/2569 tickers
+2026-02-12 10:09:54,450 - app.logic.stock_analyzer - INFO - Processed 1870/2569 tickers
+2026-02-12 10:09:54,453 - app.logic.stock_analyzer - INFO - Processed 1880/2569 tickers
+2026-02-12 10:09:54,454 - app.logic.stock_analyzer - INFO - Processed 1890/2569 tickers
+2026-02-12 10:09:54,455 - app.logic.stock_analyzer - INFO - Processed 1900/2569 tickers
+2026-02-12 10:09:54,456 - app.logic.stock_analyzer - INFO - Processed 1910/2569 tickers
+2026-02-12 10:10:14,733 - yfinance - ERROR - $IXPH6: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:10:14,894 - yfinance - ERROR - $IXPH6: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:11:55,787 - yfinance - ERROR - $CAREFULLY CONSIDER THE FUNDS' INVESTMENT OBJECTIVES, RISK FACTORS, AND CHARGES AND EXPENSES BEFORE INVESTING- THIS AND OTHER INFORMATION CAN BE FOUND IN THE FUNDS' PROSPECTUSES OR, IF AVAILABLE, THE SUMMARY PROSPECTUSES WHICH MAY BE OBTAINED BY VISITING WWW-ISHARES-COM OR WWW-BLACKROCK-COM- READ THE PROSPECTUS CAREFULLY BEFORE INVESTING- INVESTING INVOLVES RISK, INCLUDING POSSIBLE LOSS OF PRINCIPAL-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:11:56,016 - yfinance - ERROR - $CAREFULLY CONSIDER THE FUNDS' INVESTMENT OBJECTIVES, RISK FACTORS, AND CHARGES AND EXPENSES BEFORE INVESTING- THIS AND OTHER INFORMATION CAN BE FOUND IN THE FUNDS' PROSPECTUSES OR, IF AVAILABLE, THE SUMMARY PROSPECTUSES WHICH MAY BE OBTAINED BY VISITING WWW-ISHARES-COM OR WWW-BLACKROCK-COM- READ THE PROSPECTUS CAREFULLY BEFORE INVESTING- INVESTING INVOLVES RISK, INCLUDING POSSIBLE LOSS OF PRINCIPAL-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:13:31,392 - yfinance - ERROR - $MSFUT: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:13:31,549 - yfinance - ERROR - $MSFUT: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:14:49,587 - yfinance - ERROR - $GEFB: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:14:49,818 - yfinance - ERROR - $GEFB: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:14:52,147 - yfinance - ERROR - $GTXI: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:14:52,321 - yfinance - ERROR - $GTXI: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:20:31,991 - yfinance - ERROR - $THE FUNDS ARE DISTRIBUTED BY BLACKROCK INVESTMENTS, LLC (TOGETHER WITH ITS AFFILIATES, “BLACKROCK”)-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:20:32,210 - yfinance - ERROR - $THE FUNDS ARE DISTRIBUTED BY BLACKROCK INVESTMENTS, LLC (TOGETHER WITH ITS AFFILIATES, “BLACKROCK”)-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:21:21,913 - yfinance - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: XTSLA"}}}
+2026-02-12 10:21:22,251 - yfinance - ERROR - $XTSLA: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:21:22,491 - yfinance - ERROR - $XTSLA: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:21:28,747 - yfinance - ERROR - $©2023 BLACKROCK, INC OR ITS AFFILIATES- ALL RIGHTS RESERVED- ISHARES, IBONDS AND BLACKROCK ARE TRADEMARKS OF BLACKROCK, INC- OR ITS AFFILIATES- ALL OTHER TRADEMARKS ARE THOSE OF THEIR RESPECTIVE OWNERS-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:21:28,923 - yfinance - ERROR - $©2023 BLACKROCK, INC OR ITS AFFILIATES- ALL RIGHTS RESERVED- ISHARES, IBONDS AND BLACKROCK ARE TRADEMARKS OF BLACKROCK, INC- OR ITS AFFILIATES- ALL OTHER TRADEMARKS ARE THOSE OF THEIR RESPECTIVE OWNERS-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:21:52,615 - yfinance - ERROR - $P5N994: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:21:52,769 - yfinance - ERROR - $P5N994: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:22:13,395 - app.logic.stock_analyzer - INFO - Processed 1920/2569 tickers
+2026-02-12 10:22:13,395 - app.logic.stock_analyzer - INFO - Processed 1930/2569 tickers
+2026-02-12 10:22:13,395 - app.logic.stock_analyzer - INFO - Processed 1940/2569 tickers
+2026-02-12 10:22:13,395 - app.logic.stock_analyzer - INFO - Processed 1950/2569 tickers
+2026-02-12 10:22:13,395 - app.logic.stock_analyzer - INFO - Processed 1960/2569 tickers
+2026-02-12 10:22:13,396 - app.logic.stock_analyzer - INFO - Processed 1970/2569 tickers
+2026-02-12 10:22:13,396 - app.logic.stock_analyzer - INFO - Processed 1980/2569 tickers
+2026-02-12 10:22:48,400 - app.logic.stock_analyzer - INFO - Processed 1990/2569 tickers
+2026-02-12 10:22:48,401 - app.logic.stock_analyzer - INFO - Processed 2000/2569 tickers
+2026-02-12 10:22:48,401 - app.logic.stock_analyzer - INFO - Processed 2010/2569 tickers
+2026-02-12 10:22:48,401 - app.logic.stock_analyzer - INFO - Processed 2020/2569 tickers
+2026-02-12 10:22:48,401 - app.logic.stock_analyzer - INFO - Processed 2030/2569 tickers
+2026-02-12 10:22:48,401 - app.logic.stock_analyzer - INFO - Processed 2040/2569 tickers
+2026-02-12 10:22:48,401 - app.logic.stock_analyzer - INFO - Processed 2050/2569 tickers
+2026-02-12 10:22:48,401 - app.logic.stock_analyzer - INFO - Processed 2060/2569 tickers
+2026-02-12 10:22:48,402 - app.logic.stock_analyzer - INFO - Processed 2070/2569 tickers
+2026-02-12 10:22:48,402 - app.logic.stock_analyzer - INFO - Processed 2080/2569 tickers
+2026-02-12 10:22:48,402 - app.logic.stock_analyzer - INFO - Processed 2090/2569 tickers
+2026-02-12 10:22:48,402 - app.logic.stock_analyzer - INFO - Processed 2100/2569 tickers
+2026-02-12 10:22:48,402 - app.logic.stock_analyzer - INFO - Processed 2110/2569 tickers
+2026-02-12 10:22:48,402 - app.logic.stock_analyzer - INFO - Processed 2120/2569 tickers
+2026-02-12 10:22:48,403 - app.logic.stock_analyzer - INFO - Processed 2130/2569 tickers
+2026-02-12 10:22:57,722 - app.logic.stock_analyzer - INFO - Processed 2140/2569 tickers
+2026-02-12 10:22:57,722 - app.logic.stock_analyzer - INFO - Processed 2150/2569 tickers
+2026-02-12 10:22:57,723 - app.logic.stock_analyzer - INFO - Processed 2160/2569 tickers
+2026-02-12 10:22:57,723 - app.logic.stock_analyzer - INFO - Processed 2170/2569 tickers
+2026-02-12 10:22:57,723 - app.logic.stock_analyzer - INFO - Processed 2180/2569 tickers
+2026-02-12 10:22:57,723 - app.logic.stock_analyzer - INFO - Processed 2190/2569 tickers
+2026-02-12 10:22:57,723 - app.logic.stock_analyzer - INFO - Processed 2200/2569 tickers
+2026-02-12 10:22:57,723 - app.logic.stock_analyzer - INFO - Processed 2210/2569 tickers
+2026-02-12 10:22:57,723 - app.logic.stock_analyzer - INFO - Processed 2220/2569 tickers
+2026-02-12 10:22:57,723 - app.logic.stock_analyzer - INFO - Processed 2230/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2240/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2250/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2260/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2270/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2280/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2290/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2300/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2310/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2320/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2330/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2340/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2350/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2360/2569 tickers
+2026-02-12 10:22:57,724 - app.logic.stock_analyzer - INFO - Processed 2370/2569 tickers
+2026-02-12 10:22:57,725 - app.logic.stock_analyzer - INFO - Processed 2380/2569 tickers
+2026-02-12 10:22:57,725 - app.logic.stock_analyzer - INFO - Processed 2390/2569 tickers
+2026-02-12 10:22:57,725 - app.logic.stock_analyzer - INFO - Processed 2400/2569 tickers
+2026-02-12 10:22:57,725 - app.logic.stock_analyzer - INFO - Processed 2410/2569 tickers
+2026-02-12 10:23:24,025 - yfinance - ERROR - HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: THIS MATERIAL IS STRICTLY FOR ILLUSTRATIVE, EDUCATIONAL, OR INFORMATIONAL PURPOSES AND IS SUBJECT TO CHANGE-"}}}
+2026-02-12 10:23:24,283 - yfinance - ERROR - $THIS MATERIAL IS STRICTLY FOR ILLUSTRATIVE, EDUCATIONAL, OR INFORMATIONAL PURPOSES AND IS SUBJECT TO CHANGE-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:23:24,437 - yfinance - ERROR - $THIS MATERIAL IS STRICTLY FOR ILLUSTRATIVE, EDUCATIONAL, OR INFORMATIONAL PURPOSES AND IS SUBJECT TO CHANGE-: possibly delisted; no price data found  (period=2y) (Yahoo error = "No data found, symbol may be delisted")
+2026-02-12 10:23:24,782 - app.logic.stock_analyzer - INFO - Processed 2420/2569 tickers
+2026-02-12 10:23:24,782 - app.logic.stock_analyzer - INFO - Processed 2430/2569 tickers
+2026-02-12 10:23:24,782 - app.logic.stock_analyzer - INFO - Processed 2440/2569 tickers
+2026-02-12 10:23:24,782 - app.logic.stock_analyzer - INFO - Processed 2450/2569 tickers
+2026-02-12 10:23:24,782 - app.logic.stock_analyzer - INFO - Processed 2460/2569 tickers
+2026-02-12 10:23:24,782 - app.logic.stock_analyzer - INFO - Processed 2470/2569 tickers
+2026-02-12 10:23:24,782 - app.logic.stock_analyzer - INFO - Processed 2480/2569 tickers
+2026-02-12 10:23:31,349 - app.logic.stock_analyzer - INFO - Processed 2490/2569 tickers
+2026-02-12 10:23:31,349 - app.logic.stock_analyzer - INFO - Processed 2500/2569 tickers
+2026-02-12 10:23:31,349 - app.logic.stock_analyzer - INFO - Processed 2510/2569 tickers
+2026-02-12 10:23:31,349 - app.logic.stock_analyzer - INFO - Processed 2520/2569 tickers
+2026-02-12 10:23:31,349 - app.logic.stock_analyzer - INFO - Processed 2530/2569 tickers
+2026-02-12 10:23:31,349 - app.logic.stock_analyzer - INFO - Processed 2540/2569 tickers
+2026-02-12 10:23:31,349 - app.logic.stock_analyzer - INFO - Processed 2550/2569 tickers
+2026-02-12 10:23:53,592 - app.logic.stock_analyzer - INFO - Processed 2560/2569 tickers
+2026-02-12 10:23:53,593 - app.logic.stock_analyzer - INFO - Processed 2569/2569 tickers
+2026-02-12 10:23:53,693 - app.logic.stock_analyzer - INFO - Processed 2542 tickers successfully
+2026-02-12 10:27:53,498 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-12 10:28:31,958 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-12 10:29:06,149 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-12 10:29:06,167 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 160 days
+2026-02-12 10:29:06,173 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 242 days
+2026-02-12 10:29:06,173 - app.logic.stock_analyzer - INFO - Computing breadth for SOXX with 30 tickers
+2026-02-12 10:29:06,176 - app.logic.stock_analyzer - INFO - Saved CD breadth for SOXX: 115 days
+2026-02-12 10:29:06,180 - app.logic.stock_analyzer - INFO - Saved MC breadth for SOXX: 185 days
+2026-02-12 10:29:06,180 - app.logic.stock_analyzer - INFO - Computing breadth for XBI with 145 tickers
+2026-02-12 10:29:06,185 - app.logic.stock_analyzer - INFO - Saved CD breadth for XBI: 368 days
+2026-02-12 10:29:06,189 - app.logic.stock_analyzer - INFO - Saved MC breadth for XBI: 371 days
+2026-02-12 10:29:06,189 - app.logic.stock_analyzer - INFO - Computing breadth for SPACE with 25 tickers
+2026-02-12 10:29:06,193 - app.logic.stock_analyzer - INFO - Saved CD breadth for SPACE: 148 days
+2026-02-12 10:29:06,200 - app.logic.stock_analyzer - INFO - Saved MC breadth for SPACE: 195 days
+2026-02-12 10:29:06,200 - app.logic.stock_analyzer - INFO - Computing breadth for CRYPTO with 27 tickers
+2026-02-12 10:29:06,204 - app.logic.stock_analyzer - INFO - Saved CD breadth for CRYPTO: 122 days
+2026-02-12 10:29:06,207 - app.logic.stock_analyzer - INFO - Saved MC breadth for CRYPTO: 135 days
+2026-02-12 10:29:06,208 - app.logic.stock_analyzer - INFO - Computing breadth for QUANTUM with 16 tickers
+2026-02-12 10:29:06,214 - app.logic.stock_analyzer - INFO - Saved CD breadth for QUANTUM: 151 days
+2026-02-12 10:29:06,217 - app.logic.stock_analyzer - INFO - Saved MC breadth for QUANTUM: 121 days
+2026-02-12 10:29:06,217 - app.logic.stock_analyzer - INFO - Computing breadth for QQQ with 101 tickers
+2026-02-12 10:29:06,222 - app.logic.stock_analyzer - INFO - Saved CD breadth for QQQ: 307 days
+2026-02-12 10:29:06,231 - app.logic.stock_analyzer - INFO - Saved MC breadth for QQQ: 382 days
+2026-02-12 10:29:06,231 - app.logic.stock_analyzer - INFO - Computing breadth for SPX with 503 tickers
+2026-02-12 10:29:06,235 - app.logic.stock_analyzer - INFO - Saved CD breadth for SPX: 454 days
+2026-02-12 10:29:06,241 - app.logic.stock_analyzer - INFO - Saved MC breadth for SPX: 474 days
+2026-02-12 10:29:06,241 - app.logic.stock_analyzer - INFO - Computing breadth for IWM with 1956 tickers
+2026-02-12 10:29:06,252 - app.logic.stock_analyzer - INFO - Saved CD breadth for IWM: 495 days
+2026-02-12 10:29:06,260 - app.logic.stock_analyzer - INFO - Saved MC breadth for IWM: 494 days
+2026-02-12 10:29:06,260 - app.logic.stock_analyzer - INFO - Computing breadth for KWEB with 37 tickers
+2026-02-12 10:29:06,264 - app.logic.stock_analyzer - INFO - Saved CD breadth for KWEB: 211 days
+2026-02-12 10:29:06,274 - app.logic.stock_analyzer - INFO - Saved MC breadth for KWEB: 205 days
+2026-02-12 10:29:06,284 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-12 10:29:06,284 - app.logic.stock_analyzer - WARNING - Failed tickers: CRDA, BITE, INH, RTYH6, MOGA, AKE, CAD, Holdings subject to change- See www-iShares-com for the most recent funds holdings-, ADRO, The iShares Funds are not sponsored, endorsed, issued, sold or promoted by Bloomberg, BlackRock Index Services, LLC, Cboe Global Indices, LLC, Cohen & Steers, European Public Real Estate Association (“EPRA® ”), FTSE International Limited (“FTSE”), ICE Data Indices, LLC, NSE Indices Ltd, JPMorgan, JPX Group, London Stock Exchange Group (“LSEG”), MSCI Inc-, Markit Indices Limited, Morningstar, Inc-, Nasdaq, Inc-, National Association of Real Estate Investment Trusts (“NAREIT”), Nikkei, Inc-, Russell, S&P Dow Jones Indices LLC or STOXX Ltd- None of these companies make any representation regarding the advisability of investing in the Funds- With the exception of BlackRock Index Services, LLC, who is an affiliate, BlackRock Investments, LLC is not affiliated with the companies listed above- Neither FTSE, LSEG, nor NAREIT makes any warranty regarding the FTSE Nareit Equity REITS Index, FTSE Nareit All Residential Capped Index or FTSE Nareit All Mortgage Capped Index- Neither FTSE, EPRA, LSEG, nor NAREIT makes any warranty regarding the FTSE EPRA Nareit Developed ex-U-S- Index, FTSE EPRA Nareit Developed Green Target Index or FTSE EPRA Nareit Global REITs Index- “FTSE®” is a trademark of London Stock Exchange Group companies and is used by FTSE under license-, The values for “price” shown herein generally represent a price provided by a third-party pricing vendor for the portfolio holding and do not reflect the impact of systematic fair valuation (“the vendor price”)- The vendor price is not necessarily the price at which the Fund values the portfolio holding for the purposes of determining its net asset value (the “valuation price”)- Additionally, where applicable, foreign currency exchange rates with respect to the portfolio holdings denominated in non-U-S- currencies for the valuation price will be generally determined as of the close of business on the New York Stock Exchange, whereas for the vendor price will be generally determined as of 4 p-m- London- The values shown herein for “market value,” “weight,” and “notional value” (the “calculated values”) are based off of the vendor price and may have been different if the valuation price were to have been used to calculate such values- The vendor price is as of the most recent practicable date and may not necessarily be as of the date shown above-, Please see the “Determination of Net Asset Value” section of each Fund’s prospectus for additional information on the Fund’s valuation policies and procedures-, SBT, This information should not be relied upon as research, investment advice, or a recommendation regarding any products, strategies, or any security in particular-, THRD, The content contained herein is owned or licensed by BlackRock and/or its third-party information providers and is protected by applicable copyrights, trademarks, service marks, and/or other intellectual property rights- Such content is solely for your personal, non-commercial use- Accordingly, you may not copy, distribute, modify, post, frame or deep link this content- You may download material displayed on this Website for your personal use provided you also retain all copyright and other proprietary notices contained on the materials- Modification or use of the materials for any other purpose violates BlackRock's intellectual property rights-, PDLI, IXPH6, MSFUT, GEFB, GTXI, P5N994, XTSLA, ©2023 BlackRock, Inc or its affiliates- All rights reserved- iSHARES, iBONDS and BLACKROCK are trademarks of BlackRock, Inc- or its affiliates- All other trademarks are those of their respective owners-, CAREFULLY CONSIDER THE FUNDS' INVESTMENT OBJECTIVES, RISK FACTORS, AND CHARGES AND EXPENSES BEFORE INVESTING- THIS AND OTHER INFORMATION CAN BE FOUND IN THE FUNDS' PROSPECTUSES OR, IF AVAILABLE, THE SUMMARY PROSPECTUSES WHICH MAY BE OBTAINED BY VISITING WWW-ISHARES-COM OR WWW-BLACKROCK-COM- READ THE PROSPECTUS CAREFULLY BEFORE INVESTING- INVESTING INVOLVES RISK, INCLUDING POSSIBLE LOSS OF PRINCIPAL-, This material is strictly for illustrative, educational, or informational purposes and is subject to change-, The Funds are distributed by BlackRock Investments, LLC (together with its affiliates, “BlackRock”)-
+2026-02-12 10:29:10,907 - app.services.engine - INFO - Job 20260212092503: Multi-index analysis completed successfully
+2026-02-12 10:30:06,730 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-12 10:30:06,754 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-12 10:30:06,777 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-12 10:30:06,784 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-12 10:30:06,802 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-12 10:30:06,826 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-12 10:30:06,830 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-12 10:30:06,848 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-12 10:30:06,869 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-12 10:30:06,873 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=78
+2026-02-12 10:30:06,891 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2025-01-14', '2025-01-13', '2024-11-04', '2024-06-11', '2024-06-10', '2024-06-05']
+2026-02-12 10:30:06,913 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-10-07', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26', '2024-05-16', '2024-03-28', '2024-03-25', '2024-03-22', '2024-03-08']
+2026-02-12 10:30:06,921 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-12 10:30:06,939 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-12 10:30:06,962 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-12 10:30:06,966 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-12 10:30:06,986 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-12 10:30:07,005 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-12 10:30:07,010 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-12 10:30:07,028 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-12 10:30:07,049 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-12 10:30:07,057 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-12 10:30:07,074 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-12 10:30:07,095 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-12 10:30:07,099 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-12 10:30:07,118 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: ['2025-11-24', '2024-03-18', '2024-03-15']
+2026-02-12 10:30:07,138 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: ['2026-01-20', '2025-10-14', '2025-10-10', '2025-10-08', '2025-07-21', '2025-05-21', '2025-05-09', '2025-05-05', '2025-01-08', '2024-12-23', '2024-12-09', '2024-11-25', '2024-09-23', '2024-05-07']
+2026-02-12 10:30:07,143 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=KWEB, run_id=78
+2026-02-12 10:30:07,162 - app.api.endpoints.analysis - INFO - ticker=KWEB CD 1234 dates: ['2025-12-18', '2025-12-12', '2025-12-10', '2025-04-03', '2025-04-01', '2025-01-08', '2025-01-03', '2024-12-31', '2024-11-26', '2024-08-05', '2024-08-02', '2024-07-31', '2024-07-29', '2024-07-26', '2024-07-25', '2024-07-22', '2024-06-12', '2024-06-10']
+2026-02-12 10:30:07,182 - app.api.endpoints.analysis - INFO - ticker=KWEB MC 1234 dates: ['2025-10-07', '2025-10-06', '2025-10-03', '2025-08-14', '2025-05-15', '2025-03-20', '2025-03-10', '2025-02-24', '2025-02-12', '2024-05-20', '2024-05-17', '2024-05-15', '2024-04-12', '2024-04-11', '2024-04-10']
+2026-02-12 10:58:45,199 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-12 10:58:45,235 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-12 10:58:45,263 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-12 10:58:45,267 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-12 10:58:45,285 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-12 10:58:45,303 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-12 10:58:45,307 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-12 10:58:45,323 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-12 10:58:45,340 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-12 10:58:45,344 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-12 10:58:45,359 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-12 10:58:45,378 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-12 10:58:45,382 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-12 10:58:45,398 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-12 10:58:45,415 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-12 10:58:45,419 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-12 10:58:45,434 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-12 10:58:45,452 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-12 10:58:45,483 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-12 10:58:45,499 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-12 10:58:45,517 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-12 10:58:45,520 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-12 10:58:45,536 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: ['2025-11-24', '2024-03-18', '2024-03-15']
+2026-02-12 10:58:45,554 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: ['2026-01-20', '2025-10-14', '2025-10-10', '2025-10-08', '2025-07-21', '2025-05-21', '2025-05-09', '2025-05-05', '2025-01-08', '2024-12-23', '2024-12-09', '2024-11-25', '2024-09-23', '2024-05-07']
+2026-02-12 10:59:26,918 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=78
+2026-02-12 10:59:26,938 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2025-04-01']
+2026-02-12 10:59:26,958 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-29', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-22', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05', '2024-10-30', '2024-10-15', '2024-09-27', '2024-07-11', '2024-03-08']
+2026-02-12 10:59:26,962 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=78
+2026-02-12 10:59:26,977 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-02-12 10:59:26,995 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27', '2024-10-18', '2024-10-17', '2024-10-15', '2024-09-27', '2024-09-25', '2024-09-20', '2024-09-19', '2024-07-17', '2024-07-15', '2024-07-12', '2024-07-11', '2024-06-20', '2024-06-14', '2024-06-13', '2024-04-01', '2024-03-08']
+2026-02-12 10:59:27,000 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-12 10:59:27,016 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-12 10:59:27,034 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29', '2024-08-28']
+2026-02-12 10:59:27,038 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=78
+2026-02-12 10:59:27,053 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: ['2025-05-15', '2025-02-28', '2025-02-27', '2025-01-17', '2025-01-16', '2024-10-10', '2024-10-04', '2024-10-02', '2024-04-11', '2024-04-08', '2024-04-05', '2024-03-27']
+2026-02-12 10:59:27,071 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: ['2026-01-16', '2026-01-15', '2026-01-12', '2025-12-26', '2025-12-08', '2025-11-20', '2025-11-14', '2025-10-30', '2025-10-21', '2025-10-17', '2025-10-16', '2025-09-25', '2025-09-19', '2025-08-25', '2025-07-01', '2025-05-02', '2025-02-06', '2024-09-20', '2024-06-14', '2024-06-13', '2024-06-07', '2024-05-17']
+2026-02-12 10:59:27,074 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-12 10:59:27,091 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-12 10:59:27,109 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-07-07', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-11', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-12 10:59:27,114 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=UFO, run_id=78
+2026-02-12 10:59:27,129 - app.api.endpoints.analysis - INFO - ticker=UFO CD 1234 dates: ['2025-11-21', '2025-11-18', '2025-03-14', '2025-03-13', '2025-03-04', '2024-06-26', '2024-03-06', '2024-03-01']
+2026-02-12 10:59:27,147 - app.api.endpoints.analysis - INFO - ticker=UFO MC 1234 dates: ['2026-01-29', '2026-01-15', '2026-01-09', '2026-01-08', '2026-01-07', '2025-12-26', '2025-09-24', '2025-09-10', '2025-07-24', '2025-07-21', '2025-07-10', '2025-06-20', '2025-06-17', '2025-06-11', '2025-05-29', '2025-05-12', '2025-05-09', '2025-05-05', '2025-02-11', '2024-12-30', '2024-08-01', '2024-07-30', '2024-07-29']
+2026-02-12 10:59:27,151 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=78
+2026-02-12 10:59:27,167 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31', '2024-05-02']
+2026-02-12 10:59:27,185 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23', '2024-09-28', '2024-09-18', '2024-07-29', '2024-07-28', '2024-04-12', '2024-04-09', '2024-03-13', '2024-03-12', '2024-03-08', '2024-03-07']
+2026-02-12 10:59:27,189 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IONQ, run_id=78
+2026-02-12 10:59:27,204 - app.api.endpoints.analysis - INFO - ticker=IONQ CD 1234 dates: ['2025-11-24', '2024-03-18', '2024-03-15']
+2026-02-12 10:59:27,222 - app.api.endpoints.analysis - INFO - ticker=IONQ MC 1234 dates: ['2026-01-20', '2025-10-14', '2025-10-10', '2025-10-08', '2025-07-21', '2025-05-21', '2025-05-09', '2025-05-05', '2025-01-08', '2024-12-23', '2024-12-09', '2024-11-25', '2024-09-23', '2024-05-07']
+2026-02-12 11:26:02,205 - app.services.engine - INFO - Job 20260212112602: Starting multi-index analysis for ['SOXX', 'DJI']
+2026-02-12 11:26:02,206 - app.services.engine - INFO - Started multi-index analysis job 20260212112602 for indices: ['SOXX', 'DJI']
+2026-02-12 11:26:02,239 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['SOXX', 'DJI']
+2026-02-12 11:26:02,239 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for SOXX
+2026-02-12 11:26:02,240 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-12 11:26:02,241 - app.logic.stock_analyzer - INFO - Combined unique tickers: 61
+2026-02-12 11:26:02,241 - app.logic.stock_analyzer - INFO - Processing 61 combined tickers...
+2026-02-12 11:26:02,241 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-12 11:26:36,561 - app.logic.stock_analyzer - INFO - Processed 10/61 tickers
+2026-02-12 11:26:54,362 - app.logic.stock_analyzer - INFO - Processed 20/61 tickers
+2026-02-12 11:27:09,554 - app.logic.stock_analyzer - INFO - Processed 30/61 tickers
+2026-02-12 11:27:24,527 - app.logic.stock_analyzer - INFO - Processed 40/61 tickers
+2026-02-12 11:27:39,063 - app.logic.stock_analyzer - INFO - Processed 50/61 tickers
+2026-02-12 11:27:50,646 - app.logic.stock_analyzer - INFO - Processed 60/61 tickers
+2026-02-12 11:27:50,661 - app.logic.stock_analyzer - INFO - Processed 61/61 tickers
+2026-02-12 11:27:50,713 - app.logic.stock_analyzer - INFO - Processed 61 tickers successfully
+2026-02-12 11:27:54,070 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-12 11:27:57,709 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-12 11:28:01,177 - app.logic.stock_analyzer - INFO - Computing breadth for SOXX with 30 tickers
+2026-02-12 11:28:01,185 - app.logic.stock_analyzer - INFO - Saved CD breadth for SOXX: 110 days
+2026-02-12 11:28:01,195 - app.logic.stock_analyzer - INFO - Saved MC breadth for SOXX: 175 days
+2026-02-12 11:28:01,195 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-12 11:28:01,200 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 154 days
+2026-02-12 11:28:01,207 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 230 days
+2026-02-12 11:28:01,210 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-12 11:28:01,243 - app.services.engine - INFO - Job 20260212112602: Multi-index analysis completed successfully
+2026-02-12 11:28:04,104 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-12 11:28:04,110 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-12 11:28:04,114 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-12 11:28:04,117 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-12 11:28:04,119 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-12 11:28:04,120 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-12 11:34:44,576 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-12 11:34:44,576 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-12 11:34:44,577 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-12 11:34:44,578 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-12 11:34:44,579 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-12 11:34:44,581 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-12 11:41:26,094 - app.services.engine - INFO - Job 20260212114126: Starting multi-index analysis for ['SOXX', 'DJI']
+2026-02-12 11:41:26,094 - app.services.engine - INFO - Started multi-index analysis job 20260212114126 for indices: ['SOXX', 'DJI']
+2026-02-12 11:41:26,111 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['SOXX', 'DJI']
+2026-02-12 11:41:26,111 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for SOXX
+2026-02-12 11:41:26,111 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-12 11:41:26,111 - app.logic.stock_analyzer - INFO - Combined unique tickers: 61
+2026-02-12 11:41:26,111 - app.logic.stock_analyzer - INFO - Processing 61 combined tickers...
+2026-02-12 11:41:26,112 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-12 11:41:54,964 - app.logic.stock_analyzer - INFO - Processed 10/61 tickers
+2026-02-12 11:42:09,694 - app.logic.stock_analyzer - INFO - Processed 20/61 tickers
+2026-02-12 11:42:23,280 - app.logic.stock_analyzer - INFO - Processed 30/61 tickers
+2026-02-12 11:42:37,118 - app.logic.stock_analyzer - INFO - Processed 40/61 tickers
+2026-02-12 11:42:51,825 - app.logic.stock_analyzer - INFO - Processed 50/61 tickers
+2026-02-12 11:43:03,915 - app.logic.stock_analyzer - INFO - Processed 60/61 tickers
+2026-02-12 11:43:04,019 - app.logic.stock_analyzer - INFO - Processed 61/61 tickers
+2026-02-12 11:43:04,072 - app.logic.stock_analyzer - INFO - Processed 61 tickers successfully
+2026-02-12 11:43:07,287 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-12 11:43:08,021 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-12 11:43:08,721 - app.logic.stock_analyzer - INFO - Computing breadth for SOXX with 30 tickers
+2026-02-12 11:43:08,726 - app.logic.stock_analyzer - INFO - Saved CD breadth for SOXX: 110 days
+2026-02-12 11:43:08,730 - app.logic.stock_analyzer - INFO - Saved MC breadth for SOXX: 175 days
+2026-02-12 11:43:08,744 - app.logic.stock_analyzer - INFO - Saved CD signal breadth by interval for SOXX: 300 days
+2026-02-12 11:43:08,758 - app.logic.stock_analyzer - INFO - Saved MC signal breadth by interval for SOXX: 346 days
+2026-02-12 11:43:08,758 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-12 11:43:08,761 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 154 days
+2026-02-12 11:43:08,766 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 230 days
+2026-02-12 11:43:08,777 - app.logic.stock_analyzer - INFO - Saved CD signal breadth by interval for DJI: 358 days
+2026-02-12 11:43:08,790 - app.logic.stock_analyzer - INFO - Saved MC signal breadth by interval for DJI: 435 days
+2026-02-12 11:43:08,792 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-12 11:43:08,821 - app.services.engine - INFO - Job 20260212114126: Multi-index analysis completed successfully
+2026-02-12 11:43:10,848 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-12 11:43:10,849 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-12 11:43:10,849 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-12 11:43:10,850 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-12 11:43:10,850 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-12 11:43:10,851 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-12 11:51:47,406 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-12 11:51:47,413 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-12 11:51:47,418 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']
+2026-02-12 11:51:47,419 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-12 11:51:47,421 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-12 11:51:47,422 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-12 11:54:03,732 - app.services.engine - INFO - Job 20260212115403: Starting multi-index analysis for ['SOXX', 'DJI']
+2026-02-12 11:54:03,732 - app.services.engine - INFO - Started multi-index analysis job 20260212115403 for indices: ['SOXX', 'DJI']
+2026-02-12 11:54:03,753 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['SOXX', 'DJI']
+2026-02-12 11:54:03,753 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for SOXX
+2026-02-12 11:54:03,754 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-02-12 11:54:03,754 - app.logic.stock_analyzer - INFO - Combined unique tickers: 61
+2026-02-12 11:54:03,754 - app.logic.stock_analyzer - INFO - Processing 61 combined tickers...
+2026-02-12 11:54:03,754 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-02-12 11:54:33,980 - app.logic.stock_analyzer - INFO - Processed 10/61 tickers
+2026-02-12 11:54:51,722 - app.logic.stock_analyzer - INFO - Processed 20/61 tickers
+2026-02-12 11:55:05,933 - app.logic.stock_analyzer - INFO - Processed 30/61 tickers
+2026-02-12 11:55:21,338 - app.logic.stock_analyzer - INFO - Processed 40/61 tickers
+2026-02-12 11:55:36,435 - app.logic.stock_analyzer - INFO - Processed 50/61 tickers
+2026-02-12 11:55:48,225 - app.logic.stock_analyzer - INFO - Processed 60/61 tickers
+2026-02-12 11:55:48,674 - app.logic.stock_analyzer - INFO - Processed 61/61 tickers
+2026-02-12 11:55:48,709 - app.logic.stock_analyzer - INFO - Processed 61 tickers successfully
+2026-02-12 11:55:51,895 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-02-12 11:55:52,662 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-02-12 11:55:53,351 - app.logic.stock_analyzer - INFO - Computing breadth for SOXX with 30 tickers
+2026-02-12 11:55:53,355 - app.logic.stock_analyzer - INFO - Saved CD breadth for SOXX: 110 days
+2026-02-12 11:55:53,358 - app.logic.stock_analyzer - INFO - Saved MC breadth for SOXX: 175 days
+2026-02-12 11:55:53,371 - app.logic.stock_analyzer - INFO - Saved CD signal breadth by interval for SOXX: 314 days
+2026-02-12 11:55:53,383 - app.logic.stock_analyzer - INFO - Saved MC signal breadth by interval for SOXX: 350 days
+2026-02-12 11:55:53,383 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-02-12 11:55:53,386 - app.logic.stock_analyzer - INFO - Saved CD breadth for DJI: 154 days
+2026-02-12 11:55:53,389 - app.logic.stock_analyzer - INFO - Saved MC breadth for DJI: 230 days
+2026-02-12 11:55:53,402 - app.logic.stock_analyzer - INFO - Saved CD signal breadth by interval for DJI: 368 days
+2026-02-12 11:55:53,416 - app.logic.stock_analyzer - INFO - Saved MC signal breadth by interval for DJI: 442 days
+2026-02-12 11:55:53,417 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 78
+2026-02-12 11:55:53,449 - app.services.engine - INFO - Job 20260212115403: Multi-index analysis completed successfully
+2026-02-12 11:55:56,067 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=78
+2026-02-12 11:55:56,068 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2025-04-02', '2025-03-12', '2024-11-29', '2024-07-31']
+2026-02-12 11:55:56,069 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05', '2024-10-15', '2024-07-12', '2024-07-11', '2024-06-11', '2024-05-13']
+2026-02-12 11:55:56,075 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=78
+2026-02-12 11:55:56,075 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2025-01-13', '2025-01-03']
+2026-02-12 11:55:56,078 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27', '2024-10-21', '2024-10-18', '2024-09-20', '2024-08-30', '2024-08-29']

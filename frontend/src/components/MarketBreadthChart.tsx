@@ -20,6 +20,15 @@ interface BreadthDataPoint {
     count: number;
 }
 
+interface SignalBreadthDataPoint {
+    date: string;
+    count_1h: number;
+    count_2h: number;
+    count_3h: number;
+    count_4h: number;
+    count_1d: number;
+}
+
 const CandleShape = (props: any) => {
     const { x, y, width, height } = props;
     const { payload } = props;
@@ -61,15 +70,39 @@ interface MarketBreadthChartProps {
     spxData: any[];
     cdBreadth?: BreadthDataPoint[];
     mcBreadth?: BreadthDataPoint[];
+    cdSignalBreadth?: SignalBreadthDataPoint[];
+    mcSignalBreadth?: SignalBreadthDataPoint[];
     minDate?: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
 }
+
+// Colors for each interval in stacked bar charts
+const INTERVAL_COLORS: Record<string, string> = {
+    '1h': '#60a5fa', // blue-400
+    '2h': '#34d399', // emerald-400
+    '3h': '#fbbf24', // amber-400
+    '4h': '#f87171', // red-400
+    '1d': '#a78bfa', // violet-400
+};
+
+const INTERVALS = ['1h', '2h', '3h', '4h', '1d'] as const;
+
+// Score weights per interval: base(5) + interval weight(1/2/3/4/8)
+const SCORE_WEIGHTS: Record<string, number> = {
+    '1h': 1,  // 5+1
+    '2h': 2,  // 5+2
+    '3h': 3,  // 5+3
+    '4h': 4,  // 5+4
+    '1d': 8, // 5+8
+};
 
 export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     title,
     spxData,
     cdBreadth = [],
     mcBreadth = [],
+    cdSignalBreadth = [],
+    mcSignalBreadth = [],
     minDate,
     signals1234
 }) => {
@@ -150,6 +183,38 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             dataMap.get(dateStr).mcCount = b.count;
         });
 
+        // Process CD Signal Breadth (per-interval) + compute CD Score
+        cdSignalBreadth.forEach(b => {
+            const dateStr = b.date;
+            if (!dataMap.has(dateStr)) dataMap.set(dateStr, { date: dateStr });
+            const d = dataMap.get(dateStr);
+            d.cd_1h = b.count_1h || 0;
+            d.cd_2h = b.count_2h || 0;
+            d.cd_3h = b.count_3h || 0;
+            d.cd_4h = b.count_4h || 0;
+            d.cd_1d = b.count_1d || 0;
+            // CD Score = weighted sum
+            d.cdScore = d.cd_1h * SCORE_WEIGHTS['1h'] + d.cd_2h * SCORE_WEIGHTS['2h']
+                + d.cd_3h * SCORE_WEIGHTS['3h'] + d.cd_4h * SCORE_WEIGHTS['4h']
+                + d.cd_1d * SCORE_WEIGHTS['1d'];
+        });
+
+        // Process MC Signal Breadth (per-interval) + compute MC Score
+        mcSignalBreadth.forEach(b => {
+            const dateStr = b.date;
+            if (!dataMap.has(dateStr)) dataMap.set(dateStr, { date: dateStr });
+            const d = dataMap.get(dateStr);
+            d.mc_1h = b.count_1h || 0;
+            d.mc_2h = b.count_2h || 0;
+            d.mc_3h = b.count_3h || 0;
+            d.mc_4h = b.count_4h || 0;
+            d.mc_1d = b.count_1d || 0;
+            // MC Score = weighted sum
+            d.mcScore = d.mc_1h * SCORE_WEIGHTS['1h'] + d.mc_2h * SCORE_WEIGHTS['2h']
+                + d.mc_3h * SCORE_WEIGHTS['3h'] + d.mc_4h * SCORE_WEIGHTS['4h']
+                + d.mc_1d * SCORE_WEIGHTS['1d'];
+        });
+
         // Convert to array and sort
         let result = Array.from(dataMap.values())
             .sort((a, b) => a.date.localeCompare(b.date));
@@ -163,7 +228,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         result = result.filter(d => d.close !== undefined);
 
         return result;
-    }, [spxData, cdBreadth, mcBreadth, minDate, signals1234]);
+    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, minDate, signals1234]);
 
     // Visible slice
     const visibleData = useMemo(() => {
@@ -339,7 +404,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     );
 
     return (
-        <div className="flex flex-col h-[600px] border rounded-lg bg-card p-4">
+        <div className="flex flex-col h-[1100px] border rounded-lg bg-card p-4">
             <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-semibold text-foreground">{title}</h3>
                 <button
@@ -474,7 +539,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 2. SPX Volume */}
-                <div className="flex-[0.6] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#00A5E3] z-10">Vol</span>
                     <span className="absolute bottom-1 left-2 text-[10px] text-muted-foreground z-10">{volumeScale.suffix}</span>
                     <ResponsiveContainer width="100%" height="100%">
@@ -505,8 +570,138 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     </ResponsiveContainer>
                 </div>
 
-                {/* 3. CD Counts */}
-                <div className="flex-[0.6] min-h-0 border-b border-border/50 relative">
+                {/* 3. CD Signals by Interval (stacked bar) */}
+                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#60a5fa] z-10">CD</span>
+                    <div className="absolute top-3 right-2 flex gap-1 z-10">
+                        {INTERVALS.map(intv => (
+                            <span key={intv} className="text-[8px] font-medium" style={{ color: INTERVAL_COLORS[intv] }}>{intv}</span>
+                        ))}
+                    </div>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(true)}
+                            <YAxis
+                                orientation="left"
+                                mirror={true}
+                                domain={[0, 'auto']}
+                                tickFormatter={(val) => val === 0 ? '' : val}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={<></>} />
+                            {INTERVALS.map(intv => (
+                                <Bar
+                                    key={`cd_${intv}`}
+                                    dataKey={`cd_${intv}`}
+                                    stackId="cd_stack"
+                                    fill={INTERVAL_COLORS[intv]}
+                                    name={`CD ${intv}`}
+                                    isAnimationActive={false}
+                                />
+                            ))}
+                            <ReferenceBlock />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* 4. MC Signals by Interval (stacked bar) */}
+                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#f87171] z-10">MC</span>
+                    <div className="absolute top-3 right-2 flex gap-1 z-10">
+                        {INTERVALS.map(intv => (
+                            <span key={intv} className="text-[8px] font-medium" style={{ color: INTERVAL_COLORS[intv] }}>{intv}</span>
+                        ))}
+                    </div>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(true)}
+                            <YAxis
+                                orientation="left"
+                                mirror={true}
+                                domain={[0, 'auto']}
+                                tickFormatter={(val) => val === 0 ? '' : val}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={<></>} />
+                            {INTERVALS.map(intv => (
+                                <Bar
+                                    key={`mc_${intv}`}
+                                    dataKey={`mc_${intv}`}
+                                    stackId="mc_stack"
+                                    fill={INTERVAL_COLORS[intv]}
+                                    name={`MC ${intv}`}
+                                    isAnimationActive={false}
+                                />
+                            ))}
+                            <ReferenceBlock />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* 5. CD Score */}
+                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">CD Score</span>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(true)}
+                            <YAxis
+                                orientation="left"
+                                mirror={true}
+                                domain={[0, 'auto']}
+                                tickFormatter={(val) => val === 0 ? '' : val}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={<></>} />
+                            <Bar
+                                dataKey="cdScore"
+                                fill="#22c55e"
+                                name="CD Score"
+                                isAnimationActive={false}
+                            />
+                            <ReferenceBlock />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* 6. MC Score */}
+                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">MC Score</span>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(true)}
+                            <YAxis
+                                orientation="left"
+                                mirror={true}
+                                domain={[0, 'auto']}
+                                tickFormatter={(val) => val === 0 ? '' : val}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={<></>} />
+                            <Bar
+                                dataKey="mcScore"
+                                fill="#ef4444"
+                                name="MC Score"
+                                isAnimationActive={false}
+                            />
+                            <ReferenceBlock />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* 7. CD 1234 Counts (Buy) */}
+                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">Buy</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
@@ -528,8 +723,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     </ResponsiveContainer>
                 </div>
 
-                {/* 4. MC Counts */}
-                <div className="flex-[0.8] min-h-0 border-b border-border/50 relative">
+                {/* 8. MC 1234 Counts (Sell) */}
+                <div className="flex-[0.6] min-h-0 border-b border-border/50 relative">
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">Sell</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>

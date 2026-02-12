@@ -34,7 +34,7 @@ def process_ticker_1234(ticker, data_ticker=None):
     Returns:
         List of results
     """
-    intervals = ['1h', '2h', '3h', '4h']
+    intervals = ['1h', '2h', '3h', '4h', '1d']
     
     results = []
     # Use provided data or download if not provided

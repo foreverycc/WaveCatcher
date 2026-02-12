@@ -100,6 +100,8 @@ export const analysisApi = {
         const response = await api.get<{
             cd_breadth: { date: string, count: number }[],
             mc_breadth: { date: string, count: number }[],
+            cd_signal_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
+            mc_signal_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
             run_id: number | null
         }>(`/analysis/market_breadth/${encodeURIComponent(stockList)}`);
         return response.data;

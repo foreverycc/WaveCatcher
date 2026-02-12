@@ -8,11 +8,22 @@ interface BreadthDataPoint {
     count: number;
 }
 
+interface SignalBreadthDataPoint {
+    date: string;
+    count_1h: number;
+    count_2h: number;
+    count_3h: number;
+    count_4h: number;
+    count_1d: number;
+}
+
 interface IndexSummaryCardProps {
     title: string;
     spxData: any[];
     cdBreadth: BreadthDataPoint[];
     mcBreadth: BreadthDataPoint[];
+    cdSignalBreadth?: SignalBreadthDataPoint[];
+    mcSignalBreadth?: SignalBreadthDataPoint[];
     minDate: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
 }
@@ -59,6 +70,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     spxData,
     cdBreadth,
     mcBreadth,
+    cdSignalBreadth = [],
+    mcSignalBreadth = [],
     minDate,
     signals1234
 }) => {
@@ -164,8 +177,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             className="relative cursor-pointer w-full"
             style={{
                 perspective: '1200px',
-                height: flipped ? '650px' : 'auto',
-                minHeight: flipped ? '650px' : '310px', // Allow growth if content needs it when not flipped
+                height: flipped ? '1150px' : 'auto',
+                minHeight: flipped ? '1150px' : '310px', // Allow growth if content needs it when not flipped
                 transition: 'height 0.4s ease, min-height 0.4s ease'
             }}
             onClick={() => setFlipped(!flipped)}
@@ -310,6 +323,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                 spxData={spxData}
                                 cdBreadth={cdBreadth}
                                 mcBreadth={mcBreadth}
+                                cdSignalBreadth={cdSignalBreadth}
+                                mcSignalBreadth={mcSignalBreadth}
                                 minDate={minDate}
                                 signals1234={signals1234}
                             />

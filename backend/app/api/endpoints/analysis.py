@@ -276,9 +276,47 @@ async def get_market_breadth_by_stock_list(
             ).first()
             mc_breadth = mc_result.data if mc_result and mc_result.data else []
     
+    # Fetch per-interval signal breadth (CD/MC signal counts by interval per day)
+    cd_signal_breadth = []
+    mc_signal_breadth = []
+    
+    # Build list of (run_id, ticker_key) pairs to check
+    run_ticker_pairs = []
+    if run_id:
+        run_ticker_pairs.append((run_id, stock_list))
+        run_ticker_pairs.append((run_id, "ALL"))
+    
+    # Also check multi-index run if it's different from run_id
+    multi_run = db.query(AnalysisRun).filter(
+        AnalysisRun.stock_list_name == "multi_index",
+        AnalysisRun.status == "completed"
+    ).order_by(desc(AnalysisRun.timestamp)).first()
+    if multi_run and multi_run.id != run_id:
+        run_ticker_pairs.append((multi_run.id, stock_list))
+        run_ticker_pairs.append((multi_run.id, "ALL"))
+    
+    for rid, ticker_key in run_ticker_pairs:
+        if not cd_signal_breadth:
+            cd_sig_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == rid,
+                AnalysisResult.result_type == "cd_signal_breadth_by_interval",
+                AnalysisResult.ticker == ticker_key
+            ).first()
+            cd_signal_breadth = cd_sig_result.data if cd_sig_result and cd_sig_result.data else []
+        
+        if not mc_signal_breadth:
+            mc_sig_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == rid,
+                AnalysisResult.result_type == "mc_signal_breadth_by_interval",
+                AnalysisResult.ticker == ticker_key
+            ).first()
+            mc_signal_breadth = mc_sig_result.data if mc_sig_result and mc_sig_result.data else []
+    
     return {
         "cd_breadth": cd_breadth,
         "mc_breadth": mc_breadth,
+        "cd_signal_breadth": cd_signal_breadth,
+        "mc_signal_breadth": mc_signal_breadth,
         "run_id": run_id
     }
 

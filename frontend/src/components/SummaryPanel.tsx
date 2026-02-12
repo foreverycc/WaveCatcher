@@ -510,6 +510,8 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             spxData={history}
                             cdBreadth={breadth?.cd_breadth ?? []}
                             mcBreadth={breadth?.mc_breadth ?? []}
+                            cdSignalBreadth={breadth?.cd_signal_breadth ?? []}
+                            mcSignalBreadth={breadth?.mc_signal_breadth ?? []}
                             minDate={oneYearAgo}
                             signals1234={signals}
                         />
