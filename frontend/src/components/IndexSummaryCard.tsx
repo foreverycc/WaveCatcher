@@ -161,12 +161,17 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
 
     return (
         <div
-            className="relative cursor-pointer"
-            style={{ perspective: '1200px', minHeight: flipped ? '650px' : '310px', transition: 'min-height 0.4s ease' }}
+            className="relative cursor-pointer w-full"
+            style={{
+                perspective: '1200px',
+                height: flipped ? '650px' : 'auto',
+                minHeight: flipped ? '650px' : '310px', // Allow growth if content needs it when not flipped
+                transition: 'height 0.4s ease, min-height 0.4s ease'
+            }}
             onClick={() => setFlipped(!flipped)}
         >
             <div
-                className="w-full h-full transition-transform duration-500 ease-in-out"
+                className="w-full h-full transition-transform duration-500 ease-in-out relative"
                 style={{
                     transformStyle: 'preserve-3d',
                     transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
@@ -174,8 +179,19 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             >
                 {/* === FRONT FACE === */}
                 <div
-                    className="absolute inset-0 border rounded-lg bg-card p-4 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
-                    style={{ backfaceVisibility: 'hidden' }}
+                    className={cn(
+                        "border rounded-lg bg-card p-4 shadow-sm hover:shadow-md transition-shadow overflow-hidden",
+                        "w-full h-full", // Fill container
+                        flipped ? "absolute inset-0" : "relative" // If flipped, take out of flow to let back face dictate size? No, actually container determines size.
+                        // Better approach:
+                        // When NOT flipped: relative, so it pushes container height.
+                        // When flipped: absolute, so it doesn't push container height (container is fixed 650px).
+                    )}
+                    style={{
+                        backfaceVisibility: 'hidden',
+                        position: flipped ? 'absolute' : 'relative',
+                        top: 0, left: 0 // meaningful only if absolute
+                    }}
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between mb-3">
@@ -196,7 +212,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     {/* CD/MC Signals last 7 days */}
                     <div className="mb-3">
                         <div className="text-xs text-muted-foreground mb-1 font-medium">CD/MC Signals (7d)</div>
-                        <div className="flex gap-1.5 items-center">
+                        <div className="flex gap-1.5 items-center flex-wrap">
                             {recentSignals.map((s, i) => (
                                 <div key={i} className="flex flex-col items-center gap-0.5">
                                     <span className="text-[10px] text-muted-foreground">{s.date.slice(5)}</span>
@@ -218,15 +234,15 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     {/* 1234 Signals last 7 days */}
                     <div className="mb-3">
                         <div className="text-xs text-muted-foreground mb-1 font-medium">1234 Signals (7d)</div>
-                        <div className="flex gap-2 text-sm">
+                        <div className="flex gap-2 text-sm flex-wrap">
                             <span className={cn(
-                                "px-2 py-0.5 rounded text-xs font-medium",
+                                "px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap",
                                 recent1234.cd.length > 0 ? "bg-green-500/15 text-green-600" : "bg-muted text-muted-foreground"
                             )}>
                                 Buy: {recent1234.cd.length > 0 ? recent1234.cd.map(d => format(parseISO(d), 'MM-dd')).join(', ') : 'None'}
                             </span>
                             <span className={cn(
-                                "px-2 py-0.5 rounded text-xs font-medium",
+                                "px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap",
                                 recent1234.mc.length > 0 ? "bg-red-500/15 text-red-600" : "bg-muted text-muted-foreground"
                             )}>
                                 Sell: {recent1234.mc.length > 0 ? recent1234.mc.map(d => format(parseISO(d), 'MM-dd')).join(', ') : 'None'}
@@ -235,7 +251,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     </div>
 
                     {/* Breadth + Volume Percentile Meters */}
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 pb-6"> {/* pb-6 to perform space for absolute flip hint */}
                         <div className="text-xs text-muted-foreground font-medium">1234 Breadth & Volume (Percentile)</div>
                         <PercentileMeter
                             percentile={breadthStats.cd.percentile}
@@ -267,13 +283,20 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
 
                 {/* === BACK FACE (Chart) === */}
                 <div
-                    className="absolute inset-0"
-                    style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                    className={cn(
+                        "rounded-lg bg-card overflow-hidden",
+                        "absolute inset-0 w-full h-full" // Always absolute to fill container
+                    )}
+                    style={{
+                        backfaceVisibility: 'hidden',
+                        transform: 'rotateY(180deg)',
+                        opacity: flipped ? 1 : 0 // improve rendering
+                    }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="border rounded-lg bg-card overflow-hidden h-full">
+                    <div className="border rounded-lg bg-card overflow-hidden h-full flex flex-col">
                         <div
-                            className="p-2 border-b bg-muted/30 flex justify-between items-center cursor-pointer"
+                            className="p-2 border-b bg-muted/30 flex justify-between items-center cursor-pointer shrink-0"
                             onClick={() => setFlipped(false)}
                         >
                             <span className="text-sm font-medium">{title} — Market Breadth</span>
@@ -281,7 +304,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                 ← Back to summary
                             </span>
                         </div>
-                        <div className="p-1">
+                        <div className="p-1 flex-1 min-h-0">
                             <MarketBreadthChart
                                 title={title}
                                 spxData={spxData}
