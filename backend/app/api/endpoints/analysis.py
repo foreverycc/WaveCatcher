@@ -92,12 +92,24 @@ class JobStatus(BaseModel):
 async def get_available_indices():
     """Get list of available indices for multi-index analysis."""
     index_config = load_index_config()
-    return {
-        "indices": [
-            {"key": key, "symbol": config["symbol"], "stock_list": config["stock_list"]}
-            for key, config in index_config.items()
-        ]
-    }
+    data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../data"))
+    
+    indices = []
+    for key, config in index_config.items():
+        tickers = []
+        try:
+            stock_list_path = os.path.join(data_dir, config["stock_list"])
+            with open(stock_list_path, 'r') as f:
+                tickers = [line.strip() for line in f if line.strip()]
+                tickers = list(dict.fromkeys(tickers))  # Deduplicate
+        except FileNotFoundError:
+            logger.warning(f"Stock list not found for {key}: {config['stock_list']}")
+        indices.append({
+            "key": key, "symbol": config["symbol"],
+            "stock_list": config["stock_list"], "tickers": tickers
+        })
+    
+    return {"indices": indices}
 
 
 class IndexConfigEntry(BaseModel):

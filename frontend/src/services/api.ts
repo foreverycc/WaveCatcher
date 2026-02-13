@@ -109,7 +109,7 @@ export const analysisApi = {
 
     getIndices: async () => {
         const response = await api.get<{
-            indices: { key: string, symbol: string, stock_list: string }[]
+            indices: { key: string, symbol: string, stock_list: string, tickers: string[] }[]
         }>('/analysis/indices');
         return response.data;
     },

@@ -18,7 +18,7 @@ interface SidebarProps {
     setDateRange?: (range: { start: string; end: string }) => void;
 
     // Multi-index props
-    availableIndices?: { key: string; symbol: string; stock_list: string }[];
+    availableIndices?: { key: string; symbol: string; stock_list: string; tickers: string[] }[];
     selectedIndices: string[];
     setSelectedIndices: (indices: string[]) => void;
     handleRunMultiIndexAnalysis: () => void;
@@ -110,6 +110,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <div className="space-y-2">
                             <label className="text-xs font-medium text-muted-foreground px-1">Market Indices</label>
                             <div className="space-y-1 bg-muted/50 rounded-md p-2">
+                                <label className="flex items-center gap-2 cursor-pointer hover:bg-muted rounded px-1 py-0.5 border-b border-border/50 pb-1 mb-1">
+                                    <input
+                                        type="checkbox"
+                                        checked={availableIndices.length > 0 && selectedIndices.length === availableIndices.length}
+                                        ref={(el) => {
+                                            if (el) el.indeterminate = selectedIndices.length > 0 && selectedIndices.length < availableIndices.length;
+                                        }}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setSelectedIndices(availableIndices.map(idx => idx.key));
+                                            } else {
+                                                setSelectedIndices([]);
+                                            }
+                                        }}
+                                        className="w-3.5 h-3.5 rounded border-input accent-primary"
+                                    />
+                                    <span className="text-sm font-medium">Select All</span>
+                                </label>
                                 {availableIndices.map(idx => (
                                     <label key={idx.key} className="flex items-center gap-2 cursor-pointer hover:bg-muted rounded px-1 py-0.5">
                                         <input

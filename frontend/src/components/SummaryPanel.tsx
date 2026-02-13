@@ -16,15 +16,22 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
         enabled: !!runId && !!row.ticker
     });
 
-    // Find the matching interval row from detailed data, enriched with best metrics
+    // Find the matching interval row from detailed data, enriched with original row's metrics
     const detailedRow = useMemo(() => {
         if (!detailedData || !Array.isArray(detailedData)) return null;
         const match = detailedData.find((d: any) => d.interval === row.interval) || detailedData[0];
         if (match) {
-            return { ...match, ...extractBestMetrics(match) };
+            // Use the original row's metrics (from good_signals) which are already correctly signed,
+            // instead of extractBestMetrics which gives unsigned magnitudes from custom_detailed
+            return {
+                ...match,
+                success_rate: row.success_rate,
+                avg_return: row.avg_return,
+                test_count: row.test_count
+            };
         }
         return null;
-    }, [detailedData, row.interval]);
+    }, [detailedData, row.interval, row.success_rate, row.avg_return, row.test_count]);
 
     return (
         <div className="flex flex-col border rounded-lg bg-card overflow-hidden h-[800px] shadow-lg">
@@ -47,7 +54,7 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
                     </div>
                 ) : detailedRow ? (
                     <>
-                        <DetailedChartRow row={detailedRow} activeSubTab="summary" />
+                        <DetailedChartRow row={detailedRow} activeSubTab="summary" signalType={type} />
 
                         {/* Option Chart */}
                         <div style={{ height: '350px' }} className="p-4 border rounded-lg bg-card/50 mt-6">
@@ -119,7 +126,10 @@ const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 
         return intervals.map((interval: string) => {
             const match = detailedData.find((d: any) => d.interval === interval);
             if (match) {
-                return { ...match, ...extractBestMetrics(match) };
+                const metrics = extractBestMetrics(match);
+                // For bearish (MC) signals, negate the return (custom_detailed stores positive magnitudes)
+                if (type === 'bear') metrics.avg_return = -Math.abs(metrics.avg_return);
+                return { ...match, ...metrics };
             }
             // Return dummy if data missing (price chart will still work)
             return {
@@ -130,7 +140,7 @@ const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 
                 test_count: 0
             };
         });
-    }, [detailedData, row.intervals]);
+    }, [detailedData, row.intervals, type]);
 
     return (
         <div className="flex flex-col border rounded-lg bg-card overflow-hidden h-[800px] shadow-lg">
@@ -160,6 +170,7 @@ const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 
                                 key={`${dRow.ticker}-${dRow.interval}-${index}`}
                                 row={dRow}
                                 activeSubTab="1234"
+                                signalType={type}
                             />
                         ))}
 
@@ -183,7 +194,7 @@ interface SummaryPanelProps {
     runId: number | undefined;
     onRowClick?: (row: any, type: 'bull' | 'bear') => void;
     selectedIndices?: string[];
-    availableIndices?: { key: string, symbol: string, stock_list: string }[];
+    availableIndices?: { key: string, symbol: string, stock_list: string, tickers: string[] }[];
 }
 
 export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [], availableIndices = [] }) => {
@@ -197,6 +208,8 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
     // State for 1234 Signals Chart
     const [selected1234Row, setSelected1234Row] = React.useState<any | null>(null);
     const [selected1234Type, setSelected1234Type] = React.useState<'bull' | 'bear' | null>(null);
+    const [show1234, setShow1234] = React.useState(true);
+    const [showHighReturn, setShowHighReturn] = React.useState(true);
 
     const handleRowClick = (row: any, type: 'bull' | 'bear') => {
         if (selectedRow?.ticker === row.ticker && selectedType === type) {
@@ -225,6 +238,15 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
         }
         return availableIndices;
     }, [availableIndices, selectedIndices]);
+
+    // Collect allowed tickers from selected indices for filtering tables
+    const allowedTickers = useMemo(() => {
+        const tickers = new Set<string>();
+        activeIndices.forEach(idx => {
+            idx.tickers?.forEach(t => tickers.add(t));
+        });
+        return tickers;
+    }, [activeIndices]);
 
     // 1. Price history for each index
     const historyQueries = useQueries({
@@ -523,86 +545,102 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
 
             {/* 1234 Signals Section */}
             <div>
-                <h2 className="text-xl font-bold mb-4">1234 Signals (Top 10)</h2>
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {/* Left Column: CD 1234 Table OR Chart for MC Selection */}
-                    {selected1234Type === 'bear' && selected1234Row ? (
-                        <Fetching1234ChartView
-                            row={selected1234Row}
-                            type="bear"
-                            runId={runId}
-                            onClose={() => { setSelected1234Row(null); setSelected1234Type(null); }}
-                        />
-                    ) : (
-                        <Signals1234Table
-                            data={cd1234Data ?? []}
-                            title="CD 1234 Bullish Signals"
-                            type="bull"
-                            onRowClick={handle1234RowClick}
-                            detailedData={cdDetailedData ?? null}
-                        />
-                    )}
+                <h2
+                    className="text-xl font-bold mb-4 cursor-pointer flex items-center gap-2 hover:text-primary transition-colors"
+                    onClick={() => setShow1234(!show1234)}
+                >
+                    <span className={`transition-transform ${show1234 ? 'rotate-90' : ''}`}>▶</span>
+                    1234 Signals (Top 10)
+                </h2>
+                {show1234 && (
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        {/* Left Column: CD 1234 Table OR Chart for MC Selection */}
+                        {selected1234Type === 'bear' && selected1234Row ? (
+                            <Fetching1234ChartView
+                                row={selected1234Row}
+                                type="bear"
+                                runId={runId}
+                                onClose={() => { setSelected1234Row(null); setSelected1234Type(null); }}
+                            />
+                        ) : (
+                            <Signals1234Table
+                                data={(cd1234Data ?? []).filter((r: any) => allowedTickers.size === 0 || allowedTickers.has(r.ticker))}
+                                title="CD 1234 Bullish Signals"
+                                type="bull"
+                                onRowClick={handle1234RowClick}
+                                detailedData={cdDetailedData ?? null}
+                            />
+                        )}
 
-                    {/* Right Column: MC 1234 Table OR Chart for CD Selection */}
-                    {selected1234Type === 'bull' && selected1234Row ? (
-                        <Fetching1234ChartView
-                            row={selected1234Row}
-                            type="bull"
-                            runId={runId}
-                            onClose={() => { setSelected1234Row(null); setSelected1234Type(null); }}
-                        />
-                    ) : (
-                        <Signals1234Table
-                            data={mc1234Data ?? []}
-                            title="MC 1234 Bearish Signals"
-                            type="bear"
-                            onRowClick={handle1234RowClick}
-                            detailedData={mcDetailedData ?? null}
-                        />
-                    )}
-                </div>
+                        {/* Right Column: MC 1234 Table OR Chart for CD Selection */}
+                        {selected1234Type === 'bull' && selected1234Row ? (
+                            <Fetching1234ChartView
+                                row={selected1234Row}
+                                type="bull"
+                                runId={runId}
+                                onClose={() => { setSelected1234Row(null); setSelected1234Type(null); }}
+                            />
+                        ) : (
+                            <Signals1234Table
+                                data={(mc1234Data ?? []).filter((r: any) => allowedTickers.size === 0 || allowedTickers.has(r.ticker))}
+                                title="MC 1234 Bearish Signals"
+                                type="bear"
+                                onRowClick={handle1234RowClick}
+                                detailedData={mcDetailedData ?? null}
+                            />
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="border-t border-border pt-6"></div>
 
             {/* High Return Opportunities */}
             <div>
-                <h2 className="text-xl font-bold mb-4">High Return Opportunities (Top 10)</h2>
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {/* Left Column: CD Table OR Chart for MC Selection */}
-                    {selectedType === 'bear' && selectedRow ? (
-                        <FetchingChartView
-                            row={selectedRow}
-                            type="bear"
-                            runId={runId}
-                            onClose={() => { setSelectedRow(null); setSelectedType(null); }}
-                        />
-                    ) : (
-                        <TopTable
-                            data={bestCD ?? []}
-                            title="CD Bullish (Best Intervals)"
-                            type="bull"
-                            onRowClick={handleRowClick}
-                        />
-                    )}
+                <h2
+                    className="text-xl font-bold mb-4 cursor-pointer flex items-center gap-2 hover:text-primary transition-colors"
+                    onClick={() => setShowHighReturn(!showHighReturn)}
+                >
+                    <span className={`transition-transform ${showHighReturn ? 'rotate-90' : ''}`}>▶</span>
+                    High Return Opportunities (Top 10)
+                </h2>
+                {showHighReturn && (
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        {/* Left Column: CD Table OR Chart for MC Selection */}
+                        {selectedType === 'bear' && selectedRow ? (
+                            <FetchingChartView
+                                row={selectedRow}
+                                type="bear"
+                                runId={runId}
+                                onClose={() => { setSelectedRow(null); setSelectedType(null); }}
+                            />
+                        ) : (
+                            <TopTable
+                                data={(bestCD ?? []).filter((r: any) => allowedTickers.size === 0 || allowedTickers.has(r.ticker))}
+                                title="CD Bullish (Best Intervals)"
+                                type="bull"
+                                onRowClick={handleRowClick}
+                            />
+                        )}
 
-                    {/* Right Column: MC Table OR Chart for CD Selection */}
-                    {selectedType === 'bull' && selectedRow ? (
-                        <FetchingChartView
-                            row={selectedRow}
-                            type="bull"
-                            runId={runId}
-                            onClose={() => { setSelectedRow(null); setSelectedType(null); }}
-                        />
-                    ) : (
-                        <TopTable
-                            data={bestMC ?? []}
-                            title="MC Bearish (Best Intervals)"
-                            type="bear"
-                            onRowClick={handleRowClick}
-                        />
-                    )}
-                </div>
+                        {/* Right Column: MC Table OR Chart for CD Selection */}
+                        {selectedType === 'bull' && selectedRow ? (
+                            <FetchingChartView
+                                row={selectedRow}
+                                type="bull"
+                                runId={runId}
+                                onClose={() => { setSelectedRow(null); setSelectedType(null); }}
+                            />
+                        ) : (
+                            <TopTable
+                                data={(bestMC ?? []).filter((r: any) => allowedTickers.size === 0 || allowedTickers.has(r.ticker))}
+                                title="MC Bearish (Best Intervals)"
+                                type="bear"
+                                onRowClick={handleRowClick}
+                            />
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -17,11 +17,11 @@ interface DashboardProps {
     setShowLogs: (show: boolean) => void;
     dateRange: { start: string; end: string };
     selectedIndices?: string[];
-    availableIndices?: { key: string, symbol: string, stock_list: string }[];
+    availableIndices?: { key: string, symbol: string, stock_list: string, tickers: string[] }[];
 }
 
 // Wrapper component to handle individual chart data fetching
-export const DetailedChartRow = ({ row, activeSubTab: _activeSubTab }: { row: any, activeSubTab: string }) => {
+export const DetailedChartRow = ({ row, activeSubTab: _activeSubTab }: { row: any, activeSubTab: string, signalType?: 'bull' | 'bear' }) => {
     const [selectedInterval, setSelectedInterval] = React.useState(row.interval);
 
     // Reset selected interval when switching rows
@@ -42,7 +42,7 @@ export const DetailedChartRow = ({ row, activeSubTab: _activeSubTab }: { row: an
                 <BoxplotChart
                     selectedRow={row}
                     title={`Returns Distribution - ${row.ticker} (${row.interval})`}
-                    subtitle={`Success Rate: ${row.success_rate}% | Avg Return: ${row.avg_return}% | Signal Count: ${row.test_count || row.test_count_0 || 'N/A'}`}
+                    subtitle={`Success Rate: ${row.success_rate}% | Avg Return: ${row.avg_return != null ? Number(row.avg_return).toFixed(2) : 'N/A'}% | Signal Count: ${row.test_count || row.test_count_0 || 'N/A'}`}
                 />
             </div>
             <div style={{ height: '350px' }} className="mt-4 border-t pt-4 border-border/50">
@@ -151,7 +151,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
         staleTime: 0 // Always check for fresh data when keys change
     });
 
-    // Filter table data by date
+    // Collect allowed tickers from selected indices for filtering tables
+    const allowedTickers = React.useMemo(() => {
+        const tickers = new Set<string>();
+        const active = selectedIndices && selectedIndices.length > 0
+            ? (availableIndices || []).filter(idx => selectedIndices.includes(idx.key))
+            : (availableIndices || []);
+        active.forEach(idx => {
+            idx.tickers?.forEach(t => tickers.add(t));
+        });
+        return tickers;
+    }, [availableIndices, selectedIndices]);
+
+    // Filter table data by date and selected indices
     const filteredTableData = React.useMemo(() => {
         if (!tableData) return [];
         // No filtering for search results (user explicitly asked for them)
@@ -165,9 +177,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             // Allow string comparison YYYY-MM-DD
             const signalDate = String(dateStr).split(' ')[0]; // Extract YYYY-MM-DD
-            return signalDate >= dateRange.start && signalDate <= dateRange.end;
+            const inDateRange = signalDate >= dateRange.start && signalDate <= dateRange.end;
+
+            // Filter by selected indices' tickers
+            const inSelectedIndices = allowedTickers.size === 0 || allowedTickers.has(row.ticker);
+
+            return inDateRange && inSelectedIndices;
         });
-    }, [tableData, dateRange, isSearchMode]);
+    }, [tableData, dateRange, isSearchMode, allowedTickers]);
 
 
     // Determine detailed result type for chart data
@@ -236,6 +253,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                 if (match) {
                     const metrics = extractBestMetrics(match);
+                    // For MC (bearish) signals, negate the return (custom_detailed stores positive magnitudes)
+                    if (activeTab === 'mc') metrics.avg_return = -Math.abs(metrics.avg_return);
                     return { ...match, ...metrics };
                 }
 
@@ -265,7 +284,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             }];
         }
         return [];
-    }, [selectedRow, detailedRowData, activeSubTab]);
+    }, [selectedRow, detailedRowData, activeSubTab, activeTab]);
 
     const [chartPanelWidth, setChartPanelWidth] = useState(50);
     const [isResizing, setIsResizing] = useState(false);
@@ -528,6 +547,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                         key={`${row.ticker}-${row.interval}-${index}`}
                                                         row={row}
                                                         activeSubTab={activeSubTab}
+                                                        signalType={activeTab === 'mc' ? 'bear' : 'bull'}
                                                     />
                                                 ))}
 

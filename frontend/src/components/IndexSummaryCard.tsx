@@ -318,16 +318,18 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             </span>
                         </div>
                         <div className="p-1 flex-1 min-h-0">
-                            <MarketBreadthChart
-                                title={title}
-                                spxData={spxData}
-                                cdBreadth={cdBreadth}
-                                mcBreadth={mcBreadth}
-                                cdSignalBreadth={cdSignalBreadth}
-                                mcSignalBreadth={mcSignalBreadth}
-                                minDate={minDate}
-                                signals1234={signals1234}
-                            />
+                            {flipped && (
+                                <MarketBreadthChart
+                                    title={title}
+                                    spxData={spxData}
+                                    cdBreadth={cdBreadth}
+                                    mcBreadth={mcBreadth}
+                                    cdSignalBreadth={cdSignalBreadth}
+                                    mcSignalBreadth={mcSignalBreadth}
+                                    minDate={minDate}
+                                    signals1234={signals1234}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
