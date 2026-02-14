@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { subDays, parseISO, isAfter, format } from 'date-fns';
+import { useQuery } from '@tanstack/react-query';
+import { analysisApi } from '../services/api';
 import { MarketBreadthChart } from './MarketBreadthChart';
 import { cn } from '../utils/cn';
 
@@ -26,6 +28,7 @@ interface IndexSummaryCardProps {
     mcSignalBreadth?: SignalBreadthDataPoint[];
     minDate: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
+    tickers?: string[];
 }
 
 // Percentile meter: a horizontal bar showing where the current value falls
@@ -73,9 +76,19 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     cdSignalBreadth = [],
     mcSignalBreadth = [],
     minDate,
-    signals1234
+    signals1234,
+    tickers = []
 }) => {
     const [flipped, setFlipped] = useState(false);
+    const [selectedTicker, setSelectedTicker] = useState<string>('');
+
+    // Fetch price history for the selected component stock
+    const { data: stockData } = useQuery({
+        queryKey: ['stockPriceHistory', selectedTicker, '1d'],
+        queryFn: () => analysisApi.getPriceHistory(selectedTicker, '1d'),
+        staleTime: 1000 * 60 * 60, // 1 hour
+        enabled: !!selectedTicker && flipped
+    });
 
     // --- Derive summary metrics from existing data ---
 
@@ -321,13 +334,17 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             {flipped && (
                                 <MarketBreadthChart
                                     title={title}
-                                    spxData={spxData}
+                                    spxData={selectedTicker && stockData ? stockData : spxData}
                                     cdBreadth={cdBreadth}
                                     mcBreadth={mcBreadth}
                                     cdSignalBreadth={cdSignalBreadth}
                                     mcSignalBreadth={mcSignalBreadth}
                                     minDate={minDate}
                                     signals1234={signals1234}
+                                    tickers={tickers}
+                                    selectedTicker={selectedTicker}
+                                    onTickerChange={setSelectedTicker}
+                                    indexTitle={title}
                                 />
                             )}
                         </div>

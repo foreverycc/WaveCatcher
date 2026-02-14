@@ -536,6 +536,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             mcSignalBreadth={breadth?.mc_signal_breadth ?? []}
                             minDate={oneYearAgo}
                             signals1234={signals}
+                            tickers={idx.tickers}
                         />
                     );
                 })}

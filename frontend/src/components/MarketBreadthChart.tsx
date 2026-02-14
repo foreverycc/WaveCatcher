@@ -74,6 +74,10 @@ interface MarketBreadthChartProps {
     mcSignalBreadth?: SignalBreadthDataPoint[];
     minDate?: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
+    tickers?: string[];
+    selectedTicker?: string;
+    onTickerChange?: (ticker: string) => void;
+    indexTitle?: string;
 }
 
 // Colors for each interval in stacked bar charts
@@ -96,6 +100,86 @@ const SCORE_WEIGHTS: Record<string, number> = {
     '1d': 8, // 5+8
 };
 
+// Searchable ticker selector dropdown
+const TickerSelector = ({ tickers, selectedTicker, onSelect, indexLabel }: {
+    tickers: string[],
+    selectedTicker: string,
+    onSelect: (ticker: string) => void,
+    indexLabel: string
+}) => {
+    const [open, setOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // Close on click outside
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setOpen(false);
+                setSearch('');
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const filtered = useMemo(() => {
+        if (!search) return tickers;
+        const s = search.toUpperCase();
+        return tickers.filter(t => t.toUpperCase().includes(s));
+    }, [tickers, search]);
+
+    return (
+        <div ref={dropdownRef} className="relative">
+            <button
+                onClick={() => { setOpen(!open); setTimeout(() => inputRef.current?.focus(), 50); }}
+                className="px-2 py-1 text-xs font-medium rounded-md border border-border text-muted-foreground hover:bg-muted flex items-center gap-1 min-w-[100px]"
+            >
+                <span className="truncate">{selectedTicker || indexLabel}</span>
+                <span className="text-[10px] opacity-60">▼</span>
+            </button>
+            {open && (
+                <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-md shadow-lg z-50 w-48 max-h-64 flex flex-col">
+                    <div className="p-1.5 border-b border-border/50">
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            placeholder="Search ticker..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full px-2 py-1 text-xs rounded border border-input bg-background/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                    <div className="overflow-y-auto flex-1">
+                        {/* Index option */}
+                        <button
+                            onClick={() => { onSelect(''); setOpen(false); setSearch(''); }}
+                            className={`w-full px-3 py-1.5 text-xs text-left hover:bg-muted transition-colors flex items-center gap-1 ${!selectedTicker ? 'bg-primary/10 text-primary font-medium' : ''}`}
+                        >
+                            📊 {indexLabel} (Index)
+                        </button>
+                        <div className="border-t border-border/30" />
+                        {/* Ticker list */}
+                        {filtered.map(t => (
+                            <button
+                                key={t}
+                                onClick={() => { onSelect(t); setOpen(false); setSearch(''); }}
+                                className={`w-full px-3 py-1 text-xs text-left hover:bg-muted transition-colors ${selectedTicker === t ? 'bg-primary/10 text-primary font-medium' : ''}`}
+                            >
+                                {t}
+                            </button>
+                        ))}
+                        {filtered.length === 0 && (
+                            <div className="px-3 py-2 text-xs text-muted-foreground text-center">No matches</div>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     title,
     spxData,
@@ -104,7 +188,11 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     cdSignalBreadth = [],
     mcSignalBreadth = [],
     minDate,
-    signals1234
+    signals1234,
+    tickers = [],
+    selectedTicker = '',
+    onTickerChange,
+    indexTitle
 }) => {
     // --- Zoom State & Logic (Adapted from CandleChart) ---
     const [zoomState, setZoomState] = useState<{ start: number, end: number } | null>(null);
@@ -405,14 +493,26 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
     return (
         <div className="flex flex-col h-[1100px] border rounded-lg bg-card p-4">
-            <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-                <button
-                    onClick={() => setZoomState(null)}
-                    className="px-2 py-1 text-xs font-medium rounded-md border border-border text-muted-foreground hover:bg-muted"
-                >
-                    Reset Zoom
-                </button>
+            <div className="flex justify-between items-center mb-2 gap-2">
+                <h3 className="text-lg font-semibold text-foreground shrink-0">
+                    {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}
+                </h3>
+                <div className="flex items-center gap-2">
+                    {tickers.length > 0 && (
+                        <TickerSelector
+                            tickers={tickers}
+                            selectedTicker={selectedTicker}
+                            onSelect={(t) => onTickerChange?.(t)}
+                            indexLabel={indexTitle || title}
+                        />
+                    )}
+                    <button
+                        onClick={() => setZoomState(null)}
+                        className="px-2 py-1 text-xs font-medium rounded-md border border-border text-muted-foreground hover:bg-muted shrink-0"
+                    >
+                        Reset Zoom
+                    </button>
+                </div>
             </div>
 
             <div

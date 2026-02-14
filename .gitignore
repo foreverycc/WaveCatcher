@@ -31,3 +31,4 @@ backend/app/services/__pycache__/engine.cpython-313.pyc
 backend/backend_server.log
 .DS_Store
 .DS_Store
+.vscode/settings.json
