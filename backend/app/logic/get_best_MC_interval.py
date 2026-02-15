@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from data_loader import download_stock_data
-from indicators import compute_mc_indicator, compute_cd_indicator
+from indicators import compute_mc_indicator, compute_cd_indicator, compute_mc_score
 import yfinance as yf
 
 # EMA warmup period - should match the value in indicators.py
@@ -164,6 +164,9 @@ def calculate_returns(data, mc_signals, periods=None, max_signals=MAX_SIGNALS_TH
     # Also compute CD signals for analysis
     cd_signals = compute_cd_indicator(data)
     
+    # Compute MC signal scores
+    mc_scores = compute_mc_score(data)
+    
     for date in signal_dates:
         idx = data.index.get_loc(date)
         
@@ -208,6 +211,7 @@ def calculate_returns(data, mc_signals, periods=None, max_signals=MAX_SIGNALS_TH
         results.append({
             'date': date,
             'entry_volume': entry_volume,
+            'signal_score': float(mc_scores.get(date, np.nan)) if pd.notna(mc_scores.get(date, np.nan)) else None,
             **returns,
             **volumes,
             **cd_info

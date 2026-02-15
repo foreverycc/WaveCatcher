@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
 from app.services.engine import job_manager
-from app.logic.indicators import compute_cd_indicator, compute_mc_indicator, compute_nx_break_through
+from app.logic.indicators import compute_cd_indicator, compute_mc_indicator, compute_nx_break_through, compute_cd_score, compute_mc_score
 from app.db.database import SessionLocal
 from app.db.models import AnalysisRun, AnalysisResult, PriceBar
 from app.logic.db_utils import save_price_history
@@ -461,6 +461,8 @@ async def get_price_history(
         cd_signals = compute_cd_indicator(df)
         mc_signals = compute_mc_indicator(df)
         breakthrough = compute_nx_break_through(df)
+        cd_scores = compute_cd_score(df)
+        mc_scores = compute_mc_score(df)
         
         # Fill NaNs with False
         cd_signals = cd_signals.fillna(False).astype(bool)
@@ -516,6 +518,10 @@ async def get_price_history(
         s100 = df.loc[ts, 'sma_100'] if 'sma_100' in df else None
         s200 = df.loc[ts, 'sma_200'] if 'sma_200' in df else None
 
+        # Signal scores
+        cd_sc = cd_scores.get(ts, np.nan)
+        mc_sc = mc_scores.get(ts, np.nan)
+
         response.append({
             "time": p.timestamp.isoformat(),
             "open": p.open,
@@ -525,6 +531,8 @@ async def get_price_history(
             "volume": p.volume,
             "cd_signal": is_cd,
             "mc_signal": is_mc,
+            "cd_score": float(cd_sc) if pd.notna(cd_sc) else None,
+            "mc_score": float(mc_sc) if pd.notna(mc_sc) else None,
             "cd_1234_signal": is_cd_1234,
             "mc_1234_signal": is_mc_1234,
             "ema_13": float(e13) if pd.notna(e13) else None,

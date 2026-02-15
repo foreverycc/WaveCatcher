@@ -1,5 +1,5 @@
 import pandas as pd
-from indicators import compute_mc_indicator, compute_nx_break_through
+from indicators import compute_mc_indicator, compute_nx_break_through, compute_mc_score
 from utils import calculate_current_nx_values, get_trading_day_window_end
     
 def calculate_mc_score(data, interval, signal_date):
@@ -61,10 +61,15 @@ def process_ticker_mc_1234(ticker, data_ticker=None):
             signal_dates = data.index[sell_signals]
             breakthrough_dates = data.index[breakthrough]
             
+            # Compute indicator-level MC scores
+            mc_scores = compute_mc_score(data)
+            
             # Filter out NaN values for signal processing
             valid_mc_signals = mc.fillna(False).infer_objects(copy=False)
             for date in data.index[valid_mc_signals]:
                 score = calculate_mc_score(data, interval, date)
+                ind_score = mc_scores.get(date)
+                ind_score_val = round(float(ind_score), 1) if pd.notna(ind_score) else None
                 signal_price = data.loc[date, 'Close']  # Get the Close price at signal date
                 # Find the next breakthrough date after the signal date
                 future_breakthroughs = breakthrough_dates[breakthrough_dates >= date]
@@ -74,6 +79,7 @@ def process_ticker_mc_1234(ticker, data_ticker=None):
                     'ticker': ticker,
                     'interval': interval,
                     'score': score,
+                    'indicator_score': ind_score_val,
                     'signal_date': date.strftime('%Y-%m-%d %H:%M:%S'),
                     'signal_price': round(signal_price, 2),
                     'breakthrough_date': next_breakthrough.strftime('%Y-%m-%d %H:%M:%S') if next_breakthrough is not None else None

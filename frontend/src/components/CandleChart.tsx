@@ -28,6 +28,8 @@ interface CandleData {
     volume: number;
     cd_signal?: boolean;
     mc_signal?: boolean;
+    cd_score?: number | null;
+    mc_score?: number | null;
     ema_13?: number;
     ema_21?: number;
     ema_144?: number;
@@ -46,7 +48,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         // Find the main payload item (usually the candle or volume, we want all info)
         // payload[0] might be volume or candle depending on order/hover
         // But we can extract from payload[0].payload which is the full data object
-        const { open, high, low, close, volume, cd_signal, mc_signal, ema_13, ema_21, ema_144, ema_169 } = payload[0].payload;
+        const { open, high, low, close, volume, cd_signal, mc_signal, cd_score, mc_score, ema_13, ema_21, ema_144, ema_169 } = payload[0].payload;
 
         return (
             <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
@@ -69,8 +71,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
                 {(cd_signal || mc_signal) && (
                     <div className="mt-2 pt-2 border-t border-border flex flex-col gap-1">
-                        {cd_signal && <span className="text-green-500 font-bold flex items-center gap-1">↑ CD BUY</span>}
-                        {mc_signal && <span className="text-red-500 font-bold flex items-center gap-1">↓ MC SELL</span>}
+                        {cd_signal && <span className="text-green-500 font-bold flex items-center gap-1">↑ CD BUY{cd_score != null ? ` (Score: ${cd_score})` : ''}</span>}
+                        {mc_signal && <span className="text-red-500 font-bold flex items-center gap-1">↓ MC SELL{mc_score != null ? ` (Score: ${mc_score})` : ''}</span>}
                     </div>
                 )}
             </div>
@@ -480,13 +482,17 @@ export const CandleChart: React.FC<CandleChartProps> = ({ data, ticker, interval
                             name="CD Buy Signal"
                             dataKey="buySignal"
                             shape={(props: any) => {
-                                const { cx, cy } = props;
+                                const { cx, cy, payload } = props;
                                 if (!cx || !cy) return <g />;
+                                // Score-based opacity: higher score = more opaque (0.4 to 1.0)
+                                const score = payload?.cd_score;
+                                const opacity = score != null ? 0.4 + (score / 100) * 0.6 : 0.8;
                                 return (
                                     <path
                                         d={`M${cx},${cy} l-4,6 l8,0 z`}
                                         fill="#22c55e"
                                         stroke="#22c55e"
+                                        opacity={opacity}
                                         transform={`translate(0, 10)`} // Offset below
                                     />
                                 );
@@ -500,13 +506,16 @@ export const CandleChart: React.FC<CandleChartProps> = ({ data, ticker, interval
                             name="MC Sell Signal"
                             dataKey="sellSignal"
                             shape={(props: any) => {
-                                const { cx, cy } = props;
+                                const { cx, cy, payload } = props;
                                 if (!cx || !cy) return <g />;
+                                const score = payload?.mc_score;
+                                const opacity = score != null ? 0.4 + (score / 100) * 0.6 : 0.8;
                                 return (
                                     <path
                                         d={`M${cx},${cy} l-4,-6 l8,0 z`}
                                         fill="#ef4444"
                                         stroke="#ef4444"
+                                        opacity={opacity}
                                         transform={`translate(0, -10)`} // Offset above
                                     />
                                 );
