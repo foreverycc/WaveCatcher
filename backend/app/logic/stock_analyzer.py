@@ -356,6 +356,44 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                 logger.error(f"Error aggregating {metric_name} by interval: {e}")
                 return []
 
+        # Helper: aggregate indicator scores by date and interval
+        SCORE_INTERVAL_WEIGHTS = {'1h': 1, '2h': 2, '3h': 3, '4h': 4, '1d': 8}
+
+        def aggregate_scores_by_interval(raw_details, metric_name):
+            """Aggregate indicator_score * interval_weight by date.
+            Returns list of {date, score_1h, score_2h, ..., score_1d, total_score}."""
+            if not raw_details:
+                return []
+            try:
+                df = pd.DataFrame(raw_details)
+                if df.empty or 'signal_date' not in df.columns or 'interval' not in df.columns:
+                    return []
+                if 'indicator_score' not in df.columns:
+                    return []
+                df['date'] = pd.to_datetime(df['signal_date']).dt.strftime('%Y-%m-%d')
+                # Drop rows without valid score
+                df = df.dropna(subset=['indicator_score'])
+                if df.empty:
+                    return []
+                # Sum indicator_score per (date, interval)
+                score_sums = df.groupby(['date', 'interval'])['indicator_score'].sum().reset_index()
+                score_sums.columns = ['date', 'interval', 'score_sum']
+                pivot = score_sums.pivot_table(index='date', columns='interval', values='score_sum', fill_value=0).reset_index()
+                result = []
+                for _, row in pivot.iterrows():
+                    entry = {'date': str(row['date'])}
+                    total = 0
+                    for intv in ['1h', '2h', '3h', '4h', '1d']:
+                        s = float(row.get(intv, 0))
+                        entry[f'score_{intv}'] = round(s, 1)
+                        total += s * SCORE_INTERVAL_WEIGHTS[intv]
+                    entry['total_score'] = round(total, 1)
+                    result.append(entry)
+                return sorted(result, key=lambda x: x['date'])
+            except Exception as e:
+                logger.error(f"Error aggregating scores for {metric_name}: {e}")
+                return []
+
         # 1. Save 1234 results and identify breakout candidates
         print("Saving 1234 breakout results...")
         save_analysis_result(run_id, "ALL", "ALL", 'cd_breakout_candidates_details_1234', cd_results_1234)
@@ -389,6 +427,15 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         mc_signal_by_interval = aggregate_signals_by_interval(mc_results_1234, 'MC signals')
         if mc_signal_by_interval:
             save_analysis_result(run_id, "ALL", "ALL", 'mc_signal_breadth_by_interval', mc_signal_by_interval)
+
+        # Aggregate CD/MC indicator scores by interval
+        cd_score_by_interval = aggregate_scores_by_interval(cd_results_1234, 'CD scores')
+        if cd_score_by_interval:
+            save_analysis_result(run_id, "ALL", "ALL", 'cd_score_breadth_by_interval', cd_score_by_interval)
+
+        mc_score_by_interval = aggregate_scores_by_interval(mc_results_1234, 'MC scores')
+        if mc_score_by_interval:
+            save_analysis_result(run_id, "ALL", "ALL", 'mc_score_breadth_by_interval', mc_score_by_interval)
 
         # 5. Save CD evaluation results
         logger.info("Saving CD evaluation results...")
@@ -755,6 +802,46 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                 logger.error(f"Error aggregating {metric_name} by interval: {e}")
                 return []
 
+        # Helper: aggregate indicator scores by date and interval
+        SCORE_INTERVAL_WEIGHTS = {'1h': 1, '2h': 2, '3h': 3, '4h': 4, '1d': 8}
+
+        def aggregate_scores_by_interval(raw_details, metric_name, ticker_list=None):
+            """Aggregate indicator_score * interval_weight by date.
+            Returns list of {date, score_1h, score_2h, ..., score_1d, total_score}."""
+            if not raw_details:
+                return []
+            try:
+                df = pd.DataFrame(raw_details)
+                if df.empty or 'signal_date' not in df.columns or 'interval' not in df.columns:
+                    return []
+                if 'indicator_score' not in df.columns:
+                    return []
+                if ticker_list is not None:
+                    df = df[df['ticker'].isin(ticker_list)]
+                    if df.empty:
+                        return []
+                df['date'] = pd.to_datetime(df['signal_date']).dt.strftime('%Y-%m-%d')
+                df = df.dropna(subset=['indicator_score'])
+                if df.empty:
+                    return []
+                score_sums = df.groupby(['date', 'interval'])['indicator_score'].sum().reset_index()
+                score_sums.columns = ['date', 'interval', 'score_sum']
+                pivot = score_sums.pivot_table(index='date', columns='interval', values='score_sum', fill_value=0).reset_index()
+                result = []
+                for _, row in pivot.iterrows():
+                    entry = {'date': str(row['date'])}
+                    total = 0
+                    for intv in ['1h', '2h', '3h', '4h', '1d']:
+                        s = float(row.get(intv, 0))
+                        entry[f'score_{intv}'] = round(s, 1)
+                        total += s * SCORE_INTERVAL_WEIGHTS[intv]
+                    entry['total_score'] = round(total, 1)
+                    result.append(entry)
+                return sorted(result, key=lambda x: x['date'])
+            except Exception as e:
+                logger.error(f"Error aggregating scores for {metric_name}: {e}")
+                return []
+
         # 3. Identify breakouts and save results
         df_breakout_1234 = identify_1234(cd_results_1234, all_ticker_data)
         df_mc_breakout_1234 = identify_mc_1234(mc_results_1234, all_ticker_data)
@@ -1051,6 +1138,18 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
             if mc_sig_by_intv:
                 save_analysis_result(run_id, stock_list_name, "ALL", 'mc_signal_breadth_by_interval', mc_sig_by_intv)
                 logger.info(f"Saved MC signal breadth by interval for {idx_key}: {len(mc_sig_by_intv)} days")
+            
+            # CD score breadth by interval for this index
+            cd_score_by_intv = aggregate_scores_by_interval(cd_results_1234, f'CD scores {idx_key}', ticker_list=idx_tickers)
+            if cd_score_by_intv:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'cd_score_breadth_by_interval', cd_score_by_intv)
+                logger.info(f"Saved CD score breadth by interval for {idx_key}: {len(cd_score_by_intv)} days")
+            
+            # MC score breadth by interval for this index
+            mc_score_by_intv = aggregate_scores_by_interval(mc_results_1234, f'MC scores {idx_key}', ticker_list=idx_tickers)
+            if mc_score_by_intv:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'mc_score_breadth_by_interval', mc_score_by_intv)
+                logger.info(f"Saved MC score breadth by interval for {idx_key}: {len(mc_score_by_intv)} days")
         
         if progress_callback:
             progress_callback(100)

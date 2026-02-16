@@ -72,6 +72,8 @@ interface MarketBreadthChartProps {
     mcBreadth?: BreadthDataPoint[];
     cdSignalBreadth?: SignalBreadthDataPoint[];
     mcSignalBreadth?: SignalBreadthDataPoint[];
+    cdScoreBreadth?: { date: string, total_score: number }[];
+    mcScoreBreadth?: { date: string, total_score: number }[];
     minDate?: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
     tickers?: string[];
@@ -187,6 +189,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     mcBreadth = [],
     cdSignalBreadth = [],
     mcSignalBreadth = [],
+    cdScoreBreadth = [],
+    mcScoreBreadth = [],
     minDate,
     signals1234,
     tickers = [],
@@ -303,6 +307,20 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 + d.mc_1d * SCORE_WEIGHTS['1d'];
         });
 
+        // Process CD Score Breadth (indicator-score weighted)
+        cdScoreBreadth.forEach(b => {
+            const dateStr = b.date;
+            if (!dataMap.has(dateStr)) dataMap.set(dateStr, { date: dateStr });
+            dataMap.get(dateStr).cdNewScore = b.total_score || 0;
+        });
+
+        // Process MC Score Breadth (indicator-score weighted)
+        mcScoreBreadth.forEach(b => {
+            const dateStr = b.date;
+            if (!dataMap.has(dateStr)) dataMap.set(dateStr, { date: dateStr });
+            dataMap.get(dateStr).mcNewScore = b.total_score || 0;
+        });
+
         // Convert to array and sort
         let result = Array.from(dataMap.values())
             .sort((a, b) => a.date.localeCompare(b.date));
@@ -316,7 +334,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         result = result.filter(d => d.close !== undefined);
 
         return result;
-    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, minDate, signals1234]);
+    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, minDate, signals1234]);
 
     // Visible slice
     const visibleData = useMemo(() => {
@@ -800,7 +818,63 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     </ResponsiveContainer>
                 </div>
 
-                {/* 7. CD 1234 Counts (Buy) */}
+                {/* 7. CD New Score (indicator-weighted) */}
+                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">CD New Score</span>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(true)}
+                            <YAxis
+                                orientation="left"
+                                mirror={true}
+                                domain={[0, 'auto']}
+                                tickFormatter={(val) => val === 0 ? '' : val}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={<></>} />
+                            <Bar
+                                dataKey="cdNewScore"
+                                fill="#22c55e"
+                                name="CD New Score"
+                                isAnimationActive={false}
+                            />
+                            <ReferenceBlock />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* 8. MC New Score (indicator-weighted) */}
+                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">MC New Score</span>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(true)}
+                            <YAxis
+                                orientation="left"
+                                mirror={true}
+                                domain={[0, 'auto']}
+                                tickFormatter={(val) => val === 0 ? '' : val}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={<></>} />
+                            <Bar
+                                dataKey="mcNewScore"
+                                fill="#ef4444"
+                                name="MC New Score"
+                                isAnimationActive={false}
+                            />
+                            <ReferenceBlock />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* 9. CD 1234 Counts (Buy) */}
                 <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">Buy</span>
                     <ResponsiveContainer width="100%" height="100%">

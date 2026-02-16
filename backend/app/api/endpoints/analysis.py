@@ -323,12 +323,33 @@ async def get_market_breadth_by_stock_list(
                 AnalysisResult.ticker == ticker_key
             ).first()
             mc_signal_breadth = mc_sig_result.data if mc_sig_result and mc_sig_result.data else []
+    # Fetch per-interval score breadth (CD/MC indicator scores weighted by interval)
+    cd_score_breadth = []
+    mc_score_breadth = []
+    for rid, ticker_key in run_ticker_pairs:
+        if not cd_score_breadth:
+            cd_sc_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == rid,
+                AnalysisResult.result_type == "cd_score_breadth_by_interval",
+                AnalysisResult.ticker == ticker_key
+            ).first()
+            cd_score_breadth = cd_sc_result.data if cd_sc_result and cd_sc_result.data else []
+        
+        if not mc_score_breadth:
+            mc_sc_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == rid,
+                AnalysisResult.result_type == "mc_score_breadth_by_interval",
+                AnalysisResult.ticker == ticker_key
+            ).first()
+            mc_score_breadth = mc_sc_result.data if mc_sc_result and mc_sc_result.data else []
     
     return {
         "cd_breadth": cd_breadth,
         "mc_breadth": mc_breadth,
         "cd_signal_breadth": cd_signal_breadth,
         "mc_signal_breadth": mc_signal_breadth,
+        "cd_score_breadth": cd_score_breadth,
+        "mc_score_breadth": mc_score_breadth,
         "run_id": run_id
     }
 

@@ -102,6 +102,8 @@ export const analysisApi = {
             mc_breadth: { date: string, count: number }[],
             cd_signal_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
             mc_signal_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
+            cd_score_breadth: { date: string, total_score: number }[],
+            mc_score_breadth: { date: string, total_score: number }[],
             run_id: number | null
         }>(`/analysis/market_breadth/${encodeURIComponent(stockList)}`);
         return response.data;
