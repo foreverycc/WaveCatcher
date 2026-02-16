@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stocksApi, analysisApi } from '../services/api';
 import { Save, Trash2, Plus, RefreshCw, FileText, Settings, Edit2, Check, X } from 'lucide-react';
 import { cn } from '../utils/cn';
+import ScoringConfigPanel from '../components/ScoringConfigPanel';
 
 export const Configuration: React.FC = () => {
     const queryClient = useQueryClient();
@@ -159,6 +160,9 @@ export const Configuration: React.FC = () => {
                 <h2 className="text-3xl font-bold text-foreground">Configuration</h2>
             </div>
 
+            {/* === Scoring Weights Section === */}
+            <ScoringConfigPanel />
+
             {/* === Index Configuration Section === */}
             <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
                 <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
@@ -302,6 +306,7 @@ export const Configuration: React.FC = () => {
                     </table>
                 </div>
             </div>
+
 
             {/* === Stock Lists Section === */}
             <div className="grid grid-cols-12 gap-8">

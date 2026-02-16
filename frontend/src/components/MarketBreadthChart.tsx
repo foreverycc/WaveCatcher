@@ -72,8 +72,9 @@ interface MarketBreadthChartProps {
     mcBreadth?: BreadthDataPoint[];
     cdSignalBreadth?: SignalBreadthDataPoint[];
     mcSignalBreadth?: SignalBreadthDataPoint[];
-    cdScoreBreadth?: { date: string, total_score: number }[];
-    mcScoreBreadth?: { date: string, total_score: number }[];
+    cdScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
+    mcScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
+    intervalWeights?: Record<string, number>;
     minDate?: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
     tickers?: string[];
@@ -93,13 +94,13 @@ const INTERVAL_COLORS: Record<string, string> = {
 
 const INTERVALS = ['1h', '2h', '3h', '4h', '1d'] as const;
 
-// Score weights per interval: base(5) + interval weight(1/2/3/4/8)
+// Score weights per interval: exponential scaling (backtest-optimized)
 const SCORE_WEIGHTS: Record<string, number> = {
-    '1h': 1,  // 5+1
-    '2h': 2,  // 5+2
-    '3h': 3,  // 5+3
-    '4h': 4,  // 5+4
-    '1d': 8, // 5+8
+    '1h': 1,
+    '2h': 2,
+    '3h': 4,
+    '4h': 8,
+    '1d': 16,
 };
 
 // Searchable ticker selector dropdown
@@ -191,6 +192,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     mcSignalBreadth = [],
     cdScoreBreadth = [],
     mcScoreBreadth = [],
+    intervalWeights,
     minDate,
     signals1234,
     tickers = [],
@@ -198,6 +200,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     onTickerChange,
     indexTitle
 }) => {
+    // Effective interval weights: use prop if provided, else fall back to SCORE_WEIGHTS constant
+    const effectiveWeights = intervalWeights || SCORE_WEIGHTS;
     // --- Zoom State & Logic (Adapted from CandleChart) ---
     const [zoomState, setZoomState] = useState<{ start: number, end: number } | null>(null);
     const [selection, setSelection] = useState<{ start: number, end: number } | null>(null);
@@ -285,10 +289,10 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             d.cd_3h = b.count_3h || 0;
             d.cd_4h = b.count_4h || 0;
             d.cd_1d = b.count_1d || 0;
-            // CD Score = weighted sum
-            d.cdScore = d.cd_1h * SCORE_WEIGHTS['1h'] + d.cd_2h * SCORE_WEIGHTS['2h']
-                + d.cd_3h * SCORE_WEIGHTS['3h'] + d.cd_4h * SCORE_WEIGHTS['4h']
-                + d.cd_1d * SCORE_WEIGHTS['1d'];
+            // CD Score = weighted sum using configurable interval weights
+            d.cdScore = d.cd_1h * effectiveWeights['1h'] + d.cd_2h * effectiveWeights['2h']
+                + d.cd_3h * effectiveWeights['3h'] + d.cd_4h * effectiveWeights['4h']
+                + d.cd_1d * effectiveWeights['1d'];
         });
 
         // Process MC Signal Breadth (per-interval) + compute MC Score
@@ -301,24 +305,34 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             d.mc_3h = b.count_3h || 0;
             d.mc_4h = b.count_4h || 0;
             d.mc_1d = b.count_1d || 0;
-            // MC Score = weighted sum
-            d.mcScore = d.mc_1h * SCORE_WEIGHTS['1h'] + d.mc_2h * SCORE_WEIGHTS['2h']
-                + d.mc_3h * SCORE_WEIGHTS['3h'] + d.mc_4h * SCORE_WEIGHTS['4h']
-                + d.mc_1d * SCORE_WEIGHTS['1d'];
+            // MC Score = weighted sum using configurable interval weights
+            d.mcScore = d.mc_1h * effectiveWeights['1h'] + d.mc_2h * effectiveWeights['2h']
+                + d.mc_3h * effectiveWeights['3h'] + d.mc_4h * effectiveWeights['4h']
+                + d.mc_1d * effectiveWeights['1d'];
         });
 
-        // Process CD Score Breadth (indicator-score weighted)
+        // Process CD Score Breadth (indicator-score weighted) — recompute from per-interval raw sums
         cdScoreBreadth.forEach(b => {
             const dateStr = b.date;
             if (!dataMap.has(dateStr)) dataMap.set(dateStr, { date: dateStr });
-            dataMap.get(dateStr).cdNewScore = b.total_score || 0;
+            const d = dataMap.get(dateStr);
+            d.cdNewScore = (b.score_1h || 0) * effectiveWeights['1h']
+                + (b.score_2h || 0) * effectiveWeights['2h']
+                + (b.score_3h || 0) * effectiveWeights['3h']
+                + (b.score_4h || 0) * effectiveWeights['4h']
+                + (b.score_1d || 0) * effectiveWeights['1d'];
         });
 
-        // Process MC Score Breadth (indicator-score weighted)
+        // Process MC Score Breadth (indicator-score weighted) — recompute from per-interval raw sums
         mcScoreBreadth.forEach(b => {
             const dateStr = b.date;
             if (!dataMap.has(dateStr)) dataMap.set(dateStr, { date: dateStr });
-            dataMap.get(dateStr).mcNewScore = b.total_score || 0;
+            const d = dataMap.get(dateStr);
+            d.mcNewScore = (b.score_1h || 0) * effectiveWeights['1h']
+                + (b.score_2h || 0) * effectiveWeights['2h']
+                + (b.score_3h || 0) * effectiveWeights['3h']
+                + (b.score_4h || 0) * effectiveWeights['4h']
+                + (b.score_1d || 0) * effectiveWeights['1d'];
         });
 
         // Convert to array and sort
@@ -334,7 +348,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         result = result.filter(d => d.close !== undefined);
 
         return result;
-    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, minDate, signals1234]);
+    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, effectiveWeights, minDate, signals1234]);
 
     // Visible slice
     const visibleData = useMemo(() => {

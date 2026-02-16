@@ -136,11 +136,16 @@ def compute_nx_break_through(data):
     return break_through
 
 
-def compute_cd_score(data):
+def compute_cd_score(data, weights=None):
     """
     Compute a 0-100 score for each CD (buy) signal.
     
-    Score components (each ~33 points max):
+    Args:
+        data: DataFrame with OHLCV data
+        weights: Optional tuple (w_divergence, w_price_position, w_volume) summing to 100.
+                 If None, reads from scoring config.
+    
+    Score components (raw 0-1 values × weight):
       1. Divergence strength: how strongly DIFF diverges upward vs previous cycle
       2. Price position: how close price is to the recent low (lower = stronger buy)
       3. Volume confirmation: volume relative to 20-bar moving average
@@ -148,6 +153,11 @@ def compute_cd_score(data):
     Returns:
         pd.Series of float scores (0-100), NaN where there is no CD signal.
     """
+    if weights is None:
+        from app.logic.scoring_config import get_cd_weights
+        weights = get_cd_weights()
+    w_div, w_price, w_vol = weights
+
     close = data['Close']
     volume = data['Volume']
     if isinstance(close, pd.DataFrame):
@@ -187,60 +197,50 @@ def compute_cd_score(data):
         return score
 
     for idx in signal_indices:
-        s = 0.0
-
-        # --- Component 1: Divergence Strength (0-33) ---
-        # CD = bullish divergence: price lower low but DIFF higher low
-        # Strength = (difl1 - difl2) / abs(difl2)  (how much DIFF improved)
+        # --- Component 1: Divergence Strength (raw 0-1) ---
         d1 = difl1.iloc[idx]
         d2 = difl2.iloc[idx]
         if pd.notna(d1) and pd.notna(d2) and abs(d2) > 1e-10:
-            div_ratio = (d1 - d2) / abs(d2)
-            # Clamp to [0, 1] — ratio of 0 means barely diverging, 1+ means very strong
-            div_score = min(max(div_ratio, 0.0), 1.0) * 33.0
+            div_raw = min(max((d1 - d2) / abs(d2), 0.0), 1.0)
         else:
-            div_score = 16.5  # Neutral when data unavailable
-        s += div_score
+            div_raw = 0.5
 
-        # --- Component 2: Price Position (0-33) ---
-        # How close current price is to the recent low (lower = better for buy)
+        # --- Component 2: Price Position (raw 0-1, lower price = higher score) ---
         lookback = min(50, idx + 1)
         if lookback > 1:
             window_close = close.iloc[max(0, idx - lookback + 1):idx + 1]
-            w_min = window_close.min()
-            w_max = window_close.max()
-            w_range = w_max - w_min
+            w_range = window_close.max() - window_close.min()
             if w_range > 1e-10:
-                # Percentile: 0 = at low, 1 = at high
-                pct = (close.iloc[idx] - w_min) / w_range
-                # Lower percentile = better buy signal → invert
-                price_score = (1.0 - pct) * 33.0
+                price_raw = 1.0 - (close.iloc[idx] - window_close.min()) / w_range
             else:
-                price_score = 16.5
+                price_raw = 0.5
         else:
-            price_score = 16.5
-        s += price_score
+            price_raw = 0.5
 
-        # --- Component 3: Volume Confirmation (0-33) ---
+        # --- Component 3: Volume Confirmation (raw 0-1) ---
         vol_avg = volume.iloc[max(0, idx - 19):idx + 1].mean()
         if vol_avg > 0:
-            vol_ratio = volume.iloc[idx] / vol_avg
-            # Ratio of 1.0 = average → 16.5 pts; 2.0+ = strong → 33 pts; 0 = weak → 0 pts
-            vol_score = min(vol_ratio / 2.0, 1.0) * 33.0
+            vol_raw = min(volume.iloc[idx] / vol_avg / 2.0, 1.0)
         else:
-            vol_score = 16.5
-        s += vol_score
+            vol_raw = 0.5
 
+        # Weighted sum
+        s = div_raw * w_div + price_raw * w_price + vol_raw * w_vol
         score.iloc[idx] = round(min(max(s, 0.0), 100.0), 1)
 
     return score
 
 
-def compute_mc_score(data):
+def compute_mc_score(data, weights=None):
     """
     Compute a 0-100 score for each MC (sell) signal.
     
-    Score components (each ~33 points max):
+    Args:
+        data: DataFrame with OHLCV data
+        weights: Optional tuple (w_divergence, w_price_position, w_volume) summing to 100.
+                 If None, reads from scoring config.
+    
+    Score components (raw 0-1 values × weight):
       1. Divergence strength: how strongly DIFF diverges downward vs previous cycle
       2. Price position: how close price is to the recent high (higher = stronger sell)
       3. Volume confirmation: volume relative to 20-bar moving average
@@ -248,6 +248,11 @@ def compute_mc_score(data):
     Returns:
         pd.Series of float scores (0-100), NaN where there is no MC signal.
     """
+    if weights is None:
+        from app.logic.scoring_config import get_mc_weights
+        weights = get_mc_weights()
+    w_div, w_price, w_vol = weights
+
     close = data['Close']
     volume = data['Volume']
     if isinstance(close, pd.DataFrame):
@@ -287,47 +292,35 @@ def compute_mc_score(data):
         return score
 
     for idx in signal_indices:
-        s = 0.0
-
-        # --- Component 1: Divergence Strength (0-33) ---
-        # MC = bearish divergence: price higher high but DIFF lower high
-        # Strength = (difh2 - difh1) / abs(difh2)  (how much DIFF declined)
+        # --- Component 1: Divergence Strength (raw 0-1) ---
         d1 = difh1.iloc[idx]
         d2 = difh2.iloc[idx]
         if pd.notna(d1) and pd.notna(d2) and abs(d2) > 1e-10:
-            div_ratio = (d2 - d1) / abs(d2)
-            div_score = min(max(div_ratio, 0.0), 1.0) * 33.0
+            div_raw = min(max((d2 - d1) / abs(d2), 0.0), 1.0)
         else:
-            div_score = 16.5
-        s += div_score
+            div_raw = 0.5
 
-        # --- Component 2: Price Position (0-33) ---
-        # How close current price is to the recent high (higher = better for sell)
+        # --- Component 2: Price Position (raw 0-1, higher price = higher score) ---
         lookback = min(50, idx + 1)
         if lookback > 1:
             window_close = close.iloc[max(0, idx - lookback + 1):idx + 1]
-            w_min = window_close.min()
-            w_max = window_close.max()
-            w_range = w_max - w_min
+            w_range = window_close.max() - window_close.min()
             if w_range > 1e-10:
-                pct = (close.iloc[idx] - w_min) / w_range
-                # Higher percentile = better sell signal
-                price_score = pct * 33.0
+                price_raw = (close.iloc[idx] - window_close.min()) / w_range
             else:
-                price_score = 16.5
+                price_raw = 0.5
         else:
-            price_score = 16.5
-        s += price_score
+            price_raw = 0.5
 
-        # --- Component 3: Volume Confirmation (0-33) ---
+        # --- Component 3: Volume Confirmation (raw 0-1) ---
         vol_avg = volume.iloc[max(0, idx - 19):idx + 1].mean()
         if vol_avg > 0:
-            vol_ratio = volume.iloc[idx] / vol_avg
-            vol_score = min(vol_ratio / 2.0, 1.0) * 33.0
+            vol_raw = min(volume.iloc[idx] / vol_avg / 2.0, 1.0)
         else:
-            vol_score = 16.5
-        s += vol_score
+            vol_raw = 0.5
 
+        # Weighted sum
+        s = div_raw * w_div + price_raw * w_price + vol_raw * w_vol
         score.iloc[idx] = round(min(max(s, 0.0), 100.0), 1)
 
     return score

@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery, useQueries } from '@tanstack/react-query';
-import { analysisApi } from '../services/api';
+import { analysisApi, type ScoringConfig } from '../services/api';
 import { IndexSummaryCard } from './IndexSummaryCard';
 import { cn } from '../utils/cn';
 import { subYears, subMonths, subDays, parseISO, isAfter, format } from 'date-fns';
@@ -200,6 +200,14 @@ interface SummaryPanelProps {
 export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [], availableIndices = [] }) => {
 
     // --- Data Fetching ---
+
+    // Scoring config state (for live weight updates)
+    const [scoringConfig, setScoringConfig] = useState<ScoringConfig | null>(null);
+
+    // Fetch scoring config on mount
+    useEffect(() => {
+        analysisApi.getScoringConfig().then(setScoringConfig).catch(console.error);
+    }, []);
 
     // State for In-Line Chart (High Return Opportunities)
     const [selectedRow, setSelectedRow] = React.useState<any | null>(null);
@@ -536,6 +544,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             mcSignalBreadth={breadth?.mc_signal_breadth ?? []}
                             cdScoreBreadth={breadth?.cd_score_breadth ?? []}
                             mcScoreBreadth={breadth?.mc_score_breadth ?? []}
+                            intervalWeights={scoringConfig?.interval_weights}
                             minDate={oneYearAgo}
                             signals1234={signals}
                             tickers={idx.tickers}

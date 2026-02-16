@@ -26,8 +26,9 @@ interface IndexSummaryCardProps {
     mcBreadth: BreadthDataPoint[];
     cdSignalBreadth?: SignalBreadthDataPoint[];
     mcSignalBreadth?: SignalBreadthDataPoint[];
-    cdScoreBreadth?: { date: string, total_score: number }[];
-    mcScoreBreadth?: { date: string, total_score: number }[];
+    cdScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
+    mcScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
+    intervalWeights?: Record<string, number>;
     minDate: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
     tickers?: string[];
@@ -79,6 +80,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     mcSignalBreadth = [],
     cdScoreBreadth = [],
     mcScoreBreadth = [],
+    intervalWeights,
     minDate,
     signals1234,
     tickers = []
@@ -345,6 +347,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                     mcSignalBreadth={mcSignalBreadth}
                                     cdScoreBreadth={cdScoreBreadth}
                                     mcScoreBreadth={mcScoreBreadth}
+                                    intervalWeights={intervalWeights}
                                     minDate={minDate}
                                     signals1234={signals1234}
                                     tickers={tickers}

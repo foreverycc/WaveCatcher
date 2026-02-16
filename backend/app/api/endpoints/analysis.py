@@ -17,6 +17,7 @@ from app.db.database import SessionLocal
 from app.db.models import AnalysisRun, AnalysisResult, PriceBar
 from app.logic.db_utils import save_price_history
 from app.logic.options import get_option_data
+from app.logic.scoring_config import get_config as get_scoring_config, save_config as save_scoring_config, DEFAULT_CONFIG as SCORING_DEFAULTS
 
 logger = logging.getLogger(__name__)
 
@@ -656,3 +657,23 @@ async def get_signals_1234(ticker: str, db: Session = Depends(get_db)):
     
     return {"cd_dates": cd_dates, "mc_dates": mc_dates}
 
+
+# ─── Scoring Configuration ───────────────────────────────────────────────
+
+@router.get("/config/scoring")
+async def get_scoring_weights():
+    """Return the current scoring weight configuration."""
+    return get_scoring_config()
+
+
+@router.put("/config/scoring")
+async def update_scoring_weights(config: Dict[str, Any]):
+    """Update scoring weight configuration. Changes take effect immediately."""
+    updated = save_scoring_config(config)
+    return updated
+
+
+@router.get("/config/scoring/defaults")
+async def get_scoring_defaults():
+    """Return the default scoring weight configuration."""
+    return SCORING_DEFAULTS

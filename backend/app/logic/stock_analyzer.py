@@ -357,7 +357,7 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                 return []
 
         # Helper: aggregate indicator scores by date and interval
-        SCORE_INTERVAL_WEIGHTS = {'1h': 1, '2h': 2, '3h': 3, '4h': 4, '1d': 8}
+        SCORE_INTERVAL_WEIGHTS = {'1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 16}
 
         def aggregate_scores_by_interval(raw_details, metric_name):
             """Aggregate indicator_score * interval_weight by date.
@@ -803,7 +803,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                 return []
 
         # Helper: aggregate indicator scores by date and interval
-        SCORE_INTERVAL_WEIGHTS = {'1h': 1, '2h': 2, '3h': 3, '4h': 4, '1d': 8}
+        SCORE_INTERVAL_WEIGHTS = {'1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 16}
 
         def aggregate_scores_by_interval(raw_details, metric_name, ticker_list=None):
             """Aggregate indicator_score * interval_weight by date.
