@@ -96,6 +96,22 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         enabled: !!selectedTicker && flipped
     });
 
+    // Fetch per-ticker signal/score data across all intervals
+    const { data: tickerSignals } = useQuery({
+        queryKey: ['tickerSignals', selectedTicker],
+        queryFn: () => analysisApi.getTickerSignals(selectedTicker),
+        staleTime: 1000 * 60 * 60,
+        enabled: !!selectedTicker && flipped
+    });
+
+    // When a ticker is selected, swap index-level breadth with per-ticker data
+    const effectiveCdBreadth = selectedTicker && tickerSignals ? tickerSignals.cd_breadth : cdBreadth;
+    const effectiveMcBreadth = selectedTicker && tickerSignals ? tickerSignals.mc_breadth : mcBreadth;
+    const effectiveCdSignalBreadth = selectedTicker && tickerSignals ? tickerSignals.cd_signal_breadth : cdSignalBreadth;
+    const effectiveMcSignalBreadth = selectedTicker && tickerSignals ? tickerSignals.mc_signal_breadth : mcSignalBreadth;
+    const effectiveCdScoreBreadth = selectedTicker && tickerSignals ? tickerSignals.cd_score_breadth : cdScoreBreadth;
+    const effectiveMcScoreBreadth = selectedTicker && tickerSignals ? tickerSignals.mc_score_breadth : mcScoreBreadth;
+
     // --- Derive summary metrics from existing data ---
 
     // Latest close price + daily change
@@ -341,12 +357,12 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                 <MarketBreadthChart
                                     title={title}
                                     spxData={selectedTicker && stockData ? stockData : spxData}
-                                    cdBreadth={cdBreadth}
-                                    mcBreadth={mcBreadth}
-                                    cdSignalBreadth={cdSignalBreadth}
-                                    mcSignalBreadth={mcSignalBreadth}
-                                    cdScoreBreadth={cdScoreBreadth}
-                                    mcScoreBreadth={mcScoreBreadth}
+                                    cdBreadth={effectiveCdBreadth}
+                                    mcBreadth={effectiveMcBreadth}
+                                    cdSignalBreadth={effectiveCdSignalBreadth}
+                                    mcSignalBreadth={effectiveMcSignalBreadth}
+                                    cdScoreBreadth={effectiveCdScoreBreadth}
+                                    mcScoreBreadth={effectiveMcScoreBreadth}
                                     intervalWeights={intervalWeights}
                                     minDate={minDate}
                                     signals1234={signals1234}

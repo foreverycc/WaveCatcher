@@ -104,6 +104,18 @@ export const analysisApi = {
         return response.data;
     },
 
+    getTickerSignals: async (ticker: string) => {
+        const response = await api.get<{
+            cd_breadth: { date: string, count: number }[],
+            mc_breadth: { date: string, count: number }[],
+            cd_signal_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
+            mc_signal_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
+            cd_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+            mc_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+        }>(`/analysis/ticker_signals/${ticker}`);
+        return response.data;
+    },
+
     getMarketBreadth: async (stockList: string) => {
         const response = await api.get<{
             cd_breadth: { date: string, count: number }[],

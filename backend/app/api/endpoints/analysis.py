@@ -569,6 +569,180 @@ async def get_price_history(
         
     return response
 
+
+@router.get("/ticker_signals/{ticker}")
+async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
+    """
+    Get per-date aggregated CD/MC signal and score data across all intervals
+    for a single ticker. Returns the same shape as index-level breadth data
+    so MarketBreadthChart can render per-ticker panels without changes.
+    """
+    INTERVALS = {
+        '1h': timedelta(days=180),
+        '2h': timedelta(days=180),
+        '3h': timedelta(days=365),
+        '4h': timedelta(days=365),
+        '1d': timedelta(days=730),
+    }
+
+    now = datetime.utcnow()
+
+    # Per-date accumulators
+    cd_signal_by_date: Dict[str, Dict[str, int]] = {}   # date -> {interval -> 0/1}
+    mc_signal_by_date: Dict[str, Dict[str, int]] = {}
+    cd_score_by_date: Dict[str, Dict[str, float]] = {}  # date -> {interval -> score}
+    mc_score_by_date: Dict[str, Dict[str, float]] = {}
+    cd_1234_by_date: Dict[str, int] = {}                 # date -> count
+    mc_1234_by_date: Dict[str, int] = {}
+
+    for interval, lookback in INTERVALS.items():
+        cutoff = now - lookback
+        prices = db.query(PriceBar).filter(
+            PriceBar.ticker == ticker,
+            PriceBar.interval == interval,
+            PriceBar.timestamp >= cutoff
+        ).order_by(PriceBar.timestamp).all()
+
+        if not prices or len(prices) < 50:
+            continue
+
+        df = pd.DataFrame([{
+            "timestamp": p.timestamp,
+            "Open": p.open, "High": p.high, "Low": p.low,
+            "Close": p.close, "Volume": p.volume
+        } for p in prices])
+        df.set_index("timestamp", inplace=True)
+
+        try:
+            cd_sig = compute_cd_indicator(df).fillna(False).astype(bool)
+            mc_sig = compute_mc_indicator(df).fillna(False).astype(bool)
+            cd_sc = compute_cd_score(df)
+            mc_sc = compute_mc_score(df)
+
+            # 1234 logic (same as price_history endpoint)
+            bt = compute_nx_break_through(df).fillna(False).astype(bool)
+            oldest_bt = bt.shift(9).fillna(False)
+            cd_1234 = (cd_sig & bt) | (cd_sig & oldest_bt)
+            mc_1234 = (mc_sig & bt) | (mc_sig & oldest_bt)
+        except Exception as e:
+            logger.warning(f"Error computing signals for {ticker}/{interval}: {e}")
+            continue
+
+        # Aggregate into per-date buckets
+        for ts in df.index:
+            date_str = ts.strftime('%Y-%m-%d')
+
+            # CD signal count (0 or 1 per interval per date — take max if multiple bars same date)
+            if date_str not in cd_signal_by_date:
+                cd_signal_by_date[date_str] = {}
+            if cd_sig.get(ts, False):
+                cd_signal_by_date[date_str][interval] = 1
+
+            if date_str not in mc_signal_by_date:
+                mc_signal_by_date[date_str] = {}
+            if mc_sig.get(ts, False):
+                mc_signal_by_date[date_str][interval] = 1
+
+            # Scores: take max score per date per interval
+            sc_cd = cd_sc.get(ts, np.nan)
+            if pd.notna(sc_cd) and sc_cd > 0:
+                if date_str not in cd_score_by_date:
+                    cd_score_by_date[date_str] = {}
+                cd_score_by_date[date_str][interval] = max(
+                    cd_score_by_date[date_str].get(interval, 0), float(sc_cd)
+                )
+
+            sc_mc = mc_sc.get(ts, np.nan)
+            if pd.notna(sc_mc) and sc_mc > 0:
+                if date_str not in mc_score_by_date:
+                    mc_score_by_date[date_str] = {}
+                mc_score_by_date[date_str][interval] = max(
+                    mc_score_by_date[date_str].get(interval, 0), float(sc_mc)
+                )
+
+            # 1234 counts
+            if cd_1234.get(ts, False):
+                cd_1234_by_date[date_str] = cd_1234_by_date.get(date_str, 0) + 1
+            if mc_1234.get(ts, False):
+                mc_1234_by_date[date_str] = mc_1234_by_date.get(date_str, 0) + 1
+
+    # Build response arrays matching existing breadth data shapes
+    all_dates = sorted(set(
+        list(cd_signal_by_date.keys()) + list(mc_signal_by_date.keys()) +
+        list(cd_score_by_date.keys()) + list(mc_score_by_date.keys()) +
+        list(cd_1234_by_date.keys()) + list(mc_1234_by_date.keys())
+    ))
+
+    cd_signal_breadth = []
+    mc_signal_breadth = []
+    cd_score_breadth = []
+    mc_score_breadth = []
+    cd_breadth = []
+    mc_breadth = []
+
+    for d in all_dates:
+        cd_s = cd_signal_by_date.get(d, {})
+        mc_s = mc_signal_by_date.get(d, {})
+        cd_sc_d = cd_score_by_date.get(d, {})
+        mc_sc_d = mc_score_by_date.get(d, {})
+
+        if any(cd_s.values()) or True:  # Always emit a row for charting continuity
+            cd_signal_breadth.append({
+                "date": d,
+                "count_1h": cd_s.get('1h', 0),
+                "count_2h": cd_s.get('2h', 0),
+                "count_3h": cd_s.get('3h', 0),
+                "count_4h": cd_s.get('4h', 0),
+                "count_1d": cd_s.get('1d', 0),
+            })
+
+        mc_signal_breadth.append({
+            "date": d,
+            "count_1h": mc_s.get('1h', 0),
+            "count_2h": mc_s.get('2h', 0),
+            "count_3h": mc_s.get('3h', 0),
+            "count_4h": mc_s.get('4h', 0),
+            "count_1d": mc_s.get('1d', 0),
+        })
+
+        cd_score_breadth.append({
+            "date": d,
+            "score_1h": cd_sc_d.get('1h', 0),
+            "score_2h": cd_sc_d.get('2h', 0),
+            "score_3h": cd_sc_d.get('3h', 0),
+            "score_4h": cd_sc_d.get('4h', 0),
+            "score_1d": cd_sc_d.get('1d', 0),
+            "total_score": sum(cd_sc_d.values()),
+        })
+
+        mc_score_breadth.append({
+            "date": d,
+            "score_1h": mc_sc_d.get('1h', 0),
+            "score_2h": mc_sc_d.get('2h', 0),
+            "score_3h": mc_sc_d.get('3h', 0),
+            "score_4h": mc_sc_d.get('4h', 0),
+            "score_1d": mc_sc_d.get('1d', 0),
+            "total_score": sum(mc_sc_d.values()),
+        })
+
+        cd_count = cd_1234_by_date.get(d, 0)
+        if cd_count > 0:
+            cd_breadth.append({"date": d, "count": cd_count})
+
+        mc_count = mc_1234_by_date.get(d, 0)
+        if mc_count > 0:
+            mc_breadth.append({"date": d, "count": mc_count})
+
+    return {
+        "cd_signal_breadth": cd_signal_breadth,
+        "mc_signal_breadth": mc_signal_breadth,
+        "cd_score_breadth": cd_score_breadth,
+        "mc_score_breadth": mc_score_breadth,
+        "cd_breadth": cd_breadth,
+        "mc_breadth": mc_breadth,
+    }
+
+
 @router.get("/options/{ticker}")
 def get_options(ticker: str):
     """
