@@ -143,6 +143,51 @@ const ScoringConfigPanel: React.FC<ScoringConfigPanelProps> = ({ onConfigChange 
                     </div>
                 </div>
 
+                {/* Score Thresholds */}
+                <div className="mt-2 mb-4">
+                    <div className="text-sm font-medium mb-2">Score Thresholds
+                        <span className="text-xs font-normal text-muted-foreground ml-2">
+                            (signals below threshold are ignored)
+                        </span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex items-center gap-3">
+                            <span className="w-24 text-xs text-muted-foreground">CD (Buy)</span>
+                            <input
+                                type="range"
+                                min={0} max={100} step={5}
+                                value={config.cd_threshold}
+                                onChange={e => updateField('cd_threshold', Number(e.target.value))}
+                                className="flex-1 accent-primary h-1.5"
+                            />
+                            <input
+                                type="number"
+                                min={0} max={100} step={5}
+                                value={config.cd_threshold}
+                                onChange={e => updateField('cd_threshold', Number(e.target.value))}
+                                className="w-14 text-center text-xs bg-background border border-input rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
+                            />
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="w-24 text-xs text-muted-foreground">MC (Sell)</span>
+                            <input
+                                type="range"
+                                min={0} max={100} step={5}
+                                value={config.mc_threshold}
+                                onChange={e => updateField('mc_threshold', Number(e.target.value))}
+                                className="flex-1 accent-primary h-1.5"
+                            />
+                            <input
+                                type="number"
+                                min={0} max={100} step={5}
+                                value={config.mc_threshold}
+                                onChange={e => updateField('mc_threshold', Number(e.target.value))}
+                                className="w-14 text-center text-xs bg-background border border-input rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
+                            />
+                        </div>
+                    </div>
+                </div>
+
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleSave}

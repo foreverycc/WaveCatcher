@@ -15,6 +15,8 @@ export interface ScoringConfig {
     cd_component_weights: { divergence: number; price_position: number; volume: number };
     mc_component_weights: { divergence: number; price_position: number; volume: number };
     interval_weights: { '1h': number; '2h': number; '3h': number; '4h': number; '1d': number };
+    cd_threshold: number;
+    mc_threshold: number;
 }
 
 export interface StockList {

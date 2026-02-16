@@ -94,13 +94,13 @@ const INTERVAL_COLORS: Record<string, string> = {
 
 const INTERVALS = ['1h', '2h', '3h', '4h', '1d'] as const;
 
-// Score weights per interval: exponential scaling (backtest-optimized)
+// Score weights per interval: super-exponential scaling (backtest-optimized)
 const SCORE_WEIGHTS: Record<string, number> = {
     '1h': 1,
     '2h': 2,
     '3h': 4,
     '4h': 8,
-    '1d': 16,
+    '1d': 32,
 };
 
 // Searchable ticker selector dropdown

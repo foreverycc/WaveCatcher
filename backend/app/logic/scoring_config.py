@@ -9,25 +9,27 @@ import json
 import os
 from pathlib import Path
 
-# Default configuration (backtest-optimized values)
+# Default configuration (backtest-optimized across SOXX/SPACE/CRYPTO/QUANTUM/KWEB)
 DEFAULT_CONFIG = {
     "cd_component_weights": {
-        "divergence": 15,
-        "price_position": 70,
-        "volume": 15
+        "divergence": 40,
+        "price_position": 40,
+        "volume": 20
     },
     "mc_component_weights": {
-        "divergence": 30,
+        "divergence": 40,
         "price_position": 20,
-        "volume": 50
+        "volume": 40
     },
     "interval_weights": {
         "1h": 1,
         "2h": 2,
         "3h": 4,
         "4h": 8,
-        "1d": 16
-    }
+        "1d": 32
+    },
+    "cd_threshold": 40,
+    "mc_threshold": 50
 }
 
 # Config file location
@@ -75,6 +77,11 @@ def save_config(config: dict) -> dict:
             if intv in config['interval_weights']:
                 validated['interval_weights'][intv] = max(0, float(config['interval_weights'][intv]))
     
+    # Validate thresholds (0-100)
+    for key in ['cd_threshold', 'mc_threshold']:
+        if key in config:
+            validated[key] = max(0, min(100, float(config[key])))
+    
     with open(_CONFIG_FILE, 'w') as f:
         json.dump(validated, f, indent=2)
     
@@ -99,3 +106,15 @@ def get_interval_weights() -> dict:
     """Return interval weights as dict."""
     config = get_config()
     return config['interval_weights']
+
+
+def get_cd_threshold() -> float:
+    """Return CD score threshold. Signals below this are ignored."""
+    config = get_config()
+    return config.get('cd_threshold', DEFAULT_CONFIG['cd_threshold'])
+
+
+def get_mc_threshold() -> float:
+    """Return MC score threshold. Signals below this are ignored."""
+    config = get_config()
+    return config.get('mc_threshold', DEFAULT_CONFIG['mc_threshold'])
