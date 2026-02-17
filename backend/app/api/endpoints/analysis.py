@@ -505,15 +505,13 @@ async def get_price_history(
                 if pd.isna(sc) or sc < mc_thresh:
                     mc_signals[ts] = False
 
-        # 1234 Logic: (Signal & Breakthrough) | (Signal & Breakthrough[t-9])
-        # Logic analysis: `breakthrough.rolling(10).apply(lambda x: x.iloc[0] if x.any() else False)`
-        # If x.iloc[0] (t-9) is True, then x.any() is True, so it returns True.
-        # If x.iloc[0] is False, it returns False regardless of x.any().
-        # Thus, it simplifies to breakthrough.shift(9).
-        oldest_breakthrough = breakthrough.shift(9).fillna(False)
+        # 1234 Logic: (Signal & Breakthrough) | (Signal & Recent Breakthrough)
+        # Recent Breakthrough: occurred between 5 and 15 bars ago (inclusive)
+        # We use a rolling window of 11 bars (covering t-5 to t-15) shifted by 5
+        recent_breakthrough = breakthrough.rolling(window=11, min_periods=1).max().shift(5).fillna(False).astype(bool)
         
-        cd_1234 = (cd_signals & breakthrough) | (cd_signals & oldest_breakthrough)
-        mc_1234 = (mc_signals & breakthrough) | (mc_signals & oldest_breakthrough)
+        cd_1234 = (cd_signals & breakthrough) | (cd_signals & recent_breakthrough)
+        mc_1234 = (mc_signals & breakthrough) | (mc_signals & recent_breakthrough)
 
         # Vegas Channel EMAs
         df['ema_13'] = df['Close'].ewm(span=13, adjust=False).mean()
@@ -649,9 +647,11 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
 
             # 1234 logic (same as price_history endpoint)
             bt = compute_nx_break_through(df).fillna(False).astype(bool)
-            oldest_bt = bt.shift(9).fillna(False)
-            cd_1234 = (cd_sig & bt) | (cd_sig & oldest_bt)
-            mc_1234 = (mc_sig & bt) | (mc_sig & oldest_bt)
+            # Recent Breakthrough: occurred between 1 and 10 bars ago (inclusive)
+            recent_bt = bt.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
+            
+            cd_1234 = (cd_sig & bt) | (cd_sig & recent_bt)
+            mc_1234 = (mc_sig & bt) | (mc_sig & recent_bt)
         except Exception as e:
             logger.warning(f"Error computing signals for {ticker}/{interval}: {e}")
             continue
