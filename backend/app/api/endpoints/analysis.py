@@ -604,8 +604,8 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
     mc_signal_by_date: Dict[str, Dict[str, int]] = {}
     cd_score_by_date: Dict[str, Dict[str, float]] = {}  # date -> {interval -> score}
     mc_score_by_date: Dict[str, Dict[str, float]] = {}
-    cd_1234_by_date: Dict[str, int] = {}                 # date -> count
-    mc_1234_by_date: Dict[str, int] = {}
+    cd_1234_by_date: Dict[str, Dict[str, int]] = {}     # date -> {interval -> count}
+    mc_1234_by_date: Dict[str, Dict[str, int]] = {}
 
     for interval, lookback in INTERVALS.items():
         cutoff = now - lookback
@@ -671,9 +671,9 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
             if mc_sig.get(ts, False):
                 mc_signal_by_date[date_str][interval] = 1
 
-            # Scores: take max score per date per interval
+            # Scores: only take score if signal is valid (passed threshold)
             sc_cd = cd_sc.get(ts, np.nan)
-            if pd.notna(sc_cd) and sc_cd > 0:
+            if cd_sig.get(ts, False) and pd.notna(sc_cd) and sc_cd > 0:
                 if date_str not in cd_score_by_date:
                     cd_score_by_date[date_str] = {}
                 cd_score_by_date[date_str][interval] = max(
@@ -681,18 +681,22 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
                 )
 
             sc_mc = mc_sc.get(ts, np.nan)
-            if pd.notna(sc_mc) and sc_mc > 0:
+            if mc_sig.get(ts, False) and pd.notna(sc_mc) and sc_mc > 0:
                 if date_str not in mc_score_by_date:
                     mc_score_by_date[date_str] = {}
                 mc_score_by_date[date_str][interval] = max(
                     mc_score_by_date[date_str].get(interval, 0), float(sc_mc)
                 )
 
-            # 1234 counts
+            # 1234 counts (per-interval)
             if cd_1234.get(ts, False):
-                cd_1234_by_date[date_str] = cd_1234_by_date.get(date_str, 0) + 1
+                if date_str not in cd_1234_by_date:
+                    cd_1234_by_date[date_str] = {}
+                cd_1234_by_date[date_str][interval] = 1
             if mc_1234.get(ts, False):
-                mc_1234_by_date[date_str] = mc_1234_by_date.get(date_str, 0) + 1
+                if date_str not in mc_1234_by_date:
+                    mc_1234_by_date[date_str] = {}
+                mc_1234_by_date[date_str][interval] = 1
 
     # Build response arrays matching existing breadth data shapes
     all_dates = sorted(set(
@@ -753,13 +757,27 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
             "total_score": sum(mc_sc_d.values()),
         })
 
-        cd_count = cd_1234_by_date.get(d, 0)
-        if cd_count > 0:
-            cd_breadth.append({"date": d, "count": cd_count})
+        cd_1234_d = cd_1234_by_date.get(d, {})
+        if any(cd_1234_d.values()):
+            cd_breadth.append({
+                "date": d,
+                "count_1h": cd_1234_d.get('1h', 0),
+                "count_2h": cd_1234_d.get('2h', 0),
+                "count_3h": cd_1234_d.get('3h', 0),
+                "count_4h": cd_1234_d.get('4h', 0),
+                "count_1d": cd_1234_d.get('1d', 0),
+            })
 
-        mc_count = mc_1234_by_date.get(d, 0)
-        if mc_count > 0:
-            mc_breadth.append({"date": d, "count": mc_count})
+        mc_1234_d = mc_1234_by_date.get(d, {})
+        if any(mc_1234_d.values()):
+            mc_breadth.append({
+                "date": d,
+                "count_1h": mc_1234_d.get('1h', 0),
+                "count_2h": mc_1234_d.get('2h', 0),
+                "count_3h": mc_1234_d.get('3h', 0),
+                "count_4h": mc_1234_d.get('4h', 0),
+                "count_1d": mc_1234_d.get('1d', 0),
+            })
 
     return {
         "cd_signal_breadth": cd_signal_breadth,

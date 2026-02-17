@@ -312,18 +312,26 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                 if 'date' not in df.columns:
                     return []
                 
-                # Count unique tickers per day
-                # df['date'] is already date object or string? identify_... returns date objects
-                daily_counts = df.groupby('date')['ticker'].nunique().reset_index()
-                daily_counts.columns = ['date', 'count']
-                
-                # Sort by date
-                daily_counts = daily_counts.sort_values('date')
-                
-                # Convert date to string for JSON serialization
-                daily_counts['date'] = daily_counts['date'].astype(str)
-                
-                return daily_counts.to_dict(orient='records')
+                # If interval column exists, break down by interval
+                if 'interval' in df.columns:
+                    counts = df.groupby(['date', 'interval'])['ticker'].nunique().reset_index()
+                    counts.columns = ['date', 'interval', 'count']
+                    pivot = counts.pivot_table(index='date', columns='interval', values='count', fill_value=0).reset_index()
+                    result = []
+                    for _, row in pivot.iterrows():
+                        entry = {'date': str(row['date'])}
+                        for intv in ['1h', '2h', '3h', '4h', '1d']:
+                            entry[f'count_{intv}'] = int(row.get(intv, 0))
+                        result.append(entry)
+                    return sorted(result, key=lambda x: x['date'])
+                else:
+                    # Fallback: count unique tickers per day (no interval info)
+                    daily_counts = df.groupby('date')['ticker'].nunique().reset_index()
+                    daily_counts.columns = ['date', 'count']
+                    daily_counts = daily_counts.sort_values('date')
+                    daily_counts['date'] = daily_counts['date'].astype(str)
+                    # Convert to per-interval format with all counts in count_1d
+                    return [{'date': r['date'], 'count_1h': 0, 'count_2h': 0, 'count_3h': 0, 'count_4h': 0, 'count_1d': int(r['count'])} for r in daily_counts.to_dict(orient='records')]
             except Exception as e:
                 logger.error(f"Error aggregating {metric_name}: {e}")
                 return []
@@ -1081,7 +1089,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
         
         # 4. Compute per-index breadth (KEY CHANGE)
         def aggregate_signals_for_tickers(df, ticker_list, metric_name):
-            """Aggregate signals for a specific set of tickers."""
+            """Aggregate signals for a specific set of tickers, broken down by interval."""
             if df.empty:
                 return []
             try:
@@ -1095,11 +1103,24 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                     return []
                 
                 df_filtered['date'] = pd.to_datetime(df_filtered['date'])
-                daily_counts = df_filtered.groupby('date')['ticker'].nunique().reset_index()
-                daily_counts.columns = ['date', 'count']
-                daily_counts = daily_counts.sort_values('date')
-                daily_counts['date'] = daily_counts['date'].astype(str)
-                return daily_counts.to_dict(orient='records')
+                
+                if 'interval' in df_filtered.columns:
+                    counts = df_filtered.groupby(['date', 'interval'])['ticker'].nunique().reset_index()
+                    counts.columns = ['date', 'interval', 'count']
+                    pivot = counts.pivot_table(index='date', columns='interval', values='count', fill_value=0).reset_index()
+                    result = []
+                    for _, row in pivot.iterrows():
+                        entry = {'date': str(row['date'])}
+                        for intv in ['1h', '2h', '3h', '4h', '1d']:
+                            entry[f'count_{intv}'] = int(row.get(intv, 0))
+                        result.append(entry)
+                    return sorted(result, key=lambda x: x['date'])
+                else:
+                    daily_counts = df_filtered.groupby('date')['ticker'].nunique().reset_index()
+                    daily_counts.columns = ['date', 'count']
+                    daily_counts = daily_counts.sort_values('date')
+                    daily_counts['date'] = daily_counts['date'].astype(str)
+                    return [{'date': r['date'], 'count_1h': 0, 'count_2h': 0, 'count_3h': 0, 'count_4h': 0, 'count_1d': int(r['count'])} for r in daily_counts.to_dict(orient='records')]
             except Exception as e:
                 logger.error(f"Error aggregating {metric_name}: {e}")
                 return []

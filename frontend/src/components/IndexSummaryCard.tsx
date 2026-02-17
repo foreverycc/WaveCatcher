@@ -7,7 +7,11 @@ import { cn } from '../utils/cn';
 
 interface BreadthDataPoint {
     date: string;
-    count: number;
+    count_1h: number;
+    count_2h: number;
+    count_3h: number;
+    count_4h: number;
+    count_1d: number;
 }
 
 interface SignalBreadthDataPoint {
@@ -169,10 +173,11 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
 
         const computeStats = (data: BreadthDataPoint[]) => {
             if (!data || data.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
+            const totalCount = (d: BreadthDataPoint) => (d.count_1h || 0) + (d.count_2h || 0) + (d.count_3h || 0) + (d.count_4h || 0) + (d.count_1d || 0);
             // Find today's count by matching the latest trading date (default to 0 if no entry)
             const todayEntry = data.find(d => d.date === latestDate);
-            const today = todayEntry?.count ?? 0;
-            const counts = data.map(d => d.count);
+            const today = todayEntry ? totalCount(todayEntry) : 0;
+            const counts = data.map(d => totalCount(d));
             const avg = counts.reduce((a, b) => a + b, 0) / counts.length;
             const sorted = [...counts].sort((a, b) => a - b);
             const median = sorted.length % 2 === 0
