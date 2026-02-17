@@ -244,25 +244,11 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             d.cd_signal = p.cd_signal;
             d.mc_signal = p.mc_signal;
 
-            // Check if this date is in the external 1234 signals (from analysis results)
-            const is1234CD = signals1234?.cd_dates?.includes(dateStr) ?? false;
-            const is1234MC = signals1234?.mc_dates?.includes(dateStr) ?? false;
+            // Signal Markers (triangles for raw CD/MC from price history)
+            d.buySignal = p.cd_signal ? p.low * 0.995 : null;
+            d.sellSignal = p.mc_signal ? p.high * 1.005 : null;
 
-            // Debug logging (first 3 items only to avoid spam)
-            if (is1234CD || is1234MC) {
-                console.log(`[MarketBreadthChart] 1234 signal matched: date=${dateStr}, CD=${is1234CD}, MC=${is1234MC}`);
-            }
-
-            d.cd_1234_signal = is1234CD;
-            d.mc_1234_signal = is1234MC;
-
-            // Signal Markers
-            d.buySignal = p.cd_signal ? p.low * 0.995 : null; // Slightly below low
-            d.sellSignal = p.mc_signal ? p.high * 1.005 : null; // Slightly above high
-
-            // 1234 Markers (from analysis results)
-            d.buySignal1234 = is1234CD ? p.low * 0.98 : null;
-            d.sellSignal1234 = is1234MC ? p.high * 1.02 : null;
+            // 1234 markers will be computed below after signal breadth data is merged
         });
 
         // Process CD Breadth
@@ -335,6 +321,25 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 + (b.score_1d || 0) * effectiveWeights['1d'];
         });
 
+        // Derive 1234 markers from signal breadth data (same source as CD/MC panels)
+        // A "1234" condition = signals across ≥3 intervals on the same date
+        dataMap.forEach((d) => {
+            const cdIntervals = [d.cd_1h, d.cd_2h, d.cd_3h, d.cd_4h, d.cd_1d]
+                .filter(v => v && v > 0).length;
+            const mcIntervals = [d.mc_1h, d.mc_2h, d.mc_3h, d.mc_4h, d.mc_1d]
+                .filter(v => v && v > 0).length;
+            const is1234CD = cdIntervals >= 3;
+            const is1234MC = mcIntervals >= 3;
+            d.cd_1234_signal = is1234CD;
+            d.mc_1234_signal = is1234MC;
+            if (d.low != null) {
+                d.buySignal1234 = is1234CD ? d.low * 0.98 : null;
+            }
+            if (d.high != null) {
+                d.sellSignal1234 = is1234MC ? d.high * 1.02 : null;
+            }
+        });
+
         // Convert to array and sort
         let result = Array.from(dataMap.values())
             .sort((a, b) => a.date.localeCompare(b.date));
@@ -348,7 +353,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         result = result.filter(d => d.close !== undefined);
 
         return result;
-    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, effectiveWeights, minDate, signals1234]);
+    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, effectiveWeights, minDate]);
 
     // Visible slice
     const visibleData = useMemo(() => {

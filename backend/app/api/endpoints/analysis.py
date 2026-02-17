@@ -17,7 +17,7 @@ from app.db.database import SessionLocal
 from app.db.models import AnalysisRun, AnalysisResult, PriceBar
 from app.logic.db_utils import save_price_history
 from app.logic.options import get_option_data
-from app.logic.scoring_config import get_config as get_scoring_config, save_config as save_scoring_config, DEFAULT_CONFIG as SCORING_DEFAULTS
+from app.logic.scoring_config import get_config as get_scoring_config, save_config as save_scoring_config, DEFAULT_CONFIG as SCORING_DEFAULTS, get_cd_threshold, get_mc_threshold
 
 logger = logging.getLogger(__name__)
 
@@ -491,6 +491,20 @@ async def get_price_history(
         mc_signals = mc_signals.fillna(False).astype(bool)
         breakthrough = breakthrough.fillna(False).astype(bool)
 
+        # Apply score threshold filtering
+        cd_thresh = get_cd_threshold()
+        mc_thresh = get_mc_threshold()
+        for ts in cd_signals.index:
+            if cd_signals[ts]:
+                sc = cd_scores.get(ts, np.nan)
+                if pd.isna(sc) or sc < cd_thresh:
+                    cd_signals[ts] = False
+        for ts in mc_signals.index:
+            if mc_signals[ts]:
+                sc = mc_scores.get(ts, np.nan)
+                if pd.isna(sc) or sc < mc_thresh:
+                    mc_signals[ts] = False
+
         # 1234 Logic: (Signal & Breakthrough) | (Signal & Breakthrough[t-9])
         # Logic analysis: `breakthrough.rolling(10).apply(lambda x: x.iloc[0] if x.any() else False)`
         # If x.iloc[0] (t-9) is True, then x.any() is True, so it returns True.
@@ -578,8 +592,8 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
     so MarketBreadthChart can render per-ticker panels without changes.
     """
     INTERVALS = {
-        '1h': timedelta(days=180),
-        '2h': timedelta(days=180),
+        '1h': timedelta(days=365),
+        '2h': timedelta(days=365),
         '3h': timedelta(days=365),
         '4h': timedelta(days=365),
         '1d': timedelta(days=730),
@@ -618,6 +632,20 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
             mc_sig = compute_mc_indicator(df).fillna(False).astype(bool)
             cd_sc = compute_cd_score(df)
             mc_sc = compute_mc_score(df)
+
+            # Apply score threshold filtering
+            cd_thresh = get_cd_threshold()
+            mc_thresh = get_mc_threshold()
+            for ts in cd_sig.index:
+                if cd_sig[ts]:
+                    sc = cd_sc.get(ts, np.nan)
+                    if pd.isna(sc) or sc < cd_thresh:
+                        cd_sig[ts] = False
+            for ts in mc_sig.index:
+                if mc_sig[ts]:
+                    sc = mc_sc.get(ts, np.nan)
+                    if pd.isna(sc) or sc < mc_thresh:
+                        mc_sig[ts] = False
 
             # 1234 logic (same as price_history endpoint)
             bt = compute_nx_break_through(df).fillna(False).astype(bool)

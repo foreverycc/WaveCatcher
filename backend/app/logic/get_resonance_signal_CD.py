@@ -1,6 +1,7 @@
 import pandas as pd
 from indicators import compute_cd_indicator, compute_nx_break_through, compute_cd_score
 from utils import calculate_current_nx_values, get_trading_day_window_end
+from app.logic.scoring_config import get_cd_threshold
     
 def calculate_score(data, interval, signal_date):
     interval_weights = {
@@ -68,6 +69,9 @@ def process_ticker_1234(ticker, data_ticker=None):
                 score = calculate_score(data, interval, date)
                 ind_score = cd_scores.get(date)
                 ind_score_val = round(float(ind_score), 1) if pd.notna(ind_score) else None
+                # Skip signals below score threshold
+                if ind_score_val is None or ind_score_val < get_cd_threshold():
+                    continue
                 signal_price = data.loc[date, 'Close']  # Get the Close price at signal date
                 # Find the next breakthrough date after the signal date
                 future_breakthroughs = breakthrough_dates[breakthrough_dates >= date]
