@@ -335,15 +335,30 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 + (b.score_1d || 0) * effectiveWeights['1d'];
         });
 
-        // Derive 1234 markers from signal breadth data (same source as CD/MC panels)
-        // A "1234" condition = signals across ≥3 intervals on the same date
+        // Derive 1234 markers
+        // If explicit signals1234 provided (e.g. for Index view), use those dates.
+        // Otherwise derive from signal breadth data (e.g. for individual stock view).
+        const cdDatesSet = signals1234?.cd_dates ? new Set(signals1234.cd_dates) : null;
+        const mcDatesSet = signals1234?.mc_dates ? new Set(signals1234.mc_dates) : null;
+
         dataMap.forEach((d) => {
-            const cdIntervals = [d.cd_1h, d.cd_2h, d.cd_3h, d.cd_4h, d.cd_1d]
-                .filter(v => v && v > 0).length;
-            const mcIntervals = [d.mc_1h, d.mc_2h, d.mc_3h, d.mc_4h, d.mc_1d]
-                .filter(v => v && v > 0).length;
-            const is1234CD = cdIntervals >= 3;
-            const is1234MC = mcIntervals >= 3;
+            let is1234CD = false;
+            let is1234MC = false;
+
+            if (cdDatesSet && mcDatesSet) {
+                // Use explicit signals (Index View)
+                is1234CD = cdDatesSet.has(d.date);
+                is1234MC = mcDatesSet.has(d.date);
+            } else {
+                // Fallback: derive from breadth counts (Component/Stock View)
+                const cdIntervals = [d.cd_1h, d.cd_2h, d.cd_3h, d.cd_4h, d.cd_1d]
+                    .filter(v => v && v > 0).length;
+                const mcIntervals = [d.mc_1h, d.mc_2h, d.mc_3h, d.mc_4h, d.mc_1d]
+                    .filter(v => v && v > 0).length;
+                is1234CD = cdIntervals >= 3;
+                is1234MC = mcIntervals >= 3;
+            }
+
             d.cd_1234_signal = is1234CD;
             d.mc_1234_signal = is1234MC;
             if (d.low != null) {

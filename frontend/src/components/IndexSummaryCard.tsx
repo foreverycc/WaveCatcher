@@ -113,9 +113,11 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         enabled: !!effectiveTicker && flipped
     });
 
-    // When a ticker is selected OR indexTicker is present, use per-ticker signal data
-    // This allows showing the Index's own signals (triangle/diamond/bars) instead of sector breadth
-    const useTickerSignals = !!effectiveTicker && !!tickerSignals;
+    // When a ticker is selected, swap index-level breadth with per-ticker data
+    // If NO ticker selected (Index view):
+    // - Panels use CD/MC Breadth (Sector Sums) passed via props
+    // - Chart uses spxData (Index Price + Index Signals)
+    const useTickerSignals = !!selectedTicker && !!tickerSignals;
 
     const effectiveCdBreadth = useTickerSignals ? tickerSignals!.cd_breadth : cdBreadth;
     const effectiveMcBreadth = useTickerSignals ? tickerSignals!.mc_breadth : mcBreadth;
@@ -378,7 +380,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                     mcScoreBreadth={effectiveMcScoreBreadth}
                                     intervalWeights={intervalWeights}
                                     minDate={minDate}
-                                    signals1234={signals1234}
+                                    signals1234={selectedTicker ? undefined : signals1234}
                                     tickers={tickers}
                                     selectedTicker={selectedTicker}
                                     onTickerChange={setSelectedTicker}
