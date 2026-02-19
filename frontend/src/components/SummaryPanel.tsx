@@ -548,6 +548,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             minDate={oneYearAgo}
                             signals1234={signals}
                             tickers={idx.tickers}
+                            indexTicker={idx.symbol}
                         />
                     );
                 })}

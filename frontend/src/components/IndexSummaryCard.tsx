@@ -36,6 +36,7 @@ interface IndexSummaryCardProps {
     minDate: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
     tickers?: string[];
+    indexTicker?: string;
 }
 
 // Percentile meter: a horizontal bar showing where the current value falls
@@ -87,12 +88,16 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     intervalWeights,
     minDate,
     signals1234,
-    tickers = []
+    tickers = [],
+    indexTicker
 }) => {
     const [flipped, setFlipped] = useState(false);
     const [selectedTicker, setSelectedTicker] = useState<string>('');
 
-    // Fetch price history for the selected component stock
+    // Effective ticker is either the selected component or the index itself
+    const effectiveTicker = selectedTicker || indexTicker;
+
+    // Fetch price history for the selected component stock (only if selected)
     const { data: stockData } = useQuery({
         queryKey: ['stockPriceHistory', selectedTicker, '1d'],
         queryFn: () => analysisApi.getPriceHistory(selectedTicker, '1d'),
@@ -100,21 +105,24 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         enabled: !!selectedTicker && flipped
     });
 
-    // Fetch per-ticker signal/score data across all intervals
+    // Fetch per-ticker signal/score data across all intervals (for component OR index)
     const { data: tickerSignals } = useQuery({
-        queryKey: ['tickerSignals', selectedTicker],
-        queryFn: () => analysisApi.getTickerSignals(selectedTicker),
+        queryKey: ['tickerSignals', effectiveTicker],
+        queryFn: () => effectiveTicker ? analysisApi.getTickerSignals(effectiveTicker) : null,
         staleTime: 1000 * 60 * 60,
-        enabled: !!selectedTicker && flipped
+        enabled: !!effectiveTicker && flipped
     });
 
-    // When a ticker is selected, swap index-level breadth with per-ticker data
-    const effectiveCdBreadth = selectedTicker && tickerSignals ? tickerSignals.cd_breadth : cdBreadth;
-    const effectiveMcBreadth = selectedTicker && tickerSignals ? tickerSignals.mc_breadth : mcBreadth;
-    const effectiveCdSignalBreadth = selectedTicker && tickerSignals ? tickerSignals.cd_signal_breadth : cdSignalBreadth;
-    const effectiveMcSignalBreadth = selectedTicker && tickerSignals ? tickerSignals.mc_signal_breadth : mcSignalBreadth;
-    const effectiveCdScoreBreadth = selectedTicker && tickerSignals ? tickerSignals.cd_score_breadth : cdScoreBreadth;
-    const effectiveMcScoreBreadth = selectedTicker && tickerSignals ? tickerSignals.mc_score_breadth : mcScoreBreadth;
+    // When a ticker is selected OR indexTicker is present, use per-ticker signal data
+    // This allows showing the Index's own signals (triangle/diamond/bars) instead of sector breadth
+    const useTickerSignals = !!effectiveTicker && !!tickerSignals;
+
+    const effectiveCdBreadth = useTickerSignals ? tickerSignals!.cd_breadth : cdBreadth;
+    const effectiveMcBreadth = useTickerSignals ? tickerSignals!.mc_breadth : mcBreadth;
+    const effectiveCdSignalBreadth = useTickerSignals ? tickerSignals!.cd_signal_breadth : cdSignalBreadth;
+    const effectiveMcSignalBreadth = useTickerSignals ? tickerSignals!.mc_signal_breadth : mcSignalBreadth;
+    const effectiveCdScoreBreadth = useTickerSignals ? tickerSignals!.cd_score_breadth : cdScoreBreadth;
+    const effectiveMcScoreBreadth = useTickerSignals ? tickerSignals!.mc_score_breadth : mcScoreBreadth;
 
     // --- Derive summary metrics from existing data ---
 
