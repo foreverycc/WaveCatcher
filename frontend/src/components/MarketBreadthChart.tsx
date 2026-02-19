@@ -795,9 +795,9 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     </ResponsiveContainer>
                 </div>
 
-                {/* 7. CD New Score (indicator-weighted) */}
+                {/* 7. CD Score (indicator-weighted) */}
                 <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
-                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">CD New Score</span>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">CD Score</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
@@ -815,7 +815,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                             <Bar
                                 dataKey="cdNewScore"
                                 fill="#22c55e"
-                                name="CD New Score"
+                                name="CD Score"
                                 isAnimationActive={false}
                             />
                             <ReferenceBlock />
@@ -823,9 +823,9 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     </ResponsiveContainer>
                 </div>
 
-                {/* 8. MC New Score (indicator-weighted) */}
+                {/* 8. MC Score (indicator-weighted) */}
                 <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
-                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">MC New Score</span>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">MC Score</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
@@ -843,7 +843,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                             <Bar
                                 dataKey="mcNewScore"
                                 fill="#ef4444"
-                                name="MC New Score"
+                                name="MC Score"
                                 isAnimationActive={false}
                             />
                             <ReferenceBlock />
@@ -853,7 +853,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
                 {/* 9. CD 1234 Counts (Buy) — stacked by interval */}
                 <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
-                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">Buy</span>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">CD Breakthrough</span>
                     <div className="absolute top-3 right-2 flex gap-1 z-10">
                         {INTERVALS.map(intv => (
                             <span key={intv} className="text-[8px] font-medium" style={{ color: INTERVAL_COLORS[intv] }}>{intv}</span>
@@ -879,7 +879,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                     dataKey={`cd_buy_${intv}`}
                                     stackId="cd_buy_stack"
                                     fill={INTERVAL_COLORS[intv]}
-                                    name={`Buy ${intv}`}
+                                    name={`CD Breakthrough ${intv}`}
                                     isAnimationActive={false}
                                 />
                             ))}
@@ -890,7 +890,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
                 {/* 10. MC 1234 Counts (Sell) — stacked by interval */}
                 <div className="flex-[0.6] min-h-0 border-b border-border/50 relative">
-                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">Sell</span>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">MC Breakthrough</span>
                     <div className="absolute top-3 right-2 flex gap-1 z-10">
                         {INTERVALS.map(intv => (
                             <span key={intv} className="text-[8px] font-medium" style={{ color: INTERVAL_COLORS[intv] }}>{intv}</span>
@@ -916,7 +916,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                     dataKey={`mc_sell_${intv}`}
                                     stackId="mc_sell_stack"
                                     fill={INTERVAL_COLORS[intv]}
-                                    name={`Sell ${intv}`}
+                                    name={`MC Breakthrough ${intv}`}
                                     isAnimationActive={false}
                                 />
                             ))}

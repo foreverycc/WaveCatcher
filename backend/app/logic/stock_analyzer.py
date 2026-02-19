@@ -312,25 +312,40 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                 if 'date' not in df.columns:
                     return []
                 
+                df_work = df.copy()
+                
+                # If 'intervals' column exists (from identify_1234, e.g. "1,2,3"),
+                # explode it into individual interval rows
+                if 'intervals' in df_work.columns and 'interval' not in df_work.columns:
+                    df_work['interval_list'] = df_work['intervals'].apply(
+                        lambda x: [f'{v}h' if v != '1d' else '1d' for v in str(x).split(',')] if pd.notna(x) else []
+                    )
+                    df_work = df_work.explode('interval_list').rename(columns={'interval_list': 'interval'})
+                
                 # If interval column exists, break down by interval
-                if 'interval' in df.columns:
-                    counts = df.groupby(['date', 'interval'])['ticker'].nunique().reset_index()
+                if 'interval' in df_work.columns:
+                    counts = df_work.groupby(['date', 'interval'])['ticker'].nunique().reset_index()
                     counts.columns = ['date', 'interval', 'count']
                     pivot = counts.pivot_table(index='date', columns='interval', values='count', fill_value=0).reset_index()
                     result = []
                     for _, row in pivot.iterrows():
-                        entry = {'date': str(row['date'])}
+                        # Ensure date is YYYY-MM-DD string
+                        date_val = row['date']
+                        if hasattr(date_val, 'strftime'):
+                            date_str = date_val.strftime('%Y-%m-%d')
+                        else:
+                            date_str = str(date_val).split(' ')[0]
+                        entry = {'date': date_str}
                         for intv in ['1h', '2h', '3h', '4h', '1d']:
                             entry[f'count_{intv}'] = int(row.get(intv, 0))
                         result.append(entry)
                     return sorted(result, key=lambda x: x['date'])
                 else:
                     # Fallback: count unique tickers per day (no interval info)
-                    daily_counts = df.groupby('date')['ticker'].nunique().reset_index()
+                    daily_counts = df_work.groupby('date')['ticker'].nunique().reset_index()
                     daily_counts.columns = ['date', 'count']
                     daily_counts = daily_counts.sort_values('date')
                     daily_counts['date'] = daily_counts['date'].astype(str)
-                    # Convert to per-interval format with all counts in count_1d
                     return [{'date': r['date'], 'count_1h': 0, 'count_2h': 0, 'count_3h': 0, 'count_4h': 0, 'count_1d': int(r['count'])} for r in daily_counts.to_dict(orient='records')]
             except Exception as e:
                 logger.error(f"Error aggregating {metric_name}: {e}")
@@ -1104,13 +1119,27 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                 
                 df_filtered['date'] = pd.to_datetime(df_filtered['date'])
                 
+                # If 'intervals' column exists (from identify_1234, e.g. "1,2,3"),
+                # explode it into individual interval rows
+                if 'intervals' in df_filtered.columns and 'interval' not in df_filtered.columns:
+                    df_filtered['interval_list'] = df_filtered['intervals'].apply(
+                        lambda x: [f'{v}h' if v != '1d' else '1d' for v in str(x).split(',')] if pd.notna(x) else []
+                    )
+                    df_filtered = df_filtered.explode('interval_list').rename(columns={'interval_list': 'interval'})
+                
                 if 'interval' in df_filtered.columns:
                     counts = df_filtered.groupby(['date', 'interval'])['ticker'].nunique().reset_index()
                     counts.columns = ['date', 'interval', 'count']
                     pivot = counts.pivot_table(index='date', columns='interval', values='count', fill_value=0).reset_index()
                     result = []
                     for _, row in pivot.iterrows():
-                        entry = {'date': str(row['date'])}
+                        # Ensure date is YYYY-MM-DD string
+                        date_val = row['date']
+                        if hasattr(date_val, 'strftime'):
+                            date_str = date_val.strftime('%Y-%m-%d')
+                        else:
+                            date_str = str(date_val).split(' ')[0]
+                        entry = {'date': date_str}
                         for intv in ['1h', '2h', '3h', '4h', '1d']:
                             entry[f'count_{intv}'] = int(row.get(intv, 0))
                         result.append(entry)
