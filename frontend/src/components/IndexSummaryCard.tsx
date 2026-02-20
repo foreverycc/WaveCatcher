@@ -202,6 +202,58 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         };
     }, [cdBreadth, mcBreadth, spxData]);
 
+    // Signal Breadth stats (Today vs Avg + Percentile)
+    const signalStats = useMemo(() => {
+        const latestDate = spxData && spxData.length > 0
+            ? spxData[spxData.length - 1]?.time?.split('T')[0] ?? ''
+            : '';
+
+        const computeStats = (data: any[]) => {
+            if (!data || data.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
+            const totalCount = (d: any) => (d.count_1h || 0) + (d.count_2h || 0) + (d.count_3h || 0) + (d.count_4h || 0) + (d.count_1d || 0);
+            const todayEntry = data.find(d => d.date === latestDate);
+            const today = todayEntry ? totalCount(todayEntry) : 0;
+            const counts = data.map(d => totalCount(d));
+            const avg = counts.reduce((a, b) => a + b, 0) / counts.length;
+            const sorted = [...counts].sort((a, b) => a - b);
+            const median = sorted.length % 2 === 0
+                ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+                : sorted[Math.floor(sorted.length / 2)];
+            const percentile = computePercentile(today, counts);
+            return { today, avg: Math.round(avg * 10) / 10, median, percentile };
+        };
+        return {
+            cd: computeStats(cdSignalBreadth),
+            mc: computeStats(mcSignalBreadth)
+        };
+    }, [cdSignalBreadth, mcSignalBreadth, spxData]);
+
+    // Score Breadth stats (Today vs Avg + Percentile)
+    const scoreStats = useMemo(() => {
+        const latestDate = spxData && spxData.length > 0
+            ? spxData[spxData.length - 1]?.time?.split('T')[0] ?? ''
+            : '';
+
+        const computeStats = (data: any[]) => {
+            if (!data || data.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
+            const totalScore = (d: any) => d.total_score || 0;
+            const todayEntry = data.find(d => d.date === latestDate);
+            const today = todayEntry ? totalScore(todayEntry) : 0;
+            const scores = data.map(d => totalScore(d));
+            const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+            const sorted = [...scores].sort((a, b) => a - b);
+            const median = sorted.length % 2 === 0
+                ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+                : sorted[Math.floor(sorted.length / 2)];
+            const percentile = computePercentile(today, scores);
+            return { today, avg: Math.round(avg * 10) / 10, median, percentile };
+        };
+        return {
+            cd: computeStats(cdScoreBreadth),
+            mc: computeStats(mcScoreBreadth)
+        };
+    }, [cdScoreBreadth, mcScoreBreadth, spxData]);
+
     // Volume: today vs 1yr average + percentile
     const volumeStats = useMemo(() => {
         if (!spxData || spxData.length === 0) return null;
@@ -228,7 +280,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             style={{
                 perspective: '1200px',
                 height: flipped ? '1150px' : 'auto',
-                minHeight: flipped ? '1150px' : '310px', // Allow growth if content needs it when not flipped
+                minHeight: flipped ? '1150px' : '480px', // Increased height for new panels
                 transition: 'height 0.4s ease, min-height 0.4s ease'
             }}
             onClick={() => setFlipped(!flipped)}
@@ -245,10 +297,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     className={cn(
                         "border rounded-lg bg-card p-4 shadow-sm hover:shadow-md transition-shadow overflow-hidden",
                         "w-full h-full", // Fill container
-                        flipped ? "absolute inset-0" : "relative" // If flipped, take out of flow to let back face dictate size? No, actually container determines size.
-                        // Better approach:
-                        // When NOT flipped: relative, so it pushes container height.
-                        // When flipped: absolute, so it doesn't push container height (container is fixed 650px).
+                        flipped ? "absolute inset-0" : "relative"
                     )}
                     style={{
                         backfaceVisibility: 'hidden',
@@ -313,9 +362,43 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         </div>
                     </div>
 
-                    {/* Breadth + Volume Percentile Meters */}
-                    <div className="space-y-1.5 pb-6"> {/* pb-6 to perform space for absolute flip hint */}
-                        <div className="text-xs text-muted-foreground font-medium">1234 Breadth & Volume (Percentile)</div>
+                    {/* Panel 1: CD/MC (Signal Breadth) */}
+                    <div className="space-y-1.5 pb-2">
+                        <div className="text-xs text-muted-foreground font-medium">CD/MC</div>
+                        <PercentileMeter
+                            percentile={signalStats.cd.percentile}
+                            label="Buy"
+                            value={`${signalStats.cd.today} / ${signalStats.cd.avg}`}
+                            color="green"
+                        />
+                        <PercentileMeter
+                            percentile={signalStats.mc.percentile}
+                            label="Sell"
+                            value={`${signalStats.mc.today} / ${signalStats.mc.avg}`}
+                            color="red"
+                        />
+                    </div>
+
+                    {/* Panel 2: CD/MC Score (Score Breadth) */}
+                    <div className="space-y-1.5 pb-2">
+                        <div className="text-xs text-muted-foreground font-medium">CD/MC Score</div>
+                        <PercentileMeter
+                            percentile={scoreStats.cd.percentile}
+                            label="Buy"
+                            value={`${scoreStats.cd.today.toFixed(0)} / ${scoreStats.cd.avg.toFixed(0)}`}
+                            color="green"
+                        />
+                        <PercentileMeter
+                            percentile={scoreStats.mc.percentile}
+                            label="Sell"
+                            value={`${scoreStats.mc.today.toFixed(0)} / ${scoreStats.mc.avg.toFixed(0)}`}
+                            color="red"
+                        />
+                    </div>
+
+                    {/* Panel 3: CD/MC Breakthrough (was Buy/Sell) + Volume */}
+                    <div className="space-y-1.5 pb-6">
+                        <div className="text-xs text-muted-foreground font-medium">CD/MC Breakthrough</div>
                         <PercentileMeter
                             percentile={breadthStats.cd.percentile}
                             label="Buy"
