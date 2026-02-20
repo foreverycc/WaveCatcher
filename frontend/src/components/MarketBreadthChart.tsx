@@ -140,7 +140,7 @@ const TickerSelector = ({ tickers, selectedTicker, onSelect, indexLabel }: {
     }, [tickers, search]);
 
     return (
-        <div ref={dropdownRef} className="relative">
+        <div ref={dropdownRef} className="relative" style={{ zIndex: 9999 }}>
             <button
                 onClick={() => { setOpen(!open); setTimeout(() => inputRef.current?.focus(), 50); }}
                 className="px-2 py-1 text-xs font-medium rounded-md border border-border text-muted-foreground hover:bg-muted flex items-center gap-1 min-w-[100px]"
@@ -149,19 +149,22 @@ const TickerSelector = ({ tickers, selectedTicker, onSelect, indexLabel }: {
                 <span className="text-[10px] opacity-60">▼</span>
             </button>
             {open && (
-                <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-md shadow-lg z-50 w-48 max-h-64 flex flex-col">
-                    <div className="p-1.5 border-b border-border/50">
+                <div
+                    className="absolute right-0 top-full mt-1 border border-border rounded-md shadow-lg w-48 max-h-64 flex flex-col overflow-hidden"
+                    style={{ zIndex: 9999, backgroundColor: 'hsl(var(--card))', isolation: 'isolate' }}
+                >
+                    <div className="p-1.5 border-b border-border/50" style={{ backgroundColor: 'hsl(var(--card))' }}>
                         <input
                             ref={inputRef}
                             type="text"
                             placeholder="Search ticker..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full px-2 py-1 text-xs rounded border border-input bg-background/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                            className="w-full px-2 py-1 text-xs rounded border border-input bg-background focus:outline-none focus:ring-1 focus:ring-primary/50"
                             onClick={(e) => e.stopPropagation()}
                         />
                     </div>
-                    <div className="overflow-y-auto flex-1">
+                    <div className="overflow-y-auto flex-1" style={{ backgroundColor: 'hsl(var(--card))' }}>
                         {/* Index option */}
                         <button
                             onClick={() => { onSelect(''); setOpen(false); setSearch(''); }}
