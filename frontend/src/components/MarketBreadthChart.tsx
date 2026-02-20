@@ -721,7 +721,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
 
     return (
-        <div className="flex flex-col h-[1120px] border rounded-lg bg-card p-4">
+        <div className="flex flex-col h-[850px] border rounded-lg bg-card p-4">
             <div className="flex justify-between items-center mb-2 gap-2">
                 <h3 className="text-lg font-semibold text-foreground shrink-0">
                     {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}

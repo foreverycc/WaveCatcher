@@ -314,8 +314,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             className="relative cursor-pointer w-full"
             style={{
                 perspective: '1200px',
-                height: flipped ? '1150px' : 'auto',
-                minHeight: flipped ? '1150px' : '560px', // Increased height for new panels
+                height: flipped ? '900px' : 'auto',
+                minHeight: flipped ? '900px' : '560px', // Increased height for new panels
                 transition: 'height 0.4s ease, min-height 0.4s ease'
             }}
             onClick={() => setFlipped(!flipped)}
