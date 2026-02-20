@@ -230,7 +230,6 @@ const VolumeTooltip = ({ active, payload }: any) => {
     const d = payload[0].payload;
     return (
         <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
-            <p className="font-semibold mb-1">{d.date}</p>
             <div className="grid grid-cols-2 gap-x-4">
                 <span className="text-muted-foreground">Volume:</span>
                 <span className="text-right text-foreground">{d.spxVolume ? formatVol(d.spxVolume) : '-'}</span>
@@ -251,13 +250,11 @@ const SignalTooltip = ({ active, payload, signalType }: any) => {
     const total = intervals.reduce((sum, i) => sum + i.val, 0);
     if (total === 0) return (
         <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
-            <p className="font-semibold">{d.date}</p>
             <p className="text-muted-foreground mt-1">No {label} signals</p>
         </div>
     );
     return (
         <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
-            <p className="font-semibold mb-1">{d.date}</p>
             <div className="grid grid-cols-2 gap-x-4">
                 {intervals.filter(i => i.val > 0).map(i => (
                     <React.Fragment key={i.key}>
@@ -278,7 +275,6 @@ const ScoreTooltip = ({ active, payload, scoreKey, label, color }: any) => {
     const val = d[scoreKey];
     return (
         <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
-            <p className="font-semibold mb-1">{d.date}</p>
             <div className="grid grid-cols-2 gap-x-4">
                 <span className="text-muted-foreground">{label}:</span>
                 <span className={`text-right ${color}`}>{val != null && val > 0 ? val.toFixed(1) : '0'}</span>
@@ -297,13 +293,11 @@ const BreakthroughTooltip = ({ active, payload, signalType }: any) => {
     const total = intervals.reduce((sum, i) => sum + i.val, 0);
     if (total === 0) return (
         <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
-            <p className="font-semibold">{d.date}</p>
             <p className="text-muted-foreground mt-1">No {label} signals</p>
         </div>
     );
     return (
         <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
-            <p className="font-semibold mb-1">{d.date}</p>
             <div className="grid grid-cols-2 gap-x-4">
                 {intervals.filter(i => i.val > 0).map(i => (
                     <React.Fragment key={i.key}>
@@ -751,7 +745,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 onMouseDown={handleMouseDown}
             >
                 {/* 1. Price History (Candle) */}
-                <div className="flex-[2] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[2] min-h-0 border-b border-border/50 relative" style={{ zIndex: 100 }}>
                     <span className="absolute top-5 left-2 text-[10px] font-medium text-[#8884d8] z-10">Price</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
@@ -765,7 +759,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 width={38}
                                 tick={{ fontSize: 10 }}
                             />
-                            <Tooltip content={<PriceTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
+                            <Tooltip content={<PriceTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Bar
                                 dataKey={d => [d.low, d.high]}
                                 shape={<CandleShape />}
@@ -868,7 +862,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 2. SPX Volume */}
-                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative" style={{ zIndex: 90 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#00A5E3] z-10">Vol</span>
                     <span className="absolute bottom-1 left-2 text-[10px] text-muted-foreground z-10">{volumeScale.suffix}</span>
                     <ResponsiveContainer width="100%" height="100%">
@@ -885,7 +879,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<VolumeTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
+                            <Tooltip content={<VolumeTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Bar dataKey="spxVolume" opacity={0.6} name="Volume">
                                 {visibleData.map((entry, index) => (
                                     <Cell
@@ -900,7 +894,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 3. CD Signals by Interval (stacked bar) */}
-                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative" style={{ zIndex: 80 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#60a5fa] z-10">CD</span>
                     <div className="absolute top-3 right-2 flex gap-1 z-10">
                         {INTERVALS.map(intv => (
@@ -920,7 +914,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<SignalTooltip signalType="cd" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
+                            <Tooltip content={<SignalTooltip signalType="cd" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             {INTERVALS.map(intv => (
                                 <Bar
                                     key={`cd_${intv}`}
@@ -937,7 +931,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 4. MC Signals by Interval (stacked bar) */}
-                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative" style={{ zIndex: 70 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#f87171] z-10">MC</span>
                     <div className="absolute top-3 right-2 flex gap-1 z-10">
                         {INTERVALS.map(intv => (
@@ -957,7 +951,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<SignalTooltip signalType="mc" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
+                            <Tooltip content={<SignalTooltip signalType="mc" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             {INTERVALS.map(intv => (
                                 <Bar
                                     key={`mc_${intv}`}
@@ -974,7 +968,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 7. CD Score (indicator-weighted) */}
-                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative" style={{ zIndex: 60 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">CD Score</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
@@ -989,7 +983,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<ScoreTooltip scoreKey="cdNewScore" label="CD Score" color="text-green-400" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
+                            <Tooltip content={<ScoreTooltip scoreKey="cdNewScore" label="CD Score" color="text-green-400" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Bar
                                 dataKey="cdNewScore"
                                 fill="#22c55e"
@@ -1002,7 +996,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 8. MC Score (indicator-weighted) */}
-                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative" style={{ zIndex: 50 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">MC Score</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
@@ -1017,7 +1011,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<ScoreTooltip scoreKey="mcNewScore" label="MC Score" color="text-red-400" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
+                            <Tooltip content={<ScoreTooltip scoreKey="mcNewScore" label="MC Score" color="text-red-400" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Bar
                                 dataKey="mcNewScore"
                                 fill="#ef4444"
@@ -1030,7 +1024,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 9. CD Breakthrough Counts (Buy) — stacked by interval */}
-                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative" style={{ zIndex: 40 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">CD Breakthrough</span>
                     <div className="absolute top-3 right-2 flex gap-1 z-10">
                         {INTERVALS.map(intv => (
@@ -1050,7 +1044,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<BreakthroughTooltip signalType="cd" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
+                            <Tooltip content={<BreakthroughTooltip signalType="cd" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             {INTERVALS.map(intv => (
                                 <Bar
                                     key={`cd_buy_${intv}`}
@@ -1067,7 +1061,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 10. MC Breakthrough Counts (Sell) — stacked by interval */}
-                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative" style={{ zIndex: 30 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">MC Breakthrough</span>
                     <div className="absolute top-3 right-2 flex gap-1 z-10">
                         {INTERVALS.map(intv => (
@@ -1087,7 +1081,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<BreakthroughTooltip signalType="mc" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
+                            <Tooltip content={<BreakthroughTooltip signalType="mc" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             {INTERVALS.map(intv => (
                                 <Bar
                                     key={`mc_sell_${intv}`}
@@ -1104,7 +1098,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 11. CD Breakthrough Score (indicator-weighted, breakthrough only) */}
-                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative" style={{ zIndex: 20 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#15803d] z-10">CD BT Score</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
@@ -1119,7 +1113,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<ScoreTooltip scoreKey="cdBtScore" label="CD BT Score" color="text-green-500" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
+                            <Tooltip content={<ScoreTooltip scoreKey="cdBtScore" label="CD BT Score" color="text-green-500" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Bar
                                 dataKey="cdBtScore"
                                 fill="#15803d"
@@ -1132,7 +1126,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 12. MC Breakthrough Score (indicator-weighted, breakthrough only) */}
-                <div className="flex-[0.6] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.6] min-h-0 border-b border-border/50 relative" style={{ zIndex: 10 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#b91c1c] z-10">MC BT Score</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
@@ -1147,7 +1141,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<ScoreTooltip scoreKey="mcBtScore" label="MC BT Score" color="text-red-500" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
+                            <Tooltip content={<ScoreTooltip scoreKey="mcBtScore" label="MC BT Score" color="text-red-500" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Bar
                                 dataKey="mcBtScore"
                                 fill="#b91c1c"

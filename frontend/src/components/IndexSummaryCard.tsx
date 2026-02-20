@@ -315,7 +315,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             style={{
                 perspective: '1200px',
                 height: flipped ? '900px' : 'auto',
-                minHeight: flipped ? '900px' : '560px', // Increased height for new panels
+                minHeight: flipped ? '900px' : '460px', // Adjusted front face to hug content tightly
                 transition: 'height 0.4s ease, min-height 0.4s ease'
             }}
             onClick={() => setFlipped(!flipped)}
