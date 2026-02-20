@@ -460,6 +460,40 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         if mc_score_by_interval:
             save_analysis_result(run_id, "ALL", "ALL", 'mc_score_breadth_by_interval', mc_score_by_interval)
 
+        # Aggregate CD/MC Breakthrough Scores (scores only for signals that are also breakthroughs)
+        def filter_to_breakthrough(raw_details, df_breakout):
+            """Filter raw signal details to only those matching breakthrough (ticker, date) pairs."""
+            if not raw_details or df_breakout.empty:
+                return []
+            bt_pairs = set()
+            for _, row in df_breakout.iterrows():
+                date_val = row.get('date', '')
+                if hasattr(date_val, 'strftime'):
+                    date_str = date_val.strftime('%Y-%m-%d')
+                else:
+                    date_str = str(date_val)[:10]
+                bt_pairs.add((row['ticker'], date_str))
+            filtered = []
+            for detail in raw_details:
+                sig_date = detail.get('signal_date', '')
+                if hasattr(sig_date, 'strftime'):
+                    sig_date_str = sig_date.strftime('%Y-%m-%d')
+                else:
+                    sig_date_str = str(sig_date)[:10]
+                if (detail.get('ticker', ''), sig_date_str) in bt_pairs:
+                    filtered.append(detail)
+            return filtered
+
+        cd_bt_details = filter_to_breakthrough(cd_results_1234, df_breakout_1234)
+        cd_bt_score = aggregate_scores_by_interval(cd_bt_details, 'CD breakthrough scores')
+        if cd_bt_score:
+            save_analysis_result(run_id, "ALL", "ALL", 'cd_breakthrough_score_by_interval', cd_bt_score)
+
+        mc_bt_details = filter_to_breakthrough(mc_results_1234, df_mc_breakout_1234)
+        mc_bt_score = aggregate_scores_by_interval(mc_bt_details, 'MC breakthrough scores')
+        if mc_bt_score:
+            save_analysis_result(run_id, "ALL", "ALL", 'mc_breakthrough_score_by_interval', mc_bt_score)
+
         # 5. Save CD evaluation results
         logger.info("Saving CD evaluation results...")
         if cd_eval_results:
@@ -1200,6 +1234,50 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
             if mc_score_by_intv:
                 save_analysis_result(run_id, stock_list_name, "ALL", 'mc_score_breadth_by_interval', mc_score_by_intv)
                 logger.info(f"Saved MC score breadth by interval for {idx_key}: {len(mc_score_by_intv)} days")
+            
+            # CD breakthrough score by interval for this index
+            # Filter raw details to only breakthrough signals for this index's tickers
+            def filter_to_breakthrough_multi(raw_details, df_breakout, tickers):
+                """Filter raw signal details to breakthrough (ticker, date) pairs within a ticker list."""
+                if not raw_details or df_breakout.empty:
+                    return []
+                tickers_set = set(tickers) if tickers else None
+                bt_pairs = set()
+                for _, row in df_breakout.iterrows():
+                    t = row.get('ticker', '')
+                    if tickers_set and t not in tickers_set:
+                        continue
+                    date_val = row.get('date', '')
+                    if hasattr(date_val, 'strftime'):
+                        date_str = date_val.strftime('%Y-%m-%d')
+                    else:
+                        date_str = str(date_val)[:10]
+                    bt_pairs.add((t, date_str))
+                filtered = []
+                for detail in raw_details:
+                    t = detail.get('ticker', '')
+                    if tickers_set and t not in tickers_set:
+                        continue
+                    sig_date = detail.get('signal_date', '')
+                    if hasattr(sig_date, 'strftime'):
+                        sig_date_str = sig_date.strftime('%Y-%m-%d')
+                    else:
+                        sig_date_str = str(sig_date)[:10]
+                    if (t, sig_date_str) in bt_pairs:
+                        filtered.append(detail)
+                return filtered
+
+            cd_bt_details = filter_to_breakthrough_multi(cd_results_1234, df_breakout_1234, idx_tickers)
+            cd_bt_score = aggregate_scores_by_interval(cd_bt_details, f'CD breakthrough scores {idx_key}')
+            if cd_bt_score:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'cd_breakthrough_score_by_interval', cd_bt_score)
+                logger.info(f"Saved CD breakthrough score by interval for {idx_key}: {len(cd_bt_score)} days")
+
+            mc_bt_details = filter_to_breakthrough_multi(mc_results_1234, df_mc_breakout_1234, idx_tickers)
+            mc_bt_score = aggregate_scores_by_interval(mc_bt_details, f'MC breakthrough scores {idx_key}')
+            if mc_bt_score:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'mc_breakthrough_score_by_interval', mc_bt_score)
+                logger.info(f"Saved MC breakthrough score by interval for {idx_key}: {len(mc_bt_score)} days")
         
         if progress_callback:
             progress_callback(100)

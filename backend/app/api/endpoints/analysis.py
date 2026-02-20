@@ -344,6 +344,26 @@ async def get_market_breadth_by_stock_list(
             ).first()
             mc_score_breadth = mc_sc_result.data if mc_sc_result and mc_sc_result.data else []
     
+    # Fetch per-interval breakthrough score breadth (indicator scores for breakthrough signals only)
+    cd_breakthrough_score_breadth = []
+    mc_breakthrough_score_breadth = []
+    for rid, ticker_key in run_ticker_pairs:
+        if not cd_breakthrough_score_breadth:
+            cd_bts_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == rid,
+                AnalysisResult.result_type == "cd_breakthrough_score_by_interval",
+                AnalysisResult.ticker == ticker_key
+            ).first()
+            cd_breakthrough_score_breadth = cd_bts_result.data if cd_bts_result and cd_bts_result.data else []
+        
+        if not mc_breakthrough_score_breadth:
+            mc_bts_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == rid,
+                AnalysisResult.result_type == "mc_breakthrough_score_by_interval",
+                AnalysisResult.ticker == ticker_key
+            ).first()
+            mc_breakthrough_score_breadth = mc_bts_result.data if mc_bts_result and mc_bts_result.data else []
+    
     return {
         "cd_breadth": cd_breadth,
         "mc_breadth": mc_breadth,
@@ -351,6 +371,8 @@ async def get_market_breadth_by_stock_list(
         "mc_signal_breadth": mc_signal_breadth,
         "cd_score_breadth": cd_score_breadth,
         "mc_score_breadth": mc_score_breadth,
+        "cd_breakthrough_score_breadth": cd_breakthrough_score_breadth,
+        "mc_breakthrough_score_breadth": mc_breakthrough_score_breadth,
         "run_id": run_id
     }
 
@@ -779,6 +801,41 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
                 "count_1d": mc_1234_d.get('1d', 0),
             })
 
+    # Build breakthrough score arrays (scores only on 1234 breakthrough dates)
+    cd_breakthrough_score_breadth = []
+    mc_breakthrough_score_breadth = []
+    for d in all_dates:
+        cd_1234_d = cd_1234_by_date.get(d, {})
+        if any(cd_1234_d.values()):
+            cd_sc_d = cd_score_by_date.get(d, {})
+            # Only include scores for intervals that have a 1234 signal
+            bt_scores = {intv: cd_sc_d.get(intv, 0) for intv in cd_1234_d if cd_1234_d[intv]}
+            if bt_scores:
+                cd_breakthrough_score_breadth.append({
+                    "date": d,
+                    "score_1h": bt_scores.get('1h', 0),
+                    "score_2h": bt_scores.get('2h', 0),
+                    "score_3h": bt_scores.get('3h', 0),
+                    "score_4h": bt_scores.get('4h', 0),
+                    "score_1d": bt_scores.get('1d', 0),
+                    "total_score": sum(bt_scores.values()),
+                })
+
+        mc_1234_d = mc_1234_by_date.get(d, {})
+        if any(mc_1234_d.values()):
+            mc_sc_d = mc_score_by_date.get(d, {})
+            bt_scores = {intv: mc_sc_d.get(intv, 0) for intv in mc_1234_d if mc_1234_d[intv]}
+            if bt_scores:
+                mc_breakthrough_score_breadth.append({
+                    "date": d,
+                    "score_1h": bt_scores.get('1h', 0),
+                    "score_2h": bt_scores.get('2h', 0),
+                    "score_3h": bt_scores.get('3h', 0),
+                    "score_4h": bt_scores.get('4h', 0),
+                    "score_1d": bt_scores.get('1d', 0),
+                    "total_score": sum(bt_scores.values()),
+                })
+
     return {
         "cd_signal_breadth": cd_signal_breadth,
         "mc_signal_breadth": mc_signal_breadth,
@@ -786,6 +843,8 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
         "mc_score_breadth": mc_score_breadth,
         "cd_breadth": cd_breadth,
         "mc_breadth": mc_breadth,
+        "cd_breakthrough_score_breadth": cd_breakthrough_score_breadth,
+        "mc_breakthrough_score_breadth": mc_breakthrough_score_breadth,
     }
 
 

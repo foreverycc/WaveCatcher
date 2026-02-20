@@ -32,6 +32,8 @@ interface IndexSummaryCardProps {
     mcSignalBreadth?: SignalBreadthDataPoint[];
     cdScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
     mcScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
+    cdBreakthroughScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
+    mcBreakthroughScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
     intervalWeights?: Record<string, number>;
     minDate: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
@@ -85,6 +87,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     mcSignalBreadth = [],
     cdScoreBreadth = [],
     mcScoreBreadth = [],
+    cdBreakthroughScoreBreadth = [],
+    mcBreakthroughScoreBreadth = [],
     intervalWeights,
     minDate,
     signals1234,
@@ -125,6 +129,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     const effectiveMcSignalBreadth = useTickerSignals ? tickerSignals!.mc_signal_breadth : mcSignalBreadth;
     const effectiveCdScoreBreadth = useTickerSignals ? tickerSignals!.cd_score_breadth : cdScoreBreadth;
     const effectiveMcScoreBreadth = useTickerSignals ? tickerSignals!.mc_score_breadth : mcScoreBreadth;
+    const effectiveCdBtScoreBreadth = useTickerSignals ? (tickerSignals!.cd_breakthrough_score_breadth ?? []) : cdBreakthroughScoreBreadth;
+    const effectiveMcBtScoreBreadth = useTickerSignals ? (tickerSignals!.mc_breakthrough_score_breadth ?? []) : mcBreakthroughScoreBreadth;
 
     // --- Derive summary metrics from existing data ---
 
@@ -254,6 +260,35 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         };
     }, [cdScoreBreadth, mcScoreBreadth, spxData]);
 
+    // Breakthrough Score stats (same approach as scoreStats)
+    const breakthroughScoreStats = useMemo(() => {
+        if (!spxData || spxData.length === 0) return { cd: { today: 0, avg: 0, median: 0, percentile: 0 }, mc: { today: 0, avg: 0, median: 0, percentile: 0 } };
+        const latestDate = spxData[spxData.length - 1]?.time?.split('T')[0] ?? '';
+        const effectiveWeights = intervalWeights || { '1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32 };
+        const totalScore = (d: any) => {
+            return (d.score_1h || 0) * effectiveWeights['1h'] + (d.score_2h || 0) * effectiveWeights['2h']
+                + (d.score_3h || 0) * effectiveWeights['3h'] + (d.score_4h || 0) * effectiveWeights['4h']
+                + (d.score_1d || 0) * effectiveWeights['1d'];
+        };
+        const computeStats = (data: any[]) => {
+            if (!data || data.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
+            const todayEntry = data.find(d => d.date === latestDate);
+            const today = todayEntry ? totalScore(todayEntry) : 0;
+            const scores = data.map(d => totalScore(d));
+            const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+            const sorted = [...scores].sort((a, b) => a - b);
+            const median = sorted.length % 2 === 0
+                ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+                : sorted[Math.floor(sorted.length / 2)];
+            const percentile = computePercentile(today, scores);
+            return { today, avg: Math.round(avg * 10) / 10, median, percentile };
+        };
+        return {
+            cd: computeStats(cdBreakthroughScoreBreadth),
+            mc: computeStats(mcBreakthroughScoreBreadth)
+        };
+    }, [cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, spxData, intervalWeights]);
+
     // Volume: today vs 1yr average + percentile
     const volumeStats = useMemo(() => {
         if (!spxData || spxData.length === 0) return null;
@@ -280,7 +315,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             style={{
                 perspective: '1200px',
                 height: flipped ? '1150px' : 'auto',
-                minHeight: flipped ? '1150px' : '480px', // Increased height for new panels
+                minHeight: flipped ? '1150px' : '560px', // Increased height for new panels
                 transition: 'height 0.4s ease, min-height 0.4s ease'
             }}
             onClick={() => setFlipped(!flipped)}
@@ -396,8 +431,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         />
                     </div>
 
-                    {/* Panel 3: CD/MC Breakthrough (was Buy/Sell) + Volume */}
-                    <div className="space-y-1.5 pb-6">
+                    {/* Panel 3: CD/MC Breakthrough (was Buy/Sell) */}
+                    <div className="space-y-1.5 pb-2">
                         <div className="text-xs text-muted-foreground font-medium">CD/MC Breakthrough</div>
                         <PercentileMeter
                             percentile={breadthStats.cd.percentile}
@@ -409,6 +444,23 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             percentile={breadthStats.mc.percentile}
                             label="Sell"
                             value={`${breadthStats.mc.today} / ${breadthStats.mc.avg}`}
+                            color="red"
+                        />
+                    </div>
+
+                    {/* Panel 4: CD/MC Breakthrough Score + Volume */}
+                    <div className="space-y-1.5 pb-6">
+                        <div className="text-xs text-muted-foreground font-medium">CD/MC Breakthrough Score</div>
+                        <PercentileMeter
+                            percentile={breakthroughScoreStats.cd.percentile}
+                            label="Buy"
+                            value={`${breakthroughScoreStats.cd.today.toFixed(0)} / ${breakthroughScoreStats.cd.avg.toFixed(0)}`}
+                            color="green"
+                        />
+                        <PercentileMeter
+                            percentile={breakthroughScoreStats.mc.percentile}
+                            label="Sell"
+                            value={`${breakthroughScoreStats.mc.today.toFixed(0)} / ${breakthroughScoreStats.mc.avg.toFixed(0)}`}
                             color="red"
                         />
                         {volumeStats && (
@@ -461,6 +513,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                     mcSignalBreadth={effectiveMcSignalBreadth}
                                     cdScoreBreadth={effectiveCdScoreBreadth}
                                     mcScoreBreadth={effectiveMcScoreBreadth}
+                                    cdBreakthroughScoreBreadth={effectiveCdBtScoreBreadth}
+                                    mcBreakthroughScoreBreadth={effectiveMcBtScoreBreadth}
                                     intervalWeights={intervalWeights}
                                     minDate={minDate}
                                     signals1234={selectedTicker ? undefined : signals1234}

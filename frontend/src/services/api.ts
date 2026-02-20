@@ -112,6 +112,8 @@ export const analysisApi = {
             mc_signal_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
             cd_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
             mc_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+            cd_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+            mc_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
         }>(`/analysis/ticker_signals/${ticker}`);
         return response.data;
     },
@@ -124,6 +126,8 @@ export const analysisApi = {
             mc_signal_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
             cd_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
             mc_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+            cd_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+            mc_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
             run_id: number | null
         }>(`/analysis/market_breadth/${encodeURIComponent(stockList)}`);
         return response.data;

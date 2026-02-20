@@ -78,6 +78,8 @@ interface MarketBreadthChartProps {
     mcSignalBreadth?: SignalBreadthDataPoint[];
     cdScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
     mcScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
+    cdBreakthroughScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
+    mcBreakthroughScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
     intervalWeights?: Record<string, number>;
     minDate?: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
@@ -196,6 +198,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     mcSignalBreadth = [],
     cdScoreBreadth = [],
     mcScoreBreadth = [],
+    cdBreakthroughScoreBreadth = [],
+    mcBreakthroughScoreBreadth = [],
     intervalWeights,
     minDate,
     signals1234,
@@ -335,6 +339,30 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 + (b.score_1d || 0) * effectiveWeights['1d'];
         });
 
+        // Process CD Breakthrough Score Breadth (indicator-score weighted, breakthrough only)
+        cdBreakthroughScoreBreadth.forEach(b => {
+            const dateStr = b.date;
+            if (!dataMap.has(dateStr)) dataMap.set(dateStr, { date: dateStr });
+            const d = dataMap.get(dateStr);
+            d.cdBtScore = (b.score_1h || 0) * effectiveWeights['1h']
+                + (b.score_2h || 0) * effectiveWeights['2h']
+                + (b.score_3h || 0) * effectiveWeights['3h']
+                + (b.score_4h || 0) * effectiveWeights['4h']
+                + (b.score_1d || 0) * effectiveWeights['1d'];
+        });
+
+        // Process MC Breakthrough Score Breadth (indicator-score weighted, breakthrough only)
+        mcBreakthroughScoreBreadth.forEach(b => {
+            const dateStr = b.date;
+            if (!dataMap.has(dateStr)) dataMap.set(dateStr, { date: dateStr });
+            const d = dataMap.get(dateStr);
+            d.mcBtScore = (b.score_1h || 0) * effectiveWeights['1h']
+                + (b.score_2h || 0) * effectiveWeights['2h']
+                + (b.score_3h || 0) * effectiveWeights['3h']
+                + (b.score_4h || 0) * effectiveWeights['4h']
+                + (b.score_1d || 0) * effectiveWeights['1d'];
+        });
+
         // Derive 1234 markers
         // If explicit signals1234 provided (e.g. for Index view), use those dates.
         // Otherwise derive from signal breadth data (e.g. for individual stock view).
@@ -382,7 +410,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         result = result.filter(d => d.close !== undefined);
 
         return result;
-    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, effectiveWeights, minDate]);
+    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, effectiveWeights, minDate]);
 
     // Visible slice
     const visibleData = useMemo(() => {
@@ -558,7 +586,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     );
 
     return (
-        <div className="flex flex-col h-[1100px] border rounded-lg bg-card p-4">
+        <div className="flex flex-col h-[1120px] border rounded-lg bg-card p-4">
             <div className="flex justify-between items-center mb-2 gap-2">
                 <h3 className="text-lg font-semibold text-foreground shrink-0">
                     {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}
@@ -705,7 +733,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 2. SPX Volume */}
-                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#00A5E3] z-10">Vol</span>
                     <span className="absolute bottom-1 left-2 text-[10px] text-muted-foreground z-10">{volumeScale.suffix}</span>
                     <ResponsiveContainer width="100%" height="100%">
@@ -737,7 +765,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 3. CD Signals by Interval (stacked bar) */}
-                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#60a5fa] z-10">CD</span>
                     <div className="absolute top-3 right-2 flex gap-1 z-10">
                         {INTERVALS.map(intv => (
@@ -774,7 +802,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 4. MC Signals by Interval (stacked bar) */}
-                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#f87171] z-10">MC</span>
                     <div className="absolute top-3 right-2 flex gap-1 z-10">
                         {INTERVALS.map(intv => (
@@ -811,7 +839,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 7. CD Score (indicator-weighted) */}
-                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">CD Score</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
@@ -839,7 +867,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 8. MC Score (indicator-weighted) */}
-                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">MC Score</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
@@ -866,8 +894,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     </ResponsiveContainer>
                 </div>
 
-                {/* 9. CD 1234 Counts (Buy) — stacked by interval */}
-                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative">
+                {/* 9. CD Breakthrough Counts (Buy) — stacked by interval */}
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">CD Breakthrough</span>
                     <div className="absolute top-3 right-2 flex gap-1 z-10">
                         {INTERVALS.map(intv => (
@@ -903,8 +931,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     </ResponsiveContainer>
                 </div>
 
-                {/* 10. MC 1234 Counts (Sell) — stacked by interval */}
-                <div className="flex-[0.6] min-h-0 border-b border-border/50 relative">
+                {/* 10. MC Breakthrough Counts (Sell) — stacked by interval */}
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">MC Breakthrough</span>
                     <div className="absolute top-3 right-2 flex gap-1 z-10">
                         {INTERVALS.map(intv => (
@@ -914,7 +942,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
-                            {commonXAxis(false)}
+                            {commonXAxis(true)}
                             <YAxis
                                 orientation="left"
                                 mirror={true}
@@ -935,6 +963,62 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                     isAnimationActive={false}
                                 />
                             ))}
+                            <ReferenceBlock />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* 11. CD Breakthrough Score (indicator-weighted, breakthrough only) */}
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative">
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#15803d] z-10">CD BT Score</span>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(true)}
+                            <YAxis
+                                orientation="left"
+                                mirror={true}
+                                domain={[0, 'auto']}
+                                tickFormatter={(val) => val === 0 ? '' : val}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={<></>} />
+                            <Bar
+                                dataKey="cdBtScore"
+                                fill="#15803d"
+                                name="CD Breakthrough Score"
+                                isAnimationActive={false}
+                            />
+                            <ReferenceBlock />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* 12. MC Breakthrough Score (indicator-weighted, breakthrough only) */}
+                <div className="flex-[0.6] min-h-0 border-b border-border/50 relative">
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#b91c1c] z-10">MC BT Score</span>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(false)}
+                            <YAxis
+                                orientation="left"
+                                mirror={true}
+                                domain={[0, 'auto']}
+                                tickFormatter={(val) => val === 0 ? '' : val}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={<></>} />
+                            <Bar
+                                dataKey="mcBtScore"
+                                fill="#b91c1c"
+                                name="MC Breakthrough Score"
+                                isAnimationActive={false}
+                            />
                             <ReferenceBlock />
                         </ComposedChart>
                     </ResponsiveContainer>
