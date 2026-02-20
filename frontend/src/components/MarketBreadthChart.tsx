@@ -189,6 +189,135 @@ const TickerSelector = ({ tickers, selectedTicker, onSelect, indexLabel }: {
         </div>
     );
 };
+
+// --- Per-panel Tooltip Components (matching CandleChart style) ---
+const formatVol = (v: number) => v >= 1e9 ? (v / 1e9).toFixed(1) + 'B' : v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e3 ? (v / 1e3).toFixed(0) + 'K' : String(v);
+
+const PriceTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    if (d.close == null) return null;
+    const isUp = d.close >= d.open;
+    return (
+        <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
+            <p className="font-semibold mb-1">{d.date}</p>
+            <div className="grid grid-cols-2 gap-x-4">
+                <span className="text-muted-foreground">Open:</span> <span className={`text-right ${isUp ? 'text-green-400' : 'text-red-400'}`}>{d.open?.toFixed(2)}</span>
+                <span className="text-muted-foreground">High:</span> <span className="text-right text-foreground">{d.high?.toFixed(2)}</span>
+                <span className="text-muted-foreground">Low:</span> <span className="text-right text-foreground">{d.low?.toFixed(2)}</span>
+                <span className="text-muted-foreground">Close:</span> <span className={`text-right ${isUp ? 'text-green-400' : 'text-red-400'}`}>{d.close?.toFixed(2)}</span>
+            </div>
+            {(d.ema_20 != null || d.sma_50 != null || d.sma_100 != null || d.sma_200 != null) && (
+                <div className="mt-1 pt-1 border-t border-border/50 grid grid-cols-2 gap-x-4">
+                    {d.ema_20 != null && <><span className="text-muted-foreground">EMA 20:</span> <span className="text-right" style={{ color: '#3b82f6' }}>{d.ema_20.toFixed(2)}</span></>}
+                    {d.sma_50 != null && <><span className="text-muted-foreground">SMA 50:</span> <span className="text-right" style={{ color: '#f59e0b' }}>{d.sma_50.toFixed(2)}</span></>}
+                    {d.sma_100 != null && <><span className="text-muted-foreground">SMA 100:</span> <span className="text-right" style={{ color: '#a855f7' }}>{d.sma_100.toFixed(2)}</span></>}
+                    {d.sma_200 != null && <><span className="text-muted-foreground">SMA 200:</span> <span className="text-right" style={{ color: '#ef4444' }}>{d.sma_200.toFixed(2)}</span></>}
+                </div>
+            )}
+            {(d.cd_1234_signal || d.mc_1234_signal) && (
+                <div className="mt-1 pt-1 border-t border-border/50 flex gap-2">
+                    {d.cd_1234_signal && <span className="text-green-500 font-bold">↑ CD 1234</span>}
+                    {d.mc_1234_signal && <span className="text-red-500 font-bold">↓ MC 1234</span>}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const VolumeTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    return (
+        <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
+            <p className="font-semibold mb-1">{d.date}</p>
+            <div className="grid grid-cols-2 gap-x-4">
+                <span className="text-muted-foreground">Volume:</span>
+                <span className="text-right text-foreground">{d.spxVolume ? formatVol(d.spxVolume) : '-'}</span>
+            </div>
+        </div>
+    );
+};
+
+const INTERVAL_KEYS = ['1h', '2h', '3h', '4h', '1d'] as const;
+
+const SignalTooltip = ({ active, payload, signalType }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    const prefix = signalType === 'cd' ? 'cd_' : 'mc_';
+    const label = signalType === 'cd' ? 'CD' : 'MC';
+    const color = signalType === 'cd' ? 'text-green-400' : 'text-red-400';
+    const intervals = INTERVAL_KEYS.map(k => ({ key: k, val: d[`${prefix}${k}`] || 0 }));
+    const total = intervals.reduce((sum, i) => sum + i.val, 0);
+    if (total === 0) return (
+        <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
+            <p className="font-semibold">{d.date}</p>
+            <p className="text-muted-foreground mt-1">No {label} signals</p>
+        </div>
+    );
+    return (
+        <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
+            <p className="font-semibold mb-1">{d.date}</p>
+            <div className="grid grid-cols-2 gap-x-4">
+                {intervals.filter(i => i.val > 0).map(i => (
+                    <React.Fragment key={i.key}>
+                        <span className="text-muted-foreground">{i.key}:</span>
+                        <span className={`text-right ${color}`}>{i.val}</span>
+                    </React.Fragment>
+                ))}
+                <span className="text-muted-foreground font-semibold border-t border-border/50 pt-0.5 mt-0.5">Total:</span>
+                <span className={`text-right font-semibold border-t border-border/50 pt-0.5 mt-0.5 ${color}`}>{total}</span>
+            </div>
+        </div>
+    );
+};
+
+const ScoreTooltip = ({ active, payload, scoreKey, label, color }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    const val = d[scoreKey];
+    return (
+        <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
+            <p className="font-semibold mb-1">{d.date}</p>
+            <div className="grid grid-cols-2 gap-x-4">
+                <span className="text-muted-foreground">{label}:</span>
+                <span className={`text-right ${color}`}>{val != null && val > 0 ? val.toFixed(1) : '0'}</span>
+            </div>
+        </div>
+    );
+};
+
+const BreakthroughTooltip = ({ active, payload, signalType }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    const prefix = signalType === 'cd' ? 'cd_buy_' : 'mc_sell_';
+    const label = signalType === 'cd' ? 'CD BT' : 'MC BT';
+    const color = signalType === 'cd' ? 'text-green-400' : 'text-red-400';
+    const intervals = INTERVAL_KEYS.map(k => ({ key: k, val: d[`${prefix}${k}`] || 0 }));
+    const total = intervals.reduce((sum, i) => sum + i.val, 0);
+    if (total === 0) return (
+        <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
+            <p className="font-semibold">{d.date}</p>
+            <p className="text-muted-foreground mt-1">No {label} signals</p>
+        </div>
+    );
+    return (
+        <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
+            <p className="font-semibold mb-1">{d.date}</p>
+            <div className="grid grid-cols-2 gap-x-4">
+                {intervals.filter(i => i.val > 0).map(i => (
+                    <React.Fragment key={i.key}>
+                        <span className="text-muted-foreground">{i.key}:</span>
+                        <span className={`text-right ${color}`}>{i.val}</span>
+                    </React.Fragment>
+                ))}
+                <span className="text-muted-foreground font-semibold border-t border-border/50 pt-0.5 mt-0.5">Total:</span>
+                <span className={`text-right font-semibold border-t border-border/50 pt-0.5 mt-0.5 ${color}`}>{total}</span>
+            </div>
+        </div>
+    );
+};
+
 export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     title,
     spxData,
@@ -214,6 +343,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     const [zoomState, setZoomState] = useState<{ start: number, end: number } | null>(null);
     const [selection, setSelection] = useState<{ start: number, end: number } | null>(null);
     const isSelectingRef = useRef(false);
+
 
     // We only need one ref to track mouse movement for all synchronized charts
     // But we need to attach listeners to a wrapper
@@ -589,6 +719,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         ) : <></>
     );
 
+
     return (
         <div className="flex flex-col h-[1120px] border rounded-lg bg-card p-4">
             <div className="flex justify-between items-center mb-2 gap-2">
@@ -634,7 +765,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 width={38}
                                 tick={{ fontSize: 10 }}
                             />
-                            <Tooltip content={<></>} />
+                            <Tooltip content={<PriceTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
                             <Bar
                                 dataKey={d => [d.low, d.high]}
                                 shape={<CandleShape />}
@@ -754,7 +885,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<></>} />
+                            <Tooltip content={<VolumeTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
                             <Bar dataKey="spxVolume" opacity={0.6} name="Volume">
                                 {visibleData.map((entry, index) => (
                                     <Cell
@@ -789,7 +920,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<></>} />
+                            <Tooltip content={<SignalTooltip signalType="cd" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
                             {INTERVALS.map(intv => (
                                 <Bar
                                     key={`cd_${intv}`}
@@ -826,7 +957,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<></>} />
+                            <Tooltip content={<SignalTooltip signalType="mc" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
                             {INTERVALS.map(intv => (
                                 <Bar
                                     key={`mc_${intv}`}
@@ -858,7 +989,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<></>} />
+                            <Tooltip content={<ScoreTooltip scoreKey="cdNewScore" label="CD Score" color="text-green-400" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
                             <Bar
                                 dataKey="cdNewScore"
                                 fill="#22c55e"
@@ -886,7 +1017,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<></>} />
+                            <Tooltip content={<ScoreTooltip scoreKey="mcNewScore" label="MC Score" color="text-red-400" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
                             <Bar
                                 dataKey="mcNewScore"
                                 fill="#ef4444"
@@ -919,7 +1050,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<></>} />
+                            <Tooltip content={<BreakthroughTooltip signalType="cd" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
                             {INTERVALS.map(intv => (
                                 <Bar
                                     key={`cd_buy_${intv}`}
@@ -956,7 +1087,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<></>} />
+                            <Tooltip content={<BreakthroughTooltip signalType="mc" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
                             {INTERVALS.map(intv => (
                                 <Bar
                                     key={`mc_sell_${intv}`}
@@ -988,7 +1119,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<></>} />
+                            <Tooltip content={<ScoreTooltip scoreKey="cdBtScore" label="CD BT Score" color="text-green-500" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
                             <Bar
                                 dataKey="cdBtScore"
                                 fill="#15803d"
@@ -1016,7 +1147,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<></>} />
+                            <Tooltip content={<ScoreTooltip scoreKey="mcBtScore" label="MC BT Score" color="text-red-500" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} />
                             <Bar
                                 dataKey="mcBtScore"
                                 fill="#b91c1c"
