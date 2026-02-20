@@ -283,6 +283,10 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             d.mc_sell_1d = b.count_1d || 0;
         });
 
+        // Only normalize by total stock count when viewing index-level (aggregate) data.
+        // For individual ticker views, the scores are already for a single stock.
+        const divisor = !selectedTicker && tickers && tickers.length > 0 ? tickers.length : 1;
+
         // Process CD Signal Breadth (per-interval) + compute CD Score
         cdSignalBreadth.forEach(b => {
             const dateStr = b.date;
@@ -294,9 +298,9 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             d.cd_4h = b.count_4h || 0;
             d.cd_1d = b.count_1d || 0;
             // CD Score = weighted sum using configurable interval weights
-            d.cdScore = d.cd_1h * effectiveWeights['1h'] + d.cd_2h * effectiveWeights['2h']
+            d.cdScore = (d.cd_1h * effectiveWeights['1h'] + d.cd_2h * effectiveWeights['2h']
                 + d.cd_3h * effectiveWeights['3h'] + d.cd_4h * effectiveWeights['4h']
-                + d.cd_1d * effectiveWeights['1d'];
+                + d.cd_1d * effectiveWeights['1d']) / divisor;
         });
 
         // Process MC Signal Breadth (per-interval) + compute MC Score
@@ -310,9 +314,9 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             d.mc_4h = b.count_4h || 0;
             d.mc_1d = b.count_1d || 0;
             // MC Score = weighted sum using configurable interval weights
-            d.mcScore = d.mc_1h * effectiveWeights['1h'] + d.mc_2h * effectiveWeights['2h']
+            d.mcScore = (d.mc_1h * effectiveWeights['1h'] + d.mc_2h * effectiveWeights['2h']
                 + d.mc_3h * effectiveWeights['3h'] + d.mc_4h * effectiveWeights['4h']
-                + d.mc_1d * effectiveWeights['1d'];
+                + d.mc_1d * effectiveWeights['1d']) / divisor;
         });
 
         // Process CD Score Breadth (indicator-score weighted) — recompute from per-interval raw sums
@@ -320,11 +324,11 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             const dateStr = b.date;
             if (!dataMap.has(dateStr)) dataMap.set(dateStr, { date: dateStr });
             const d = dataMap.get(dateStr);
-            d.cdNewScore = (b.score_1h || 0) * effectiveWeights['1h']
+            d.cdNewScore = ((b.score_1h || 0) * effectiveWeights['1h']
                 + (b.score_2h || 0) * effectiveWeights['2h']
                 + (b.score_3h || 0) * effectiveWeights['3h']
                 + (b.score_4h || 0) * effectiveWeights['4h']
-                + (b.score_1d || 0) * effectiveWeights['1d'];
+                + (b.score_1d || 0) * effectiveWeights['1d']) / divisor;
         });
 
         // Process MC Score Breadth (indicator-score weighted) — recompute from per-interval raw sums
@@ -332,11 +336,11 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             const dateStr = b.date;
             if (!dataMap.has(dateStr)) dataMap.set(dateStr, { date: dateStr });
             const d = dataMap.get(dateStr);
-            d.mcNewScore = (b.score_1h || 0) * effectiveWeights['1h']
+            d.mcNewScore = ((b.score_1h || 0) * effectiveWeights['1h']
                 + (b.score_2h || 0) * effectiveWeights['2h']
                 + (b.score_3h || 0) * effectiveWeights['3h']
                 + (b.score_4h || 0) * effectiveWeights['4h']
-                + (b.score_1d || 0) * effectiveWeights['1d'];
+                + (b.score_1d || 0) * effectiveWeights['1d']) / divisor;
         });
 
         // Process CD Breakthrough Score Breadth (indicator-score weighted, breakthrough only)
@@ -344,11 +348,11 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             const dateStr = b.date;
             if (!dataMap.has(dateStr)) dataMap.set(dateStr, { date: dateStr });
             const d = dataMap.get(dateStr);
-            d.cdBtScore = (b.score_1h || 0) * effectiveWeights['1h']
+            d.cdBtScore = ((b.score_1h || 0) * effectiveWeights['1h']
                 + (b.score_2h || 0) * effectiveWeights['2h']
                 + (b.score_3h || 0) * effectiveWeights['3h']
                 + (b.score_4h || 0) * effectiveWeights['4h']
-                + (b.score_1d || 0) * effectiveWeights['1d'];
+                + (b.score_1d || 0) * effectiveWeights['1d']) / divisor;
         });
 
         // Process MC Breakthrough Score Breadth (indicator-score weighted, breakthrough only)
@@ -356,11 +360,11 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             const dateStr = b.date;
             if (!dataMap.has(dateStr)) dataMap.set(dateStr, { date: dateStr });
             const d = dataMap.get(dateStr);
-            d.mcBtScore = (b.score_1h || 0) * effectiveWeights['1h']
+            d.mcBtScore = ((b.score_1h || 0) * effectiveWeights['1h']
                 + (b.score_2h || 0) * effectiveWeights['2h']
                 + (b.score_3h || 0) * effectiveWeights['3h']
                 + (b.score_4h || 0) * effectiveWeights['4h']
-                + (b.score_1d || 0) * effectiveWeights['1d'];
+                + (b.score_1d || 0) * effectiveWeights['1d']) / divisor;
         });
 
         // Derive 1234 markers
@@ -410,7 +414,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         result = result.filter(d => d.close !== undefined);
 
         return result;
-    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, effectiveWeights, minDate]);
+    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, effectiveWeights, minDate, selectedTicker, tickers]);
 
     // Visible slice
     const visibleData = useMemo(() => {
@@ -849,7 +853,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 orientation="left"
                                 mirror={true}
                                 domain={[0, 'auto']}
-                                tickFormatter={(val) => val === 0 ? '' : val}
+                                tickFormatter={(val) => val === 0 ? '' : Number.isInteger(val) ? val : val.toFixed(2)}
                                 width={38}
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
@@ -877,7 +881,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 orientation="left"
                                 mirror={true}
                                 domain={[0, 'auto']}
-                                tickFormatter={(val) => val === 0 ? '' : val}
+                                tickFormatter={(val) => val === 0 ? '' : Number.isInteger(val) ? val : val.toFixed(2)}
                                 width={38}
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
@@ -910,7 +914,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 orientation="left"
                                 mirror={true}
                                 domain={[0, 'auto']}
-                                tickFormatter={(val) => val === 0 ? '' : val}
+                                tickFormatter={(val) => val === 0 ? '' : Number.isInteger(val) ? val : val.toFixed(2)}
                                 width={38}
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
@@ -947,7 +951,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 orientation="left"
                                 mirror={true}
                                 domain={[0, 'auto']}
-                                tickFormatter={(val) => val === 0 ? '' : val}
+                                tickFormatter={(val) => val === 0 ? '' : Number.isInteger(val) ? val : val.toFixed(2)}
                                 width={38}
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
@@ -979,7 +983,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 orientation="left"
                                 mirror={true}
                                 domain={[0, 'auto']}
-                                tickFormatter={(val) => val === 0 ? '' : val}
+                                tickFormatter={(val) => val === 0 ? '' : Number.isInteger(val) ? val : val.toFixed(2)}
                                 width={38}
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
@@ -1007,7 +1011,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 orientation="left"
                                 mirror={true}
                                 domain={[0, 'auto']}
-                                tickFormatter={(val) => val === 0 ? '' : val}
+                                tickFormatter={(val) => val === 0 ? '' : Number.isInteger(val) ? val : val.toFixed(2)}
                                 width={38}
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
