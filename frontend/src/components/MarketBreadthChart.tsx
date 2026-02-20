@@ -898,7 +898,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
                 {/* 3. CD Signals by Interval (stacked bar) */}
                 <div className="flex-[0.4] min-h-0 border-b border-border/50 relative" style={{ zIndex: 80 }}>
-                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#60a5fa] z-10">CD</span>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">CD</span>
                     <div className="absolute top-3 right-2 flex gap-1 z-10">
                         {INTERVALS.map(intv => (
                             <span key={intv} className="text-[8px] font-medium" style={{ color: INTERVAL_COLORS[intv] }}>{intv}</span>
@@ -1102,7 +1102,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
                 {/* 11. CD Breakthrough Score (indicator-weighted, breakthrough only) */}
                 <div className="flex-[0.4] min-h-0 border-b border-border/50 relative" style={{ zIndex: 20 }}>
-                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#15803d] z-10">CD BT Score</span>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#22c55e] z-10">CD BT Score</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
@@ -1116,10 +1116,10 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<ScoreTooltip scoreKey="cdBtScore" label="CD BT Score" color="text-green-500" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={<ScoreTooltip scoreKey="cdBtScore" label="CD BT Score" color="text-[#22c55e]" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Bar
                                 dataKey="cdBtScore"
-                                fill="#15803d"
+                                fill="#22c55e"
                                 name="CD Breakthrough Score"
                                 isAnimationActive={false}
                             />
@@ -1130,7 +1130,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
                 {/* 12. MC Breakthrough Score (indicator-weighted, breakthrough only) */}
                 <div className="flex-[0.6] min-h-0 border-b border-border/50 relative" style={{ zIndex: 10 }}>
-                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#b91c1c] z-10">MC BT Score</span>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">MC BT Score</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
@@ -1144,10 +1144,10 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<ScoreTooltip scoreKey="mcBtScore" label="MC BT Score" color="text-red-500" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={<ScoreTooltip scoreKey="mcBtScore" label="MC BT Score" color="text-[#ef4444]" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Bar
                                 dataKey="mcBtScore"
-                                fill="#b91c1c"
+                                fill="#ef4444"
                                 name="MC Breakthrough Score"
                                 isAnimationActive={false}
                             />
