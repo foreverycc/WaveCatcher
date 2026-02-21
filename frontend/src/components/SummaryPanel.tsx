@@ -419,7 +419,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             ) : (
                                 <tr>
                                     <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                                        No signals in the last 7 days
+                                        No signals in selected date range
                                     </td>
                                 </tr>
                             )}
@@ -537,7 +537,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             ) : (
                                 <tr>
                                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                                        No signals in the last 7 days
+                                        No signals in selected date range
                                     </td>
                                 </tr>
                             )}
