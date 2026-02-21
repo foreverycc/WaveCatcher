@@ -16,6 +16,7 @@ interface DashboardProps {
     showLogs: boolean;
     setShowLogs: (show: boolean) => void;
     dateRange: { start: string; end: string };
+    breadthDateRange: { start: string; end: string };
     selectedIndices?: string[];
     availableIndices?: { key: string, symbol: string, stock_list: string, tickers: string[] }[];
 }
@@ -83,6 +84,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     showLogs,
     setShowLogs,
     dateRange,
+    breadthDateRange,
     selectedIndices,
     availableIndices
 }) => {
@@ -391,6 +393,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         selectedIndices={selectedIndices}
                         availableIndices={availableIndices}
                         dateRange={dateRange}
+                        breadthDateRange={breadthDateRange}
                         onRowClick={(row, type) => {
                             setActiveTab(type === 'bull' ? 'cd' : 'mc');
                             setActiveSubTab('best_intervals_50');

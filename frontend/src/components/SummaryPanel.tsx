@@ -3,7 +3,7 @@ import { useQuery, useQueries } from '@tanstack/react-query';
 import { analysisApi, type ScoringConfig } from '../services/api';
 import { IndexSummaryCard } from './IndexSummaryCard';
 import { cn } from '../utils/cn';
-import { subYears, parseISO, format } from 'date-fns';
+import { parseISO, format } from 'date-fns';
 import { DetailedChartRow, InteractiveOptionChart } from '../pages/Dashboard';
 import { Maximize2, Minimize2 } from 'lucide-react';
 
@@ -225,9 +225,10 @@ interface SummaryPanelProps {
     selectedIndices?: string[];
     availableIndices?: { key: string, symbol: string, stock_list: string, tickers: string[] }[];
     dateRange: { start: string; end: string };
+    breadthDateRange: { start: string; end: string };
 }
 
-export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [], availableIndices = [], dateRange }) => {
+export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [], availableIndices = [], dateRange, breadthDateRange }) => {
 
     // --- Data Fetching ---
 
@@ -349,8 +350,9 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
         enabled: !!runId
     });
 
-    // Date Filters
-    const oneYearAgo = useMemo(() => subYears(new Date(), 1), []);
+    // Date Filters — breadthDateRange for Index Cards/Chart, dateRange for signal tables
+    const breadthMinDate = useMemo(() => parseISO(breadthDateRange.start), [breadthDateRange.start]);
+    const breadthMaxDate = useMemo(() => parseISO(breadthDateRange.end), [breadthDateRange.end]);
 
     // --- Helpers ---
     const formatPercent = (val: number) => `${val.toFixed(1)}%`;
@@ -574,7 +576,8 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             cdBreakthroughScoreBreadth={breadth?.cd_breakthrough_score_breadth ?? []}
                             mcBreakthroughScoreBreadth={breadth?.mc_breakthrough_score_breadth ?? []}
                             intervalWeights={scoringConfig?.interval_weights}
-                            minDate={oneYearAgo}
+                            minDate={breadthMinDate}
+                            maxDate={breadthMaxDate}
                             signals1234={signals}
                             tickers={idx.tickers}
                             indexTicker={idx.symbol}

@@ -16,6 +16,8 @@ interface SidebarProps {
     setShowLogs: (show: boolean) => void;
     dateRange?: { start: string; end: string };
     setDateRange?: (range: { start: string; end: string }) => void;
+    breadthDateRange?: { start: string; end: string };
+    setBreadthDateRange?: (range: { start: string; end: string }) => void;
 
     // Multi-index props
     availableIndices?: { key: string; symbol: string; stock_list: string; tickers: string[] }[];
@@ -35,6 +37,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     setShowLogs,
     dateRange,
     setDateRange,
+    breadthDateRange,
+    setBreadthDateRange,
     availableIndices,
     selectedIndices,
     setSelectedIndices,
@@ -195,15 +199,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         {!isCollapsed && <span className="text-sm">View Logs</span>}
                     </button>
 
-                    {/* Date Range Picker - Moved to bottom */}
+                    {/* Date Range Pickers */}
                     {!isCollapsed ? (
-                        <div className="px-2">
-                            <label className="text-xs font-medium text-muted-foreground px-1 mb-2 block">Date Range</label>
-                            <DateRangeCalendar
-                                startDate={dateRange?.start || ''}
-                                endDate={dateRange?.end || ''}
-                                onChange={(range) => setDateRange?.(range)}
-                            />
+                        <div className="space-y-3 px-2">
+                            <div>
+                                <label className="text-xs font-medium text-muted-foreground px-1 mb-1.5 block">Market Breadth</label>
+                                <DateRangeCalendar
+                                    startDate={breadthDateRange?.start || ''}
+                                    endDate={breadthDateRange?.end || ''}
+                                    onChange={(range) => setBreadthDateRange?.(range)}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-medium text-muted-foreground px-1 mb-1.5 block">Signals & Analysis</label>
+                                <DateRangeCalendar
+                                    startDate={dateRange?.start || ''}
+                                    endDate={dateRange?.end || ''}
+                                    onChange={(range) => setDateRange?.(range)}
+                                />
+                            </div>
                         </div>
                     ) : (
                         <div title={`Range: ${dateRange?.start} - ${dateRange?.end}`} className="w-10 h-10 flex items-center justify-center rounded-lg bg-muted text-muted-foreground">

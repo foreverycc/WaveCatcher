@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { analysisApi } from '../services/api';
 import { MarketBreadthChart } from './MarketBreadthChart';
@@ -36,6 +37,7 @@ interface IndexSummaryCardProps {
     mcBreakthroughScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
     intervalWeights?: Record<string, number>;
     minDate: Date;
+    maxDate?: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
     tickers?: string[];
     indexTicker?: string;
@@ -91,6 +93,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     mcBreakthroughScoreBreadth = [],
     intervalWeights,
     minDate,
+    maxDate,
     signals1234,
     tickers = [],
     indexTicker
@@ -133,36 +136,59 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     const effectiveCdBtScoreBreadth = useTickerSignals ? (tickerSignals!.cd_breakthrough_score_breadth ?? []) : cdBreakthroughScoreBreadth;
     const effectiveMcBtScoreBreadth = useTickerSignals ? (tickerSignals!.mc_breakthrough_score_breadth ?? []) : mcBreakthroughScoreBreadth;
 
+    // --- Filter data by date range ---
+    const minDateStr = useMemo(() => format(minDate, 'yyyy-MM-dd'), [minDate]);
+    const maxDateStr = useMemo(() => maxDate ? format(maxDate, 'yyyy-MM-dd') : null, [maxDate]);
+
+    const filteredSpxData = useMemo(() => {
+        if (!spxData) return [];
+        return spxData.filter(d => {
+            const date = d.time?.split('T')[0] ?? '';
+            if (date < minDateStr) return false;
+            if (maxDateStr && date > maxDateStr) return false;
+            return true;
+        });
+    }, [spxData, minDateStr, maxDateStr]);
+
+    const filterByDateRange = useCallback(<T extends { date: string }>(data: T[]): T[] => {
+        if (!data) return [];
+        return data.filter(d => {
+            if (d.date < minDateStr) return false;
+            if (maxDateStr && d.date > maxDateStr) return false;
+            return true;
+        });
+    }, [minDateStr, maxDateStr]);
+
     // --- Derive summary metrics from existing data ---
 
     // Latest close price + daily change
     const priceInfo = useMemo(() => {
-        if (!spxData || spxData.length === 0) return null;
-        const latest = spxData[spxData.length - 1];
-        const prev = spxData.length > 1 ? spxData[spxData.length - 2] : null;
+        if (!filteredSpxData || filteredSpxData.length === 0) return null;
+        const latest = filteredSpxData[filteredSpxData.length - 1];
+        const prev = filteredSpxData.length > 1 ? filteredSpxData[filteredSpxData.length - 2] : null;
         const change = prev ? ((latest.close - prev.close) / prev.close) * 100 : 0;
         return {
             close: latest.close,
             change,
             date: latest.time?.split('T')[0] ?? ''
         };
-    }, [spxData]);
+    }, [filteredSpxData]);
 
     // CD/MC signals for last 7 trading days (from price history 1d data)
     const recentSignals = useMemo(() => {
-        if (!spxData || spxData.length === 0) return [];
-        const last7 = spxData.slice(-7);
+        if (!filteredSpxData || filteredSpxData.length === 0) return [];
+        const last7 = filteredSpxData.slice(-7);
         return last7.map(d => ({
             date: d.time?.split('T')[0] ?? '',
             cd: !!d.cd_signal,
             mc: !!d.mc_signal
         }));
-    }, [spxData]);
+    }, [filteredSpxData]);
 
     // 1234 signals for last 7 days — per-day dot format (matches recentSignals shape)
     const recent1234Dots = useMemo(() => {
-        if (!signals1234 || !spxData || spxData.length === 0) return [] as { date: string, cd: boolean, mc: boolean }[];
-        const last7 = spxData.slice(-7);
+        if (!signals1234 || !filteredSpxData || filteredSpxData.length === 0) return [] as { date: string, cd: boolean, mc: boolean }[];
+        const last7 = filteredSpxData.slice(-7);
         const cdSet = new Set(signals1234.cd_dates || []);
         const mcSet = new Set(signals1234.mc_dates || []);
         return last7.map(d => {
@@ -173,7 +199,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                 mc: mcSet.has(date)
             };
         });
-    }, [signals1234, spxData]);
+    }, [signals1234, filteredSpxData]);
 
     // Helper: compute percentile of a value within a sorted array
     const computePercentile = (value: number, data: number[]): number => {
@@ -191,21 +217,19 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
 
     // Breadth stats: today's count + percentile
     const breadthStats = useMemo(() => {
-        // Get the latest trading date from price data to match breadth entries
-        const latestDate = spxData && spxData.length > 0
-            ? spxData[spxData.length - 1]?.time?.split('T')[0] ?? ''
+        const latestDate = filteredSpxData && filteredSpxData.length > 0
+            ? filteredSpxData[filteredSpxData.length - 1]?.time?.split('T')[0] ?? ''
             : '';
         const divisor = tickers.length > 0 ? tickers.length : 1;
-        // Total trading days from spxData (cdBreadth is sparse — only days with signals)
-        const totalDays = spxData ? spxData.length : 0;
+        const totalDays = filteredSpxData ? filteredSpxData.length : 0;
 
         const computeStats = (data: BreadthDataPoint[]) => {
-            if (!data || data.length === 0 || totalDays === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
+            const filtered = filterByDateRange(data);
+            if (!filtered || filtered.length === 0 || totalDays === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
             const totalCount = (d: BreadthDataPoint) => ((d.count_1h || 0) + (d.count_2h || 0) + (d.count_3h || 0) + (d.count_4h || 0) + (d.count_1d || 0)) / divisor;
-            const todayEntry = data.find(d => d.date === latestDate);
+            const todayEntry = filtered.find(d => d.date === latestDate);
             const today = todayEntry ? totalCount(todayEntry) : 0;
-            // Pad with zeros for days not in the sparse BT data
-            const signalCounts = data.map(d => totalCount(d));
+            const signalCounts = filtered.map(d => totalCount(d));
             const zeroPadding = new Array(Math.max(0, totalDays - signalCounts.length)).fill(0);
             const counts = [...signalCounts, ...zeroPadding];
             const avg = counts.reduce((a, b) => a + b, 0) / counts.length;
@@ -220,21 +244,22 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             cd: computeStats(cdBreadth),
             mc: computeStats(mcBreadth)
         };
-    }, [cdBreadth, mcBreadth, spxData, tickers]);
+    }, [cdBreadth, mcBreadth, filteredSpxData, tickers, filterByDateRange]);
 
     // Signal Breadth stats (Today vs Avg + Percentile)
     const signalStats = useMemo(() => {
-        const latestDate = spxData && spxData.length > 0
-            ? spxData[spxData.length - 1]?.time?.split('T')[0] ?? ''
+        const latestDate = filteredSpxData && filteredSpxData.length > 0
+            ? filteredSpxData[filteredSpxData.length - 1]?.time?.split('T')[0] ?? ''
             : '';
         const divisor = tickers.length > 0 ? tickers.length : 1;
 
         const computeStats = (data: any[]) => {
-            if (!data || data.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
+            const filtered = filterByDateRange(data);
+            if (!filtered || filtered.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
             const totalCount = (d: any) => ((d.count_1h || 0) + (d.count_2h || 0) + (d.count_3h || 0) + (d.count_4h || 0) + (d.count_1d || 0)) / divisor;
-            const todayEntry = data.find(d => d.date === latestDate);
+            const todayEntry = filtered.find(d => d.date === latestDate);
             const today = todayEntry ? totalCount(todayEntry) : 0;
-            const counts = data.map(d => totalCount(d));
+            const counts = filtered.map(d => totalCount(d));
             const avg = counts.reduce((a, b) => a + b, 0) / counts.length;
             const sorted = [...counts].sort((a, b) => a - b);
             const median = sorted.length % 2 === 0
@@ -247,12 +272,12 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             cd: computeStats(cdSignalBreadth),
             mc: computeStats(mcSignalBreadth)
         };
-    }, [cdSignalBreadth, mcSignalBreadth, spxData, tickers]);
+    }, [cdSignalBreadth, mcSignalBreadth, filteredSpxData, tickers, filterByDateRange]);
 
     // Score Breadth stats (Today vs Avg + Percentile)
     const scoreStats = useMemo(() => {
-        const latestDate = spxData && spxData.length > 0
-            ? spxData[spxData.length - 1]?.time?.split('T')[0] ?? ''
+        const latestDate = filteredSpxData && filteredSpxData.length > 0
+            ? filteredSpxData[filteredSpxData.length - 1]?.time?.split('T')[0] ?? ''
             : '';
         const divisor = tickers.length > 0 ? tickers.length : 1;
         const effectiveWeights = intervalWeights || { '1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32 };
@@ -263,10 +288,11 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         };
 
         const computeStats = (data: any[]) => {
-            if (!data || data.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
-            const todayEntry = data.find(d => d.date === latestDate);
+            const filtered = filterByDateRange(data);
+            if (!filtered || filtered.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
+            const todayEntry = filtered.find(d => d.date === latestDate);
             const today = todayEntry ? totalScore(todayEntry) : 0;
-            const scores = data.map(d => totalScore(d));
+            const scores = filtered.map(d => totalScore(d));
             const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
             const sorted = [...scores].sort((a, b) => a - b);
             const median = sorted.length % 2 === 0
@@ -279,26 +305,27 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             cd: computeStats(cdScoreBreadth),
             mc: computeStats(mcScoreBreadth)
         };
-    }, [cdScoreBreadth, mcScoreBreadth, spxData, tickers, intervalWeights]);
+    }, [cdScoreBreadth, mcScoreBreadth, filteredSpxData, tickers, intervalWeights, filterByDateRange]);
 
     // Breakthrough Score stats (same approach as scoreStats)
     const breakthroughScoreStats = useMemo(() => {
-        if (!spxData || spxData.length === 0) return { cd: { today: 0, avg: 0, median: 0, percentile: 0 }, mc: { today: 0, avg: 0, median: 0, percentile: 0 } };
-        const latestDate = spxData[spxData.length - 1]?.time?.split('T')[0] ?? '';
+        if (!filteredSpxData || filteredSpxData.length === 0) return { cd: { today: 0, avg: 0, median: 0, percentile: 0 }, mc: { today: 0, avg: 0, median: 0, percentile: 0 } };
+        const latestDate = filteredSpxData[filteredSpxData.length - 1]?.time?.split('T')[0] ?? '';
         const effectiveWeights = intervalWeights || { '1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32 };
         const divisor = tickers.length > 0 ? tickers.length : 1;
-        const totalDays = spxData.length;
+        const totalDays = filteredSpxData.length;
         const totalScore = (d: any) => {
             return ((d.score_1h || 0) * effectiveWeights['1h'] + (d.score_2h || 0) * effectiveWeights['2h']
                 + (d.score_3h || 0) * effectiveWeights['3h'] + (d.score_4h || 0) * effectiveWeights['4h']
                 + (d.score_1d || 0) * effectiveWeights['1d']) / divisor;
         };
         const computeStats = (data: any[]) => {
-            if (!data || data.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
-            const todayEntry = data.find(d => d.date === latestDate);
+            const filtered = filterByDateRange(data);
+            if (!filtered || filtered.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
+            const todayEntry = filtered.find(d => d.date === latestDate);
             const today = todayEntry ? totalScore(todayEntry) : 0;
             // Pad with zeros for days not in the sparse BT score data
-            const signalScores = data.map(d => totalScore(d));
+            const signalScores = filtered.map(d => totalScore(d));
             const zeroPadding = new Array(Math.max(0, totalDays - signalScores.length)).fill(0);
             const scores = [...signalScores, ...zeroPadding];
             const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
@@ -310,22 +337,22 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             return { today, avg, median, percentile };
         };
         return {
-            cd: computeStats(cdBreakthroughScoreBreadth),
-            mc: computeStats(mcBreakthroughScoreBreadth)
+            cd: computeStats(effectiveCdBtScoreBreadth),
+            mc: computeStats(effectiveMcBtScoreBreadth)
         };
-    }, [cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, spxData, intervalWeights, tickers]);
+    }, [effectiveCdBtScoreBreadth, effectiveMcBtScoreBreadth, filteredSpxData, tickers, intervalWeights, filterByDateRange]);
 
     // Volume: today vs 1yr average + percentile
     const volumeStats = useMemo(() => {
-        if (!spxData || spxData.length === 0) return null;
-        const todayVol = spxData[spxData.length - 1]?.volume ?? 0;
-        const volumes = spxData.map((d: any) => d.volume).filter((v: number) => v > 0);
+        if (!filteredSpxData || filteredSpxData.length === 0) return null;
+        const todayVol = filteredSpxData[filteredSpxData.length - 1]?.volume ?? 0;
+        const volumes = filteredSpxData.map((d: any) => d.volume).filter((v: number) => v > 0);
         if (volumes.length === 0) return null;
         const avg = volumes.reduce((a: number, b: number) => a + b, 0) / volumes.length;
         const ratio = avg > 0 ? ((todayVol - avg) / avg) * 100 : 0;
         const percentile = computePercentile(todayVol, volumes);
         return { today: todayVol, avg, ratio, percentile };
-    }, [spxData]);
+    }, [filteredSpxData]);
 
     // Format volume
     const formatVol = (v: number) => {
@@ -558,6 +585,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                         mcBreakthroughScoreBreadth={effectiveMcBtScoreBreadth}
                                         intervalWeights={intervalWeights}
                                         minDate={minDate}
+                                        maxDate={maxDate}
                                         signals1234={selectedTicker ? undefined : signals1234}
                                         tickers={tickers}
                                         selectedTicker={selectedTicker}
@@ -609,6 +637,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             mcBreakthroughScoreBreadth={effectiveMcBtScoreBreadth}
                             intervalWeights={intervalWeights}
                             minDate={minDate}
+                            maxDate={maxDate}
                             signals1234={selectedTicker ? undefined : signals1234}
                             tickers={tickers}
                             selectedTicker={selectedTicker}

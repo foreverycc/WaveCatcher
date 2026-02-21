@@ -82,6 +82,7 @@ interface MarketBreadthChartProps {
     mcBreakthroughScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
     intervalWeights?: Record<string, number>;
     minDate?: Date;
+    maxDate?: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
     tickers?: string[];
     selectedTicker?: string;
@@ -328,6 +329,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     mcBreakthroughScoreBreadth = [],
     intervalWeights,
     minDate,
+    maxDate,
     signals1234,
     tickers = [],
     selectedTicker = '',
@@ -536,12 +538,16 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             const minStr = format(minDate, 'yyyy-MM-dd');
             result = result.filter(d => d.date >= minStr);
         }
+        if (maxDate) {
+            const maxStr = format(maxDate, 'yyyy-MM-dd');
+            result = result.filter(d => d.date <= maxStr);
+        }
 
         // Filter to generally available days (mostly SPX days) for cleaner chart
         result = result.filter(d => d.close !== undefined);
 
         return result;
-    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, effectiveWeights, minDate, selectedTicker, tickers]);
+    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, effectiveWeights, minDate, maxDate, selectedTicker, tickers]);
 
     // Visible slice
     const visibleData = useMemo(() => {

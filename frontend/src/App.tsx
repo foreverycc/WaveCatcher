@@ -4,7 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './pages/Dashboard';
 import { Configuration } from './pages/Configuration';
 import { analysisApi, stocksApi } from './services/api';
-import { subDays, format } from 'date-fns';
+import { subDays, subYears, format } from 'date-fns';
 
 const queryClient = new QueryClient();
 
@@ -24,9 +24,15 @@ function AppContent() {
     return stored ? JSON.parse(stored) : ['SPX', 'QQQ', 'DJI', 'IWM'];
   });
 
-  // Date Range State (default: last 7 days)
+  // Signal Date Range State (default: last 7 days) — for 1234 Signals, High Return, CD/MC tabs
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
     start: format(subDays(new Date(), 7), 'yyyy-MM-dd'),
+    end: format(new Date(), 'yyyy-MM-dd')
+  });
+
+  // Breadth Date Range State (default: last 1 year) — for Market Breadth / Index Summary Cards
+  const [breadthDateRange, setBreadthDateRange] = useState<{ start: string; end: string }>({
+    start: format(subYears(new Date(), 1), 'yyyy-MM-dd'),
     end: format(new Date(), 'yyyy-MM-dd')
   });
 
@@ -168,6 +174,8 @@ function AppContent() {
         setShowLogs={setShowLogs}
         dateRange={dateRange}
         setDateRange={setDateRange}
+        breadthDateRange={breadthDateRange}
+        setBreadthDateRange={setBreadthDateRange}
 
         // Multi-index props
         availableIndices={availableIndices}
@@ -183,6 +191,7 @@ function AppContent() {
             showLogs={showLogs}
             setShowLogs={setShowLogs}
             dateRange={dateRange}
+            breadthDateRange={breadthDateRange}
             selectedIndices={selectedIndices}
             availableIndices={availableIndices}
           />
