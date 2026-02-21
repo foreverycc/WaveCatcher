@@ -193,7 +193,7 @@ export const DateRangeCalendar: React.FC<DateRangeCalendarProps> = ({
                     ref={startRef}
                     onClick={() => setOpenPicker(openPicker === 'start' ? null : 'start')}
                     className={cn(
-                        "w-full flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs transition-colors",
+                        "w-full flex justify-center items-center gap-1 px-1.5 py-1.5 rounded-md border text-xs transition-colors",
                         openPicker === 'start'
                             ? "border-primary bg-primary/5 text-foreground"
                             : "border-border bg-card text-foreground hover:bg-muted"
@@ -222,7 +222,7 @@ export const DateRangeCalendar: React.FC<DateRangeCalendarProps> = ({
                     ref={endRef}
                     onClick={() => setOpenPicker(openPicker === 'end' ? null : 'end')}
                     className={cn(
-                        "w-full flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs transition-colors",
+                        "w-full flex justify-center items-center gap-1 px-1.5 py-1.5 rounded-md border text-xs transition-colors",
                         openPicker === 'end'
                             ? "border-primary bg-primary/5 text-foreground"
                             : "border-border bg-card text-foreground hover:bg-muted"
