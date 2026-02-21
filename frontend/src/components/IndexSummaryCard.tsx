@@ -59,7 +59,7 @@ const PercentileMeter = ({ percentile, label, value, color }: {
         <div className="flex items-center gap-2">
             <span className={cn("text-xs font-medium w-8 shrink-0", c.text)}>{label}</span>
             <div className="flex-1 flex items-center gap-2">
-                <div className={cn("relative h-3 flex-1 rounded-full overflow-hidden", c.track)}>
+                <div className={cn("relative h-2 flex-1 rounded-full overflow-hidden", c.track)}>
                     <div
                         className={cn("absolute inset-y-0 left-0 rounded-full transition-all duration-500", c.bg)}
                         style={{ width: `${Math.min(100, Math.max(0, percentile))}%`, opacity: 0.8 }}
@@ -67,7 +67,7 @@ const PercentileMeter = ({ percentile, label, value, color }: {
                     {/* Marker line at 50th percentile */}
                     <div className="absolute inset-y-0 left-1/2 w-px bg-foreground/20" />
                 </div>
-                <span className="text-[10px] text-muted-foreground w-14 text-right shrink-0">
+                <span className="text-[10px] text-muted-foreground w-20 text-right shrink-0">
                     {value}
                 </span>
                 <span className={cn("text-[10px] font-semibold w-8 text-right shrink-0", c.text)}>
@@ -314,8 +314,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             className="relative cursor-pointer w-full"
             style={{
                 perspective: '1200px',
-                height: flipped ? '900px' : 'auto',
-                minHeight: flipped ? '900px' : '460px', // Adjusted front face to hug content tightly
+                height: flipped ? '898px' : 'auto',
+                minHeight: flipped ? '898px' : '380px', // Adjusted front face to hug content tightly
                 transition: 'height 0.4s ease, min-height 0.4s ease'
             }}
             onClick={() => setFlipped(!flipped)}
@@ -357,7 +357,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     </div>
 
                     {/* CD/MC Signals last 7 days */}
-                    <div className="mb-3">
+                    <div className="mb-2">
                         <div className="text-xs text-muted-foreground mb-1 font-medium">CD/MC Signals (7d)</div>
                         <div className="flex gap-1.5 items-center flex-wrap">
                             {recentSignals.map((s, i) => (
@@ -379,7 +379,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     </div>
 
                     {/* 1234 Signals last 7 days */}
-                    <div className="mb-3">
+                    <div className="mb-2">
                         <div className="text-xs text-muted-foreground mb-1 font-medium">1234 Signals (7d)</div>
                         <div className="flex gap-2 text-sm flex-wrap">
                             <span className={cn(
@@ -398,7 +398,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     </div>
 
                     {/* Panel 1: CD/MC (Signal Breadth) */}
-                    <div className="space-y-1.5 pb-2">
+                    <div className="space-y-1 pb-1">
                         <div className="text-xs text-muted-foreground font-medium">CD/MC</div>
                         <PercentileMeter
                             percentile={signalStats.cd.percentile}
@@ -415,7 +415,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     </div>
 
                     {/* Panel 2: CD/MC Score (Score Breadth) */}
-                    <div className="space-y-1.5 pb-2">
+                    <div className="space-y-1 pb-1">
                         <div className="text-xs text-muted-foreground font-medium">CD/MC Score</div>
                         <PercentileMeter
                             percentile={scoreStats.cd.percentile}
@@ -432,7 +432,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     </div>
 
                     {/* Panel 3: CD/MC Breakthrough (was Buy/Sell) */}
-                    <div className="space-y-1.5 pb-2">
+                    <div className="space-y-1 pb-1">
                         <div className="text-xs text-muted-foreground font-medium">CD/MC Breakthrough</div>
                         <PercentileMeter
                             percentile={breadthStats.cd.percentile}
@@ -449,7 +449,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     </div>
 
                     {/* Panel 4: CD/MC Breakthrough Score + Volume */}
-                    <div className="space-y-1.5 pb-6">
+                    <div className="space-y-1 pb-1">
                         <div className="text-xs text-muted-foreground font-medium">CD/MC Breakthrough Score</div>
                         <PercentileMeter
                             percentile={breakthroughScoreStats.cd.percentile}
@@ -473,10 +473,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         )}
                     </div>
 
-                    {/* Flip hint */}
-                    <div className="absolute bottom-2 right-3 text-[10px] text-muted-foreground/60">
-                        Click to view chart →
-                    </div>
+
                 </div>
 
                 {/* === BACK FACE (Chart) === */}
