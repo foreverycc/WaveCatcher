@@ -178,6 +178,11 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     // Helper: compute percentile of a value within a sorted array
     const computePercentile = (value: number, data: number[]): number => {
         if (data.length === 0) return 0;
+        // Special case: if value is 0 (the absolute minimum for counts/scores), it's the 0th percentile.
+        // Otherwise, a dataset with 90% zeros would assign the ~45th percentile to a value of 0 
+        // due to the standard statistical tie-breaking formula.
+        if (value === 0) return 0;
+
         const sorted = [...data].sort((a, b) => a - b);
         const below = sorted.filter(v => v < value).length;
         const equal = sorted.filter(v => v === value).length;
