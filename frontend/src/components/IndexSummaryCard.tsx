@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { subDays, parseISO, isAfter, format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { analysisApi } from '../services/api';
 import { MarketBreadthChart } from './MarketBreadthChart';
@@ -160,18 +159,21 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         }));
     }, [spxData]);
 
-    // 1234 signals for last 7 days
-    const recent1234 = useMemo(() => {
-        if (!signals1234) return { cd: [] as string[], mc: [] as string[] };
-        const cutoff = subDays(new Date(), 7);
-        const cdRecent = (signals1234.cd_dates || []).filter(d => {
-            try { return isAfter(parseISO(d), cutoff); } catch { return false; }
+    // 1234 signals for last 7 days — per-day dot format (matches recentSignals shape)
+    const recent1234Dots = useMemo(() => {
+        if (!signals1234 || !spxData || spxData.length === 0) return [] as { date: string, cd: boolean, mc: boolean }[];
+        const last7 = spxData.slice(-7);
+        const cdSet = new Set(signals1234.cd_dates || []);
+        const mcSet = new Set(signals1234.mc_dates || []);
+        return last7.map(d => {
+            const date = d.time?.split('T')[0] ?? '';
+            return {
+                date,
+                cd: cdSet.has(date),
+                mc: mcSet.has(date)
+            };
         });
-        const mcRecent = (signals1234.mc_dates || []).filter(d => {
-            try { return isAfter(parseISO(d), cutoff); } catch { return false; }
-        });
-        return { cd: cdRecent, mc: mcRecent };
-    }, [signals1234]);
+    }, [signals1234, spxData]);
 
     // Helper: compute percentile of a value within a sorted array
     const computePercentile = (value: number, data: number[]): number => {
@@ -318,7 +320,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                 style={{
                     perspective: '1200px',
                     height: flipped ? '888px' : 'auto',
-                    minHeight: flipped ? '888px' : '380px', // Adjusted front face to hug content tightly
+                    minHeight: flipped ? '888px' : '435px', // Adjusted front face to hug content tightly
                     transition: 'height 0.4s ease, min-height 0.4s ease'
                 }}
                 onClick={() => setFlipped(!flipped)}
@@ -360,9 +362,9 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         </div>
 
                         {/* CD/MC Signals last 7 days */}
-                        <div className="mb-2">
-                            <div className="text-xs text-muted-foreground mb-1 font-medium">CD/MC Signals (7d)</div>
-                            <div className="flex gap-3 items-center flex-wrap">
+                        <div className="mb-2 flex items-center gap-4">
+                            <span className="text-xs text-muted-foreground font-medium shrink-0">idx CD/MC</span>
+                            <div className="flex gap-2 items-center flex-wrap">
                                 {recentSignals.map((s, i) => (
                                     <div key={i} className="flex flex-col items-center gap-0.5">
                                         <span className="text-[10px] text-muted-foreground">{s.date.slice(5)}</span>
@@ -382,21 +384,24 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         </div>
 
                         {/* 1234 Signals last 7 days */}
-                        <div className="mb-2">
-                            <div className="text-xs text-muted-foreground mb-1 font-medium">1234 Signals (7d)</div>
-                            <div className="flex gap-2 text-sm flex-wrap">
-                                <span className={cn(
-                                    "px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap",
-                                    recent1234.cd.length > 0 ? "bg-green-500/15 text-green-600" : "bg-muted text-muted-foreground"
-                                )}>
-                                    Buy: {recent1234.cd.length > 0 ? recent1234.cd.map(d => format(parseISO(d), 'MM-dd')).join(', ') : 'None'}
-                                </span>
-                                <span className={cn(
-                                    "px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap",
-                                    recent1234.mc.length > 0 ? "bg-red-500/15 text-red-600" : "bg-muted text-muted-foreground"
-                                )}>
-                                    Sell: {recent1234.mc.length > 0 ? recent1234.mc.map(d => format(parseISO(d), 'MM-dd')).join(', ') : 'None'}
-                                </span>
+                        <div className="mb-2 flex items-center gap-7">
+                            <span className="text-xs text-muted-foreground font-medium shrink-0">idx 1234</span>
+                            <div className="flex gap-2 items-center flex-wrap">
+                                {recent1234Dots.map((s, i) => (
+                                    <div key={i} className="flex flex-col items-center gap-0.5">
+                                        <span className="text-[10px] text-muted-foreground">{s.date.slice(5)}</span>
+                                        <div className="flex gap-0.5">
+                                            <div className={cn(
+                                                "w-3 h-3 rounded-full border",
+                                                s.cd ? "bg-green-500 border-green-600" : "bg-muted border-border"
+                                            )} title={`1234 CD ${s.cd ? 'Buy' : '-'}`} />
+                                            <div className={cn(
+                                                "w-3 h-3 rounded-full border",
+                                                s.mc ? "bg-red-500 border-red-600" : "bg-muted border-border"
+                                            )} title={`1234 MC ${s.mc ? 'Sell' : '-'}`} />
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
@@ -436,7 +441,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
 
                         {/* Panel 3: CD/MC Breakthrough (was Buy/Sell) */}
                         <div className="space-y-1 pb-1">
-                            <div className="text-xs text-muted-foreground font-medium">CD/MC Breakthrough</div>
+                            <div className="text-xs text-muted-foreground font-medium">CD/MC BT</div>
                             <PercentileMeter
                                 percentile={breadthStats.cd.percentile}
                                 label="Buy"
@@ -453,7 +458,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
 
                         {/* Panel 4: CD/MC Breakthrough Score + Volume */}
                         <div className="space-y-1 pb-1">
-                            <div className="text-xs text-muted-foreground font-medium">CD/MC Breakthrough Score</div>
+                            <div className="text-xs text-muted-foreground font-medium">CD/MC BT Score</div>
                             <PercentileMeter
                                 percentile={breakthroughScoreStats.cd.percentile}
                                 label="Buy"
@@ -475,7 +480,10 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                 />
                             )}
                         </div>
-
+                        {/* Flip hint */}
+                        <div className="absolute bottom-2 right-3 text-[10px] text-muted-foreground/60">
+                            Click to view chart →
+                        </div>
 
                     </div>
 
