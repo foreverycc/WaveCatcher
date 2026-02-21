@@ -57,7 +57,7 @@ const PercentileMeter = ({ percentile, label, value, color }: {
     const c = colorMap[color];
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
             <span className={cn("text-xs font-medium w-8 shrink-0", c.text)}>{label}</span>
             <div className="flex-1 flex items-center gap-2">
                 <div className={cn("relative h-2 flex-1 rounded-full overflow-hidden", c.track)}>
@@ -68,7 +68,7 @@ const PercentileMeter = ({ percentile, label, value, color }: {
                     {/* Marker line at 50th percentile */}
                     <div className="absolute inset-y-0 left-1/2 w-px bg-foreground/20" />
                 </div>
-                <span className="text-[10px] text-muted-foreground w-20 text-right shrink-0">
+                <span className="text-[10px] text-muted-foreground w-24 text-right shrink-0 whitespace-nowrap">
                     {value}
                 </span>
                 <span className={cn("text-[10px] font-semibold w-8 text-right shrink-0", c.text)}>
@@ -362,7 +362,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         {/* CD/MC Signals last 7 days */}
                         <div className="mb-2">
                             <div className="text-xs text-muted-foreground mb-1 font-medium">CD/MC Signals (7d)</div>
-                            <div className="flex gap-1.5 items-center flex-wrap">
+                            <div className="flex gap-3 items-center flex-wrap">
                                 {recentSignals.map((s, i) => (
                                     <div key={i} className="flex flex-col items-center gap-0.5">
                                         <span className="text-[10px] text-muted-foreground">{s.date.slice(5)}</span>

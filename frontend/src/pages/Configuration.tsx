@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { stocksApi, analysisApi } from '../services/api';
-import { Save, Trash2, Plus, RefreshCw, FileText, Settings, Edit2, Check, X } from 'lucide-react';
+import { Save, Trash2, Plus, RefreshCw, FileText, Settings, Edit2, Check, X, AlertTriangle, CheckCircle } from 'lucide-react';
 import { cn } from '../utils/cn';
 import ScoringConfigPanel from '../components/ScoringConfigPanel';
 
@@ -12,6 +12,9 @@ export const Configuration: React.FC = () => {
     const [newFileName, setNewFileName] = useState('');
     const [newFileContent, setNewFileContent] = useState('');
     const [isCreating, setIsCreating] = useState(false);
+    const [badTickers, setBadTickers] = useState<string[]>([]);
+    const [validationMessage, setValidationMessage] = useState('');
+    const [isValidating, setIsValidating] = useState(false);
 
     // --- Index config state ---
     const [addingIndex, setAddingIndex] = useState(false);
@@ -52,6 +55,9 @@ export const Configuration: React.FC = () => {
                 });
             }
         }
+        // Clear validation when file changes
+        setBadTickers([]);
+        setValidationMessage('');
     }, [selectedFileData, selectedFile]);
 
     const saveMutation = useMutation({
@@ -424,25 +430,89 @@ export const Configuration: React.FC = () => {
                                     </button>
                                 </div>
                             </div>
-                            <div className="p-0 flex-1 flex flex-col">
+                            <div className="p-0 flex-1 flex flex-col min-h-0">
                                 <textarea
                                     value={fileContent}
-                                    onChange={(e) => setFileContent(e.target.value)}
-                                    className="flex-1 w-full p-4 bg-background focus:outline-none font-mono text-sm resize-none"
+                                    onChange={(e) => { setFileContent(e.target.value); setBadTickers([]); setValidationMessage(''); }}
+                                    className={cn(
+                                        "flex-1 w-full p-4 bg-background focus:outline-none font-mono text-sm resize-none",
+                                        badTickers.length > 0 ? "hidden" : ""
+                                    )}
                                 />
+                                {badTickers.length > 0 && (
+                                    <div className="flex-1 overflow-y-auto p-4 font-mono text-sm space-y-0.5">
+                                        {fileContent.split('\n').map((line, i) => {
+                                            const ticker = line.trim().toUpperCase();
+                                            const isBad = ticker && badTickers.includes(ticker);
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    className={cn(
+                                                        "px-2 py-0.5 rounded",
+                                                        isBad ? "bg-red-500/15 text-red-600 font-semibold" : ""
+                                                    )}
+                                                >
+                                                    {line || '\u00A0'}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
+                            {validationMessage && (
+                                <div className={cn(
+                                    "px-4 py-2 text-sm border-t border-border flex items-center gap-2",
+                                    badTickers.length > 0 ? "text-red-600 bg-red-500/5" : "text-green-600 bg-green-500/5"
+                                )}>
+                                    {badTickers.length > 0
+                                        ? <AlertTriangle className="w-4 h-4 shrink-0" />
+                                        : <CheckCircle className="w-4 h-4 shrink-0" />}
+                                    <span>{validationMessage}</span>
+                                </div>
+                            )}
                             <div className="p-4 border-t border-border bg-muted/30 flex justify-between items-center">
                                 <div className="text-xs text-muted-foreground">
                                     {fileContent.split('\n').filter(l => l.trim()).length} stocks
                                 </div>
-                                <button
-                                    onClick={handleSave}
-                                    disabled={saveMutation.isPending}
-                                    className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-2"
-                                >
-                                    {saveMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                    Save Changes
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={async () => {
+                                            const tickers = fileContent.split('\n').map(l => l.trim().toUpperCase()).filter(Boolean);
+                                            if (tickers.length === 0) return;
+                                            setIsValidating(true);
+                                            setBadTickers([]);
+                                            setValidationMessage('');
+                                            try {
+                                                const result = await stocksApi.validateTickers(tickers);
+                                                setBadTickers(result.bad_tickers);
+                                                if (result.bad_tickers.length > 0) {
+                                                    setValidationMessage(
+                                                        `${result.bad_tickers.length} bad ticker(s): ${result.bad_tickers.join(', ')}`
+                                                    );
+                                                } else {
+                                                    setValidationMessage('All tickers are valid!');
+                                                }
+                                            } catch (err) {
+                                                setValidationMessage(`Validation error: ${err}`);
+                                            } finally {
+                                                setIsValidating(false);
+                                            }
+                                        }}
+                                        disabled={isValidating}
+                                        className="px-4 py-2 rounded-md border border-input hover:bg-muted transition-colors flex items-center gap-2 text-sm"
+                                    >
+                                        {isValidating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
+                                        {isValidating ? 'Validating...' : 'Validate Tickers'}
+                                    </button>
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={saveMutation.isPending}
+                                        className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-2"
+                                    >
+                                        {saveMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                        Save Changes
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ) : (

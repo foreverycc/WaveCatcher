@@ -63,6 +63,12 @@ export const stocksApi = {
         const response = await api.delete(`/stocks/${filename}`);
         return response.data;
     },
+    validateTickers: async (tickers: string[]) => {
+        const response = await api.post<{ bad_tickers: string[], good_tickers: string[] }>(
+            '/stocks/validate', { tickers }
+        );
+        return response.data;
+    },
 };
 
 export const analysisApi = {

@@ -1,11 +1,24 @@
 import os
-from fastapi import APIRouter, HTTPException, Body
+from fastapi import APIRouter, HTTPException, Body, Depends
 from pydantic import BaseModel
 from typing import List, Optional
+from sqlalchemy.orm import Session
+from sqlalchemy import distinct
+
+from app.db.database import SessionLocal
+from app.db.models import PriceBar
 
 router = APIRouter()
 
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../data"))
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 class StockListCreate(BaseModel):
     name: str
@@ -107,3 +120,26 @@ async def delete_stock_list(filename: str):
         return {"message": "File deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class ValidateTickersRequest(BaseModel):
+    tickers: List[str]
+
+
+@router.post("/validate")
+async def validate_tickers(request: ValidateTickersRequest, db: Session = Depends(get_db)):
+    """Validate tickers by checking if they have price data in the database."""
+    if not request.tickers:
+        return {"bad_tickers": [], "good_tickers": []}
+
+    # Get all tickers that have at least one row in the price_history table
+    existing_tickers = set(
+        row[0] for row in db.query(distinct(PriceBar.ticker))
+        .filter(PriceBar.ticker.in_(request.tickers))
+        .all()
+    )
+
+    good_tickers = [t for t in request.tickers if t in existing_tickers]
+    bad_tickers = [t for t in request.tickers if t not in existing_tickers]
+
+    return {"bad_tickers": bad_tickers, "good_tickers": good_tickers}
