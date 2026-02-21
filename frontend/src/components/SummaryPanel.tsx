@@ -362,10 +362,8 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
         type: 'bull' | 'bear',
         onRowClick?: (row: any, type: 'bull' | 'bear') => void
     }) => {
-        if (!data || data.length === 0) return null;
-
-        // Take top 10 sorted by return magnitude, filtered by last 7 days
         const sorted = useMemo(() => {
+            if (!data || data.length === 0) return [];
             const cutoffDate = subDays(new Date(), 7);
 
             return [...data]
@@ -386,8 +384,6 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                 .slice(0, 10);
         }, [data, type]);
 
-        if (sorted.length === 0) return null;
-
         return (
             <div className="flex flex-col border rounded-lg bg-card overflow-hidden">
                 <div className="p-3 bg-muted/30 border-b font-medium flex justify-between">
@@ -407,24 +403,32 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             </tr>
                         </thead>
                         <tbody>
-                            {sorted.map((row, i) => (
-                                <tr
-                                    key={i}
-                                    className="border-b last:border-0 hover:bg-muted/10 cursor-pointer transition-colors"
-                                    onClick={() => onRowClick?.(row, type)}
-                                >
-                                    <td className="p-2 font-medium">{row.ticker}</td>
-                                    <td className="p-2 text-muted-foreground text-xs">
-                                        {row.latest_signal ? format(parseISO(row.latest_signal), 'MM-dd HH:mm') : '-'}
+                            {sorted.length > 0 ? (
+                                sorted.map((row, i) => (
+                                    <tr
+                                        key={i}
+                                        className="border-b last:border-0 hover:bg-muted/10 cursor-pointer transition-colors"
+                                        onClick={() => onRowClick?.(row, type)}
+                                    >
+                                        <td className="p-2 font-medium">{row.ticker}</td>
+                                        <td className="p-2 text-muted-foreground text-xs">
+                                            {row.latest_signal ? format(parseISO(row.latest_signal), 'MM-dd HH:mm') : '-'}
+                                        </td>
+                                        <td className="p-2 text-muted-foreground">{row.interval}</td>
+                                        <td className={cn("p-2 text-right font-medium", row.avg_return >= 0 ? "text-green-500" : "text-red-500")}>
+                                            {formatPercent(row.avg_return)}
+                                        </td>
+                                        <td className="p-2 text-right">{formatPercent(row.success_rate)}</td>
+                                        <td className="p-2 text-right">{row.test_count}</td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                                        No signals in the last 7 days
                                     </td>
-                                    <td className="p-2 text-muted-foreground">{row.interval}</td>
-                                    <td className={cn("p-2 text-right font-medium", row.avg_return >= 0 ? "text-green-500" : "text-red-500")}>
-                                        {formatPercent(row.avg_return)}
-                                    </td>
-                                    <td className="p-2 text-right">{formatPercent(row.success_rate)}</td>
-                                    <td className="p-2 text-right">{row.test_count}</td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -440,10 +444,8 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
         onRowClick?: (row: any, type: 'bull' | 'bear') => void,
         detailedData: any[] | null
     }) => {
-        if (!data || data.length === 0) return null;
-
-        // Filter by last 7 days, calculate return, sort by return, take top 10
         const sorted = useMemo(() => {
+            if (!data || data.length === 0) return [];
             // Calculate average return for a row based on its intervals
             const calculateAvgReturn = (row: any) => {
                 if (!detailedData || !row.intervals) return 0;
@@ -504,8 +506,6 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                 .slice(0, 10);
         }, [data, detailedData, type]);
 
-        if (sorted.length === 0) return null;
-
         return (
             <div className="flex flex-col border rounded-lg bg-card overflow-hidden">
                 <div className="p-3 bg-muted/30 border-b font-medium flex justify-between">
@@ -524,29 +524,37 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             </tr>
                         </thead>
                         <tbody>
-                            {sorted.map((row, i) => (
-                                <tr
-                                    key={i}
-                                    className="border-b last:border-0 hover:bg-muted/10 cursor-pointer transition-colors"
-                                    onClick={() => onRowClick?.(row, type)}
-                                >
-                                    <td className="p-2 font-medium">{row.ticker}</td>
-                                    <td className="p-2 text-muted-foreground text-xs">
-                                        {row.date ? format(parseISO(row.date), 'MM-dd') : '-'}
-                                    </td>
-                                    <td className="p-2 text-muted-foreground">{row.intervals}</td>
-                                    <td className={cn("p-2 text-right font-medium", (row.calculatedReturn ?? 0) >= 0 ? "text-green-500" : "text-red-500")}>
-                                        {row.calculatedReturn !== null ? formatPercent(row.calculatedReturn) : '-'}
-                                    </td>
-                                    <td className={cn("p-2 text-center", row.nx_1d ? "text-green-500" : "text-red-500")}>
-                                        {row.nx_1d ? '▲' : '▼'}
+                            {sorted.length > 0 ? (
+                                sorted.map((row, i) => (
+                                    <tr
+                                        key={i}
+                                        className="border-b last:border-0 hover:bg-muted/10 cursor-pointer transition-colors"
+                                        onClick={() => onRowClick?.(row, type)}
+                                    >
+                                        <td className="p-2 font-medium">{row.ticker}</td>
+                                        <td className="p-2 text-muted-foreground text-xs">
+                                            {row.date ? format(parseISO(row.date), 'MM-dd') : '-'}
+                                        </td>
+                                        <td className="p-2 text-muted-foreground">{row.intervals}</td>
+                                        <td className={cn("p-2 text-right font-medium", (row.calculatedReturn ?? 0) >= 0 ? "text-green-500" : "text-red-500")}>
+                                            {row.calculatedReturn !== null ? formatPercent(row.calculatedReturn) : '-'}
+                                        </td>
+                                        <td className={cn("p-2 text-center", row.nx_1d ? "text-green-500" : "text-red-500")}>
+                                            {row.nx_1d ? '▲' : '▼'}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                                        No signals in the last 7 days
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>
-            </div >
+            </div>
         );
     };
 
