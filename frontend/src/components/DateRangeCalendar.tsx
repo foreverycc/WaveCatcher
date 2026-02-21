@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import {
     format,
@@ -37,8 +38,20 @@ const CalendarPopover = ({
 }) => {
     const [currentMonth, setCurrentMonth] = useState(value || new Date());
     const popoverRef = useRef<HTMLDivElement>(null);
+    const [coords, setCoords] = useState({ bottom: -9999, left: -9999 });
 
-    // Close on click outside
+    // Calculate position
+    useEffect(() => {
+        if (anchorRef.current) {
+            const rect = anchorRef.current.getBoundingClientRect();
+            setCoords({
+                bottom: window.innerHeight - rect.top + 4,
+                left: rect.left + window.scrollX
+            });
+        }
+    }, [anchorRef]);
+
+    // Close on click outside or escape key
     useEffect(() => {
         const handleClick = (e: MouseEvent) => {
             if (
@@ -48,8 +61,15 @@ const CalendarPopover = ({
                 onClose();
             }
         };
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
         document.addEventListener('mousedown', handleClick);
-        return () => document.removeEventListener('mousedown', handleClick);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', handleClick);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
     }, [onClose, anchorRef]);
 
     const monthStart = startOfMonth(currentMonth);
@@ -68,65 +88,66 @@ const CalendarPopover = ({
         weeks.push(week);
     }
 
-    return (
+    const popoverContent = (
         <div
             ref={popoverRef}
-            className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-lg shadow-lg p-3 w-[240px]"
+            style={{ bottom: coords.bottom, left: coords.left }}
+            className="absolute z-[9999] bg-card border border-border rounded-lg shadow-xl p-3 w-[240px]"
         >
             {/* Header */}
             <div className="flex items-center justify-between mb-2">
                 <button
                     onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                    className="p-1 hover:bg-muted rounded-full"
+                    className="p-1 hover:bg-muted rounded-full transition-colors"
                 >
-                    <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
+                    <ChevronLeft className="w-4 h-4 text-muted-foreground" />
                 </button>
-                <span className="text-xs font-bold text-foreground">
+                <span className="text-sm font-bold text-foreground tracking-wide">
                     {format(currentMonth, 'MMM yyyy').toUpperCase()}
                 </span>
                 <button
                     onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                    className="p-1 hover:bg-muted rounded-full"
+                    className="p-1 hover:bg-muted rounded-full transition-colors"
                 >
-                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </button>
             </div>
 
             {/* Day headers */}
-            <div className="grid grid-cols-7 mb-1">
+            <div className="grid grid-cols-7 mb-2">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                    <div key={i} className="text-center text-[10px] font-medium text-muted-foreground">
+                    <div key={i} className="text-center text-[10px] font-semibold text-muted-foreground">
                         {d}
                     </div>
                 ))}
             </div>
 
             {/* Date cells */}
-            <div className="space-y-0.5">
+            <div className="space-y-1">
                 {weeks.map((week, wi) => (
-                    <div key={wi} className="grid grid-cols-7">
+                    <div key={wi} className="grid grid-cols-7 gap-1">
                         {week.map((d, di) => {
                             const inMonth = isSameMonth(d, monthStart);
                             const selected = value && isSameDay(d, value);
                             const today = isToday(d);
 
                             return (
-                                <div
+                                <button
                                     key={di}
-                                    className={cn(
-                                        "h-7 w-full flex items-center justify-center text-xs cursor-pointer rounded-full transition-colors",
-                                        selected ? "bg-primary text-primary-foreground font-semibold" : "hover:bg-muted",
-                                        !inMonth && "text-muted-foreground/30",
-                                        inMonth && !selected && "text-foreground",
-                                        today && !selected && "ring-1 ring-red-500 text-red-500 font-semibold"
-                                    )}
                                     onClick={() => {
                                         onSelect(d);
                                         onClose();
                                     }}
+                                    className={cn(
+                                        "h-8 w-full flex items-center justify-center text-xs rounded-md transition-all",
+                                        selected ? "bg-primary text-primary-foreground font-bold shadow-sm" : "hover:bg-muted",
+                                        !inMonth && "text-muted-foreground/30",
+                                        inMonth && !selected && "text-foreground",
+                                        today && !selected && "ring-1 ring-inset ring-red-500 text-red-500 font-semibold"
+                                    )}
                                 >
                                     {format(d, 'd')}
-                                </div>
+                                </button>
                             );
                         })}
                     </div>
@@ -134,6 +155,8 @@ const CalendarPopover = ({
             </div>
         </div>
     );
+
+    return createPortal(popoverContent, document.body);
 };
 
 export const DateRangeCalendar: React.FC<DateRangeCalendarProps> = ({
