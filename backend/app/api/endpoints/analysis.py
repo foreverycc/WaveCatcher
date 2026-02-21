@@ -12,11 +12,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
 from app.services.engine import job_manager
-from app.logic.indicators import compute_cd_indicator, compute_mc_indicator, compute_nx_break_through
+from app.logic.indicators import compute_cd_indicator, compute_mc_indicator, compute_nx_break_through, compute_cd_score, compute_mc_score
 from app.db.database import SessionLocal
 from app.db.models import AnalysisRun, AnalysisResult, PriceBar
 from app.logic.db_utils import save_price_history
 from app.logic.options import get_option_data
+from app.logic.scoring_config import get_config as get_scoring_config, save_config as save_scoring_config, DEFAULT_CONFIG as SCORING_DEFAULTS, get_cd_threshold, get_mc_threshold
 
 logger = logging.getLogger(__name__)
 
@@ -323,12 +324,55 @@ async def get_market_breadth_by_stock_list(
                 AnalysisResult.ticker == ticker_key
             ).first()
             mc_signal_breadth = mc_sig_result.data if mc_sig_result and mc_sig_result.data else []
+    # Fetch per-interval score breadth (CD/MC indicator scores weighted by interval)
+    cd_score_breadth = []
+    mc_score_breadth = []
+    for rid, ticker_key in run_ticker_pairs:
+        if not cd_score_breadth:
+            cd_sc_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == rid,
+                AnalysisResult.result_type == "cd_score_breadth_by_interval",
+                AnalysisResult.ticker == ticker_key
+            ).first()
+            cd_score_breadth = cd_sc_result.data if cd_sc_result and cd_sc_result.data else []
+        
+        if not mc_score_breadth:
+            mc_sc_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == rid,
+                AnalysisResult.result_type == "mc_score_breadth_by_interval",
+                AnalysisResult.ticker == ticker_key
+            ).first()
+            mc_score_breadth = mc_sc_result.data if mc_sc_result and mc_sc_result.data else []
+    
+    # Fetch per-interval breakthrough score breadth (indicator scores for breakthrough signals only)
+    cd_breakthrough_score_breadth = []
+    mc_breakthrough_score_breadth = []
+    for rid, ticker_key in run_ticker_pairs:
+        if not cd_breakthrough_score_breadth:
+            cd_bts_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == rid,
+                AnalysisResult.result_type == "cd_breakthrough_score_by_interval",
+                AnalysisResult.ticker == ticker_key
+            ).first()
+            cd_breakthrough_score_breadth = cd_bts_result.data if cd_bts_result and cd_bts_result.data else []
+        
+        if not mc_breakthrough_score_breadth:
+            mc_bts_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == rid,
+                AnalysisResult.result_type == "mc_breakthrough_score_by_interval",
+                AnalysisResult.ticker == ticker_key
+            ).first()
+            mc_breakthrough_score_breadth = mc_bts_result.data if mc_bts_result and mc_bts_result.data else []
     
     return {
         "cd_breadth": cd_breadth,
         "mc_breadth": mc_breadth,
         "cd_signal_breadth": cd_signal_breadth,
         "mc_signal_breadth": mc_signal_breadth,
+        "cd_score_breadth": cd_score_breadth,
+        "mc_score_breadth": mc_score_breadth,
+        "cd_breakthrough_score_breadth": cd_breakthrough_score_breadth,
+        "mc_breakthrough_score_breadth": mc_breakthrough_score_breadth,
         "run_id": run_id
     }
 
@@ -461,21 +505,35 @@ async def get_price_history(
         cd_signals = compute_cd_indicator(df)
         mc_signals = compute_mc_indicator(df)
         breakthrough = compute_nx_break_through(df)
+        cd_scores = compute_cd_score(df)
+        mc_scores = compute_mc_score(df)
         
         # Fill NaNs with False
         cd_signals = cd_signals.fillna(False).astype(bool)
         mc_signals = mc_signals.fillna(False).astype(bool)
         breakthrough = breakthrough.fillna(False).astype(bool)
 
-        # 1234 Logic: (Signal & Breakthrough) | (Signal & Breakthrough[t-9])
-        # Logic analysis: `breakthrough.rolling(10).apply(lambda x: x.iloc[0] if x.any() else False)`
-        # If x.iloc[0] (t-9) is True, then x.any() is True, so it returns True.
-        # If x.iloc[0] is False, it returns False regardless of x.any().
-        # Thus, it simplifies to breakthrough.shift(9).
-        oldest_breakthrough = breakthrough.shift(9).fillna(False)
+        # Apply score threshold filtering
+        cd_thresh = get_cd_threshold()
+        mc_thresh = get_mc_threshold()
+        for ts in cd_signals.index:
+            if cd_signals[ts]:
+                sc = cd_scores.get(ts, np.nan)
+                if pd.isna(sc) or sc < cd_thresh:
+                    cd_signals[ts] = False
+        for ts in mc_signals.index:
+            if mc_signals[ts]:
+                sc = mc_scores.get(ts, np.nan)
+                if pd.isna(sc) or sc < mc_thresh:
+                    mc_signals[ts] = False
+
+        # 1234 Logic: (Signal & Breakthrough) | (Signal & Recent Breakthrough)
+        # Recent Breakthrough: occurred between 5 and 15 bars ago (inclusive)
+        # We use a rolling window of 11 bars (covering t-5 to t-15) shifted by 5
+        recent_breakthrough = breakthrough.rolling(window=11, min_periods=1).max().shift(5).fillna(False).astype(bool)
         
-        cd_1234 = (cd_signals & breakthrough) | (cd_signals & oldest_breakthrough)
-        mc_1234 = (mc_signals & breakthrough) | (mc_signals & oldest_breakthrough)
+        cd_1234 = (cd_signals & breakthrough) | (cd_signals & recent_breakthrough)
+        mc_1234 = (mc_signals & breakthrough) | (mc_signals & recent_breakthrough)
 
         # Vegas Channel EMAs
         df['ema_13'] = df['Close'].ewm(span=13, adjust=False).mean()
@@ -516,6 +574,10 @@ async def get_price_history(
         s100 = df.loc[ts, 'sma_100'] if 'sma_100' in df else None
         s200 = df.loc[ts, 'sma_200'] if 'sma_200' in df else None
 
+        # Signal scores
+        cd_sc = cd_scores.get(ts, np.nan)
+        mc_sc = mc_scores.get(ts, np.nan)
+
         response.append({
             "time": p.timestamp.isoformat(),
             "open": p.open,
@@ -525,6 +587,8 @@ async def get_price_history(
             "volume": p.volume,
             "cd_signal": is_cd,
             "mc_signal": is_mc,
+            "cd_score": float(cd_sc) if pd.notna(cd_sc) else None,
+            "mc_score": float(mc_sc) if pd.notna(mc_sc) else None,
             "cd_1234_signal": is_cd_1234,
             "mc_1234_signal": is_mc_1234,
             "ema_13": float(e13) if pd.notna(e13) else None,
@@ -538,6 +602,251 @@ async def get_price_history(
         })
         
     return response
+
+
+@router.get("/ticker_signals/{ticker}")
+async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
+    """
+    Get per-date aggregated CD/MC signal and score data across all intervals
+    for a single ticker. Returns the same shape as index-level breadth data
+    so MarketBreadthChart can render per-ticker panels without changes.
+    """
+    INTERVALS = {
+        '1h': timedelta(days=365),
+        '2h': timedelta(days=365),
+        '3h': timedelta(days=365),
+        '4h': timedelta(days=365),
+        '1d': timedelta(days=730),
+    }
+
+    now = datetime.utcnow()
+
+    # Per-date accumulators
+    cd_signal_by_date: Dict[str, Dict[str, int]] = {}   # date -> {interval -> 0/1}
+    mc_signal_by_date: Dict[str, Dict[str, int]] = {}
+    cd_score_by_date: Dict[str, Dict[str, float]] = {}  # date -> {interval -> score}
+    mc_score_by_date: Dict[str, Dict[str, float]] = {}
+    cd_1234_by_date: Dict[str, Dict[str, int]] = {}     # date -> {interval -> count}
+    mc_1234_by_date: Dict[str, Dict[str, int]] = {}
+
+    for interval, lookback in INTERVALS.items():
+        cutoff = now - lookback
+        prices = db.query(PriceBar).filter(
+            PriceBar.ticker == ticker,
+            PriceBar.interval == interval,
+            PriceBar.timestamp >= cutoff
+        ).order_by(PriceBar.timestamp).all()
+
+        if not prices or len(prices) < 50:
+            continue
+
+        df = pd.DataFrame([{
+            "timestamp": p.timestamp,
+            "Open": p.open, "High": p.high, "Low": p.low,
+            "Close": p.close, "Volume": p.volume
+        } for p in prices])
+        df.set_index("timestamp", inplace=True)
+
+        try:
+            cd_sig = compute_cd_indicator(df).fillna(False).astype(bool)
+            mc_sig = compute_mc_indicator(df).fillna(False).astype(bool)
+            cd_sc = compute_cd_score(df)
+            mc_sc = compute_mc_score(df)
+
+            # Apply score threshold filtering
+            cd_thresh = get_cd_threshold()
+            mc_thresh = get_mc_threshold()
+            for ts in cd_sig.index:
+                if cd_sig[ts]:
+                    sc = cd_sc.get(ts, np.nan)
+                    if pd.isna(sc) or sc < cd_thresh:
+                        cd_sig[ts] = False
+            for ts in mc_sig.index:
+                if mc_sig[ts]:
+                    sc = mc_sc.get(ts, np.nan)
+                    if pd.isna(sc) or sc < mc_thresh:
+                        mc_sig[ts] = False
+
+            # 1234 logic (same as price_history endpoint)
+            bt = compute_nx_break_through(df).fillna(False).astype(bool)
+            # Recent Breakthrough: occurred between 1 and 10 bars ago (inclusive)
+            recent_bt = bt.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
+            
+            cd_1234 = (cd_sig & bt) | (cd_sig & recent_bt)
+            mc_1234 = (mc_sig & bt) | (mc_sig & recent_bt)
+        except Exception as e:
+            logger.warning(f"Error computing signals for {ticker}/{interval}: {e}")
+            continue
+
+        # Aggregate into per-date buckets
+        for ts in df.index:
+            date_str = ts.strftime('%Y-%m-%d')
+
+            # CD signal count (0 or 1 per interval per date — take max if multiple bars same date)
+            if date_str not in cd_signal_by_date:
+                cd_signal_by_date[date_str] = {}
+            if cd_sig.get(ts, False):
+                cd_signal_by_date[date_str][interval] = 1
+
+            if date_str not in mc_signal_by_date:
+                mc_signal_by_date[date_str] = {}
+            if mc_sig.get(ts, False):
+                mc_signal_by_date[date_str][interval] = 1
+
+            # Scores: only take score if signal is valid (passed threshold)
+            sc_cd = cd_sc.get(ts, np.nan)
+            if cd_sig.get(ts, False) and pd.notna(sc_cd) and sc_cd > 0:
+                if date_str not in cd_score_by_date:
+                    cd_score_by_date[date_str] = {}
+                cd_score_by_date[date_str][interval] = max(
+                    cd_score_by_date[date_str].get(interval, 0), float(sc_cd)
+                )
+
+            sc_mc = mc_sc.get(ts, np.nan)
+            if mc_sig.get(ts, False) and pd.notna(sc_mc) and sc_mc > 0:
+                if date_str not in mc_score_by_date:
+                    mc_score_by_date[date_str] = {}
+                mc_score_by_date[date_str][interval] = max(
+                    mc_score_by_date[date_str].get(interval, 0), float(sc_mc)
+                )
+
+            # 1234 counts (per-interval)
+            if cd_1234.get(ts, False):
+                if date_str not in cd_1234_by_date:
+                    cd_1234_by_date[date_str] = {}
+                cd_1234_by_date[date_str][interval] = 1
+            if mc_1234.get(ts, False):
+                if date_str not in mc_1234_by_date:
+                    mc_1234_by_date[date_str] = {}
+                mc_1234_by_date[date_str][interval] = 1
+
+    # Build response arrays matching existing breadth data shapes
+    all_dates = sorted(set(
+        list(cd_signal_by_date.keys()) + list(mc_signal_by_date.keys()) +
+        list(cd_score_by_date.keys()) + list(mc_score_by_date.keys()) +
+        list(cd_1234_by_date.keys()) + list(mc_1234_by_date.keys())
+    ))
+
+    cd_signal_breadth = []
+    mc_signal_breadth = []
+    cd_score_breadth = []
+    mc_score_breadth = []
+    cd_breadth = []
+    mc_breadth = []
+
+    for d in all_dates:
+        cd_s = cd_signal_by_date.get(d, {})
+        mc_s = mc_signal_by_date.get(d, {})
+        cd_sc_d = cd_score_by_date.get(d, {})
+        mc_sc_d = mc_score_by_date.get(d, {})
+
+        if any(cd_s.values()) or True:  # Always emit a row for charting continuity
+            cd_signal_breadth.append({
+                "date": d,
+                "count_1h": cd_s.get('1h', 0),
+                "count_2h": cd_s.get('2h', 0),
+                "count_3h": cd_s.get('3h', 0),
+                "count_4h": cd_s.get('4h', 0),
+                "count_1d": cd_s.get('1d', 0),
+            })
+
+        mc_signal_breadth.append({
+            "date": d,
+            "count_1h": mc_s.get('1h', 0),
+            "count_2h": mc_s.get('2h', 0),
+            "count_3h": mc_s.get('3h', 0),
+            "count_4h": mc_s.get('4h', 0),
+            "count_1d": mc_s.get('1d', 0),
+        })
+
+        cd_score_breadth.append({
+            "date": d,
+            "score_1h": cd_sc_d.get('1h', 0),
+            "score_2h": cd_sc_d.get('2h', 0),
+            "score_3h": cd_sc_d.get('3h', 0),
+            "score_4h": cd_sc_d.get('4h', 0),
+            "score_1d": cd_sc_d.get('1d', 0),
+            "total_score": sum(cd_sc_d.values()),
+        })
+
+        mc_score_breadth.append({
+            "date": d,
+            "score_1h": mc_sc_d.get('1h', 0),
+            "score_2h": mc_sc_d.get('2h', 0),
+            "score_3h": mc_sc_d.get('3h', 0),
+            "score_4h": mc_sc_d.get('4h', 0),
+            "score_1d": mc_sc_d.get('1d', 0),
+            "total_score": sum(mc_sc_d.values()),
+        })
+
+        cd_1234_d = cd_1234_by_date.get(d, {})
+        if any(cd_1234_d.values()):
+            cd_breadth.append({
+                "date": d,
+                "count_1h": cd_1234_d.get('1h', 0),
+                "count_2h": cd_1234_d.get('2h', 0),
+                "count_3h": cd_1234_d.get('3h', 0),
+                "count_4h": cd_1234_d.get('4h', 0),
+                "count_1d": cd_1234_d.get('1d', 0),
+            })
+
+        mc_1234_d = mc_1234_by_date.get(d, {})
+        if any(mc_1234_d.values()):
+            mc_breadth.append({
+                "date": d,
+                "count_1h": mc_1234_d.get('1h', 0),
+                "count_2h": mc_1234_d.get('2h', 0),
+                "count_3h": mc_1234_d.get('3h', 0),
+                "count_4h": mc_1234_d.get('4h', 0),
+                "count_1d": mc_1234_d.get('1d', 0),
+            })
+
+    # Build breakthrough score arrays (scores only on 1234 breakthrough dates)
+    cd_breakthrough_score_breadth = []
+    mc_breakthrough_score_breadth = []
+    for d in all_dates:
+        cd_1234_d = cd_1234_by_date.get(d, {})
+        if any(cd_1234_d.values()):
+            cd_sc_d = cd_score_by_date.get(d, {})
+            # Only include scores for intervals that have a 1234 signal
+            bt_scores = {intv: cd_sc_d.get(intv, 0) for intv in cd_1234_d if cd_1234_d[intv]}
+            if bt_scores:
+                cd_breakthrough_score_breadth.append({
+                    "date": d,
+                    "score_1h": bt_scores.get('1h', 0),
+                    "score_2h": bt_scores.get('2h', 0),
+                    "score_3h": bt_scores.get('3h', 0),
+                    "score_4h": bt_scores.get('4h', 0),
+                    "score_1d": bt_scores.get('1d', 0),
+                    "total_score": sum(bt_scores.values()),
+                })
+
+        mc_1234_d = mc_1234_by_date.get(d, {})
+        if any(mc_1234_d.values()):
+            mc_sc_d = mc_score_by_date.get(d, {})
+            bt_scores = {intv: mc_sc_d.get(intv, 0) for intv in mc_1234_d if mc_1234_d[intv]}
+            if bt_scores:
+                mc_breakthrough_score_breadth.append({
+                    "date": d,
+                    "score_1h": bt_scores.get('1h', 0),
+                    "score_2h": bt_scores.get('2h', 0),
+                    "score_3h": bt_scores.get('3h', 0),
+                    "score_4h": bt_scores.get('4h', 0),
+                    "score_1d": bt_scores.get('1d', 0),
+                    "total_score": sum(bt_scores.values()),
+                })
+
+    return {
+        "cd_signal_breadth": cd_signal_breadth,
+        "mc_signal_breadth": mc_signal_breadth,
+        "cd_score_breadth": cd_score_breadth,
+        "mc_score_breadth": mc_score_breadth,
+        "cd_breadth": cd_breadth,
+        "mc_breadth": mc_breadth,
+        "cd_breakthrough_score_breadth": cd_breakthrough_score_breadth,
+        "mc_breakthrough_score_breadth": mc_breakthrough_score_breadth,
+    }
+
 
 @router.get("/options/{ticker}")
 def get_options(ticker: str):
@@ -627,3 +936,23 @@ async def get_signals_1234(ticker: str, db: Session = Depends(get_db)):
     
     return {"cd_dates": cd_dates, "mc_dates": mc_dates}
 
+
+# ─── Scoring Configuration ───────────────────────────────────────────────
+
+@router.get("/config/scoring")
+async def get_scoring_weights():
+    """Return the current scoring weight configuration."""
+    return get_scoring_config()
+
+
+@router.put("/config/scoring")
+async def update_scoring_weights(config: Dict[str, Any]):
+    """Update scoring weight configuration. Changes take effect immediately."""
+    updated = save_scoring_config(config)
+    return updated
+
+
+@router.get("/config/scoring/defaults")
+async def get_scoring_defaults():
+    """Return the default scoring weight configuration."""
+    return SCORING_DEFAULTS

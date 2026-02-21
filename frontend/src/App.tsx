@@ -4,7 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './pages/Dashboard';
 import { Configuration } from './pages/Configuration';
 import { analysisApi, stocksApi } from './services/api';
-import { subDays, subMonths, format } from 'date-fns';
+import { subDays, format } from 'date-fns';
 
 const queryClient = new QueryClient();
 
@@ -24,9 +24,9 @@ function AppContent() {
     return stored ? JSON.parse(stored) : ['SPX', 'QQQ', 'DJI', 'IWM'];
   });
 
-  // Date Range State (default: last 1 month)
+  // Date Range State (default: last 7 days)
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
-    start: format(subMonths(new Date(), 1), 'yyyy-MM-dd'),
+    start: format(subDays(new Date(), 7), 'yyyy-MM-dd'),
     end: format(new Date(), 'yyyy-MM-dd')
   });
 

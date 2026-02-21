@@ -312,18 +312,41 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                 if 'date' not in df.columns:
                     return []
                 
-                # Count unique tickers per day
-                # df['date'] is already date object or string? identify_... returns date objects
-                daily_counts = df.groupby('date')['ticker'].nunique().reset_index()
-                daily_counts.columns = ['date', 'count']
+                df_work = df.copy()
                 
-                # Sort by date
-                daily_counts = daily_counts.sort_values('date')
+                # If 'intervals' column exists (from identify_1234, e.g. "1,2,3"),
+                # explode it into individual interval rows
+                if 'intervals' in df_work.columns and 'interval' not in df_work.columns:
+                    df_work['interval_list'] = df_work['intervals'].apply(
+                        lambda x: [f'{v}h' if v != '1d' else '1d' for v in str(x).split(',')] if pd.notna(x) else []
+                    )
+                    df_work = df_work.explode('interval_list').rename(columns={'interval_list': 'interval'})
                 
-                # Convert date to string for JSON serialization
-                daily_counts['date'] = daily_counts['date'].astype(str)
-                
-                return daily_counts.to_dict(orient='records')
+                # If interval column exists, break down by interval
+                if 'interval' in df_work.columns:
+                    counts = df_work.groupby(['date', 'interval'])['ticker'].nunique().reset_index()
+                    counts.columns = ['date', 'interval', 'count']
+                    pivot = counts.pivot_table(index='date', columns='interval', values='count', fill_value=0).reset_index()
+                    result = []
+                    for _, row in pivot.iterrows():
+                        # Ensure date is YYYY-MM-DD string
+                        date_val = row['date']
+                        if hasattr(date_val, 'strftime'):
+                            date_str = date_val.strftime('%Y-%m-%d')
+                        else:
+                            date_str = str(date_val).split(' ')[0]
+                        entry = {'date': date_str}
+                        for intv in ['1h', '2h', '3h', '4h', '1d']:
+                            entry[f'count_{intv}'] = int(row.get(intv, 0))
+                        result.append(entry)
+                    return sorted(result, key=lambda x: x['date'])
+                else:
+                    # Fallback: count unique tickers per day (no interval info)
+                    daily_counts = df_work.groupby('date')['ticker'].nunique().reset_index()
+                    daily_counts.columns = ['date', 'count']
+                    daily_counts = daily_counts.sort_values('date')
+                    daily_counts['date'] = daily_counts['date'].astype(str)
+                    return [{'date': r['date'], 'count_1h': 0, 'count_2h': 0, 'count_3h': 0, 'count_4h': 0, 'count_1d': int(r['count'])} for r in daily_counts.to_dict(orient='records')]
             except Exception as e:
                 logger.error(f"Error aggregating {metric_name}: {e}")
                 return []
@@ -354,6 +377,44 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                 return sorted(result, key=lambda x: x['date'])
             except Exception as e:
                 logger.error(f"Error aggregating {metric_name} by interval: {e}")
+                return []
+
+        # Helper: aggregate indicator scores by date and interval
+        SCORE_INTERVAL_WEIGHTS = {'1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32}
+
+        def aggregate_scores_by_interval(raw_details, metric_name):
+            """Aggregate indicator_score * interval_weight by date.
+            Returns list of {date, score_1h, score_2h, ..., score_1d, total_score}."""
+            if not raw_details:
+                return []
+            try:
+                df = pd.DataFrame(raw_details)
+                if df.empty or 'signal_date' not in df.columns or 'interval' not in df.columns:
+                    return []
+                if 'indicator_score' not in df.columns:
+                    return []
+                df['date'] = pd.to_datetime(df['signal_date']).dt.strftime('%Y-%m-%d')
+                # Drop rows without valid score
+                df = df.dropna(subset=['indicator_score'])
+                if df.empty:
+                    return []
+                # Sum indicator_score per (date, interval)
+                score_sums = df.groupby(['date', 'interval'])['indicator_score'].sum().reset_index()
+                score_sums.columns = ['date', 'interval', 'score_sum']
+                pivot = score_sums.pivot_table(index='date', columns='interval', values='score_sum', fill_value=0).reset_index()
+                result = []
+                for _, row in pivot.iterrows():
+                    entry = {'date': str(row['date'])}
+                    total = 0
+                    for intv in ['1h', '2h', '3h', '4h', '1d']:
+                        s = float(row.get(intv, 0))
+                        entry[f'score_{intv}'] = round(s, 1)
+                        total += s * SCORE_INTERVAL_WEIGHTS[intv]
+                    entry['total_score'] = round(total, 1)
+                    result.append(entry)
+                return sorted(result, key=lambda x: x['date'])
+            except Exception as e:
+                logger.error(f"Error aggregating scores for {metric_name}: {e}")
                 return []
 
         # 1. Save 1234 results and identify breakout candidates
@@ -389,6 +450,49 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         mc_signal_by_interval = aggregate_signals_by_interval(mc_results_1234, 'MC signals')
         if mc_signal_by_interval:
             save_analysis_result(run_id, "ALL", "ALL", 'mc_signal_breadth_by_interval', mc_signal_by_interval)
+
+        # Aggregate CD/MC indicator scores by interval
+        cd_score_by_interval = aggregate_scores_by_interval(cd_results_1234, 'CD scores')
+        if cd_score_by_interval:
+            save_analysis_result(run_id, "ALL", "ALL", 'cd_score_breadth_by_interval', cd_score_by_interval)
+
+        mc_score_by_interval = aggregate_scores_by_interval(mc_results_1234, 'MC scores')
+        if mc_score_by_interval:
+            save_analysis_result(run_id, "ALL", "ALL", 'mc_score_breadth_by_interval', mc_score_by_interval)
+
+        # Aggregate CD/MC Breakthrough Scores (scores only for signals that are also breakthroughs)
+        def filter_to_breakthrough(raw_details, df_breakout):
+            """Filter raw signal details to only those matching breakthrough (ticker, date) pairs."""
+            if not raw_details or df_breakout.empty:
+                return []
+            bt_pairs = set()
+            for _, row in df_breakout.iterrows():
+                date_val = row.get('date', '')
+                if hasattr(date_val, 'strftime'):
+                    date_str = date_val.strftime('%Y-%m-%d')
+                else:
+                    date_str = str(date_val)[:10]
+                bt_pairs.add((row['ticker'], date_str))
+            filtered = []
+            for detail in raw_details:
+                sig_date = detail.get('signal_date', '')
+                if hasattr(sig_date, 'strftime'):
+                    sig_date_str = sig_date.strftime('%Y-%m-%d')
+                else:
+                    sig_date_str = str(sig_date)[:10]
+                if (detail.get('ticker', ''), sig_date_str) in bt_pairs:
+                    filtered.append(detail)
+            return filtered
+
+        cd_bt_details = filter_to_breakthrough(cd_results_1234, df_breakout_1234)
+        cd_bt_score = aggregate_scores_by_interval(cd_bt_details, 'CD breakthrough scores')
+        if cd_bt_score:
+            save_analysis_result(run_id, "ALL", "ALL", 'cd_breakthrough_score_by_interval', cd_bt_score)
+
+        mc_bt_details = filter_to_breakthrough(mc_results_1234, df_mc_breakout_1234)
+        mc_bt_score = aggregate_scores_by_interval(mc_bt_details, 'MC breakthrough scores')
+        if mc_bt_score:
+            save_analysis_result(run_id, "ALL", "ALL", 'mc_breakthrough_score_by_interval', mc_bt_score)
 
         # 5. Save CD evaluation results
         logger.info("Saving CD evaluation results...")
@@ -755,6 +859,46 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                 logger.error(f"Error aggregating {metric_name} by interval: {e}")
                 return []
 
+        # Helper: aggregate indicator scores by date and interval
+        SCORE_INTERVAL_WEIGHTS = {'1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 16}
+
+        def aggregate_scores_by_interval(raw_details, metric_name, ticker_list=None):
+            """Aggregate indicator_score * interval_weight by date.
+            Returns list of {date, score_1h, score_2h, ..., score_1d, total_score}."""
+            if not raw_details:
+                return []
+            try:
+                df = pd.DataFrame(raw_details)
+                if df.empty or 'signal_date' not in df.columns or 'interval' not in df.columns:
+                    return []
+                if 'indicator_score' not in df.columns:
+                    return []
+                if ticker_list is not None:
+                    df = df[df['ticker'].isin(ticker_list)]
+                    if df.empty:
+                        return []
+                df['date'] = pd.to_datetime(df['signal_date']).dt.strftime('%Y-%m-%d')
+                df = df.dropna(subset=['indicator_score'])
+                if df.empty:
+                    return []
+                score_sums = df.groupby(['date', 'interval'])['indicator_score'].sum().reset_index()
+                score_sums.columns = ['date', 'interval', 'score_sum']
+                pivot = score_sums.pivot_table(index='date', columns='interval', values='score_sum', fill_value=0).reset_index()
+                result = []
+                for _, row in pivot.iterrows():
+                    entry = {'date': str(row['date'])}
+                    total = 0
+                    for intv in ['1h', '2h', '3h', '4h', '1d']:
+                        s = float(row.get(intv, 0))
+                        entry[f'score_{intv}'] = round(s, 1)
+                        total += s * SCORE_INTERVAL_WEIGHTS[intv]
+                    entry['total_score'] = round(total, 1)
+                    result.append(entry)
+                return sorted(result, key=lambda x: x['date'])
+            except Exception as e:
+                logger.error(f"Error aggregating scores for {metric_name}: {e}")
+                return []
+
         # 3. Identify breakouts and save results
         df_breakout_1234 = identify_1234(cd_results_1234, all_ticker_data)
         df_mc_breakout_1234 = identify_mc_1234(mc_results_1234, all_ticker_data)
@@ -994,7 +1138,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
         
         # 4. Compute per-index breadth (KEY CHANGE)
         def aggregate_signals_for_tickers(df, ticker_list, metric_name):
-            """Aggregate signals for a specific set of tickers."""
+            """Aggregate signals for a specific set of tickers, broken down by interval."""
             if df.empty:
                 return []
             try:
@@ -1008,11 +1152,38 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                     return []
                 
                 df_filtered['date'] = pd.to_datetime(df_filtered['date'])
-                daily_counts = df_filtered.groupby('date')['ticker'].nunique().reset_index()
-                daily_counts.columns = ['date', 'count']
-                daily_counts = daily_counts.sort_values('date')
-                daily_counts['date'] = daily_counts['date'].astype(str)
-                return daily_counts.to_dict(orient='records')
+                
+                # If 'intervals' column exists (from identify_1234, e.g. "1,2,3"),
+                # explode it into individual interval rows
+                if 'intervals' in df_filtered.columns and 'interval' not in df_filtered.columns:
+                    df_filtered['interval_list'] = df_filtered['intervals'].apply(
+                        lambda x: [f'{v}h' if v != '1d' else '1d' for v in str(x).split(',')] if pd.notna(x) else []
+                    )
+                    df_filtered = df_filtered.explode('interval_list').rename(columns={'interval_list': 'interval'})
+                
+                if 'interval' in df_filtered.columns:
+                    counts = df_filtered.groupby(['date', 'interval'])['ticker'].nunique().reset_index()
+                    counts.columns = ['date', 'interval', 'count']
+                    pivot = counts.pivot_table(index='date', columns='interval', values='count', fill_value=0).reset_index()
+                    result = []
+                    for _, row in pivot.iterrows():
+                        # Ensure date is YYYY-MM-DD string
+                        date_val = row['date']
+                        if hasattr(date_val, 'strftime'):
+                            date_str = date_val.strftime('%Y-%m-%d')
+                        else:
+                            date_str = str(date_val).split(' ')[0]
+                        entry = {'date': date_str}
+                        for intv in ['1h', '2h', '3h', '4h', '1d']:
+                            entry[f'count_{intv}'] = int(row.get(intv, 0))
+                        result.append(entry)
+                    return sorted(result, key=lambda x: x['date'])
+                else:
+                    daily_counts = df_filtered.groupby('date')['ticker'].nunique().reset_index()
+                    daily_counts.columns = ['date', 'count']
+                    daily_counts = daily_counts.sort_values('date')
+                    daily_counts['date'] = daily_counts['date'].astype(str)
+                    return [{'date': r['date'], 'count_1h': 0, 'count_2h': 0, 'count_3h': 0, 'count_4h': 0, 'count_1d': int(r['count'])} for r in daily_counts.to_dict(orient='records')]
             except Exception as e:
                 logger.error(f"Error aggregating {metric_name}: {e}")
                 return []
@@ -1051,6 +1222,62 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
             if mc_sig_by_intv:
                 save_analysis_result(run_id, stock_list_name, "ALL", 'mc_signal_breadth_by_interval', mc_sig_by_intv)
                 logger.info(f"Saved MC signal breadth by interval for {idx_key}: {len(mc_sig_by_intv)} days")
+            
+            # CD score breadth by interval for this index
+            cd_score_by_intv = aggregate_scores_by_interval(cd_results_1234, f'CD scores {idx_key}', ticker_list=idx_tickers)
+            if cd_score_by_intv:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'cd_score_breadth_by_interval', cd_score_by_intv)
+                logger.info(f"Saved CD score breadth by interval for {idx_key}: {len(cd_score_by_intv)} days")
+            
+            # MC score breadth by interval for this index
+            mc_score_by_intv = aggregate_scores_by_interval(mc_results_1234, f'MC scores {idx_key}', ticker_list=idx_tickers)
+            if mc_score_by_intv:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'mc_score_breadth_by_interval', mc_score_by_intv)
+                logger.info(f"Saved MC score breadth by interval for {idx_key}: {len(mc_score_by_intv)} days")
+            
+            # CD breakthrough score by interval for this index
+            # Filter raw details to only breakthrough signals for this index's tickers
+            def filter_to_breakthrough_multi(raw_details, df_breakout, tickers):
+                """Filter raw signal details to breakthrough (ticker, date) pairs within a ticker list."""
+                if not raw_details or df_breakout.empty:
+                    return []
+                tickers_set = set(tickers) if tickers else None
+                bt_pairs = set()
+                for _, row in df_breakout.iterrows():
+                    t = row.get('ticker', '')
+                    if tickers_set and t not in tickers_set:
+                        continue
+                    date_val = row.get('date', '')
+                    if hasattr(date_val, 'strftime'):
+                        date_str = date_val.strftime('%Y-%m-%d')
+                    else:
+                        date_str = str(date_val)[:10]
+                    bt_pairs.add((t, date_str))
+                filtered = []
+                for detail in raw_details:
+                    t = detail.get('ticker', '')
+                    if tickers_set and t not in tickers_set:
+                        continue
+                    sig_date = detail.get('signal_date', '')
+                    if hasattr(sig_date, 'strftime'):
+                        sig_date_str = sig_date.strftime('%Y-%m-%d')
+                    else:
+                        sig_date_str = str(sig_date)[:10]
+                    if (t, sig_date_str) in bt_pairs:
+                        filtered.append(detail)
+                return filtered
+
+            cd_bt_details = filter_to_breakthrough_multi(cd_results_1234, df_breakout_1234, idx_tickers)
+            cd_bt_score = aggregate_scores_by_interval(cd_bt_details, f'CD breakthrough scores {idx_key}')
+            if cd_bt_score:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'cd_breakthrough_score_by_interval', cd_bt_score)
+                logger.info(f"Saved CD breakthrough score by interval for {idx_key}: {len(cd_bt_score)} days")
+
+            mc_bt_details = filter_to_breakthrough_multi(mc_results_1234, df_mc_breakout_1234, idx_tickers)
+            mc_bt_score = aggregate_scores_by_interval(mc_bt_details, f'MC breakthrough scores {idx_key}')
+            if mc_bt_score:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'mc_breakthrough_score_by_interval', mc_bt_score)
+                logger.info(f"Saved MC breakthrough score by interval for {idx_key}: {len(mc_bt_score)} days")
         
         if progress_callback:
             progress_callback(100)

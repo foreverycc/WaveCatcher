@@ -135,6 +135,196 @@ def compute_nx_break_through(data):
     break_through = (close > short_upper) & (close.shift(1) <= short_upper.shift(1))
     return break_through
 
+
+def compute_cd_score(data, weights=None):
+    """
+    Compute a 0-100 score for each CD (buy) signal.
+    
+    Args:
+        data: DataFrame with OHLCV data
+        weights: Optional tuple (w_divergence, w_price_position, w_volume) summing to 100.
+                 If None, reads from scoring config.
+    
+    Score components (raw 0-1 values × weight):
+      1. Divergence strength: how strongly DIFF diverges upward vs previous cycle
+      2. Price position: how close price is to the recent low (lower = stronger buy)
+      3. Volume confirmation: volume relative to 20-bar moving average
+    
+    Returns:
+        pd.Series of float scores (0-100), NaN where there is no CD signal.
+    """
+    if weights is None:
+        from app.logic.scoring_config import get_cd_weights
+        weights = get_cd_weights()
+    w_div, w_price, w_vol = weights
+
+    close = data['Close']
+    volume = data['Volume']
+    if isinstance(close, pd.DataFrame):
+        close = close.iloc[:, 0]
+    if isinstance(volume, pd.DataFrame):
+        volume = volume.iloc[:, 0]
+
+    # --- Recompute MACD internals (same as compute_cd_indicator) ---
+    fast_ema = close.ewm(span=12, adjust=False).mean()
+    slow_ema = close.ewm(span=26, adjust=False).mean()
+    diff = fast_ema - slow_ema
+    dea = diff.ewm(span=9, adjust=False).mean()
+    mcd = (diff - dea) * 2
+
+    cross_down = (mcd.shift(1) >= 0) & (mcd < 0)
+    cross_up = (mcd.shift(1) <= 0) & (mcd > 0)
+
+    n1 = _compute_barslast(cross_down, len(data))
+    mm1 = _compute_barslast(cross_up, len(data))
+    n1_safe = n1 + 1
+    mm1_safe = mm1 + 1
+
+    # LLV series for price and DIFF
+    cc1 = _compute_llv(close, n1_safe)
+    cc2 = _compute_ref(cc1, mm1_safe)
+    difl1 = _compute_llv(diff, n1_safe)
+    difl2 = _compute_ref(difl1, mm1_safe)
+
+    # Get CD signal mask
+    cd_signal = compute_cd_indicator(data).fillna(False).astype(bool)
+
+    # Initialize score series as NaN
+    score = pd.Series(np.nan, index=data.index)
+
+    signal_indices = np.where(cd_signal)[0]
+    if len(signal_indices) == 0:
+        return score
+
+    for idx in signal_indices:
+        # --- Component 1: Divergence Strength (raw 0-1) ---
+        d1 = difl1.iloc[idx]
+        d2 = difl2.iloc[idx]
+        if pd.notna(d1) and pd.notna(d2) and abs(d2) > 1e-10:
+            div_raw = min(max((d1 - d2) / abs(d2), 0.0), 1.0)
+        else:
+            div_raw = 0.5
+
+        # --- Component 2: Price Position (raw 0-1, lower price = higher score) ---
+        lookback = min(50, idx + 1)
+        if lookback > 1:
+            window_close = close.iloc[max(0, idx - lookback + 1):idx + 1]
+            w_range = window_close.max() - window_close.min()
+            if w_range > 1e-10:
+                price_raw = 1.0 - (close.iloc[idx] - window_close.min()) / w_range
+            else:
+                price_raw = 0.5
+        else:
+            price_raw = 0.5
+
+        # --- Component 3: Volume Confirmation (raw 0-1) ---
+        vol_avg = volume.iloc[max(0, idx - 19):idx + 1].mean()
+        if vol_avg > 0:
+            vol_raw = min(volume.iloc[idx] / vol_avg / 2.0, 1.0)
+        else:
+            vol_raw = 0.5
+
+        # Weighted sum
+        s = div_raw * w_div + price_raw * w_price + vol_raw * w_vol
+        score.iloc[idx] = round(min(max(s, 0.0), 100.0), 1)
+
+    return score
+
+
+def compute_mc_score(data, weights=None):
+    """
+    Compute a 0-100 score for each MC (sell) signal.
+    
+    Args:
+        data: DataFrame with OHLCV data
+        weights: Optional tuple (w_divergence, w_price_position, w_volume) summing to 100.
+                 If None, reads from scoring config.
+    
+    Score components (raw 0-1 values × weight):
+      1. Divergence strength: how strongly DIFF diverges downward vs previous cycle
+      2. Price position: how close price is to the recent high (higher = stronger sell)
+      3. Volume confirmation: volume relative to 20-bar moving average
+    
+    Returns:
+        pd.Series of float scores (0-100), NaN where there is no MC signal.
+    """
+    if weights is None:
+        from app.logic.scoring_config import get_mc_weights
+        weights = get_mc_weights()
+    w_div, w_price, w_vol = weights
+
+    close = data['Close']
+    volume = data['Volume']
+    if isinstance(close, pd.DataFrame):
+        close = close.iloc[:, 0]
+    if isinstance(volume, pd.DataFrame):
+        volume = volume.iloc[:, 0]
+
+    # --- Recompute MACD internals (same as compute_mc_indicator) ---
+    fast_ema = close.ewm(span=12, adjust=False).mean()
+    slow_ema = close.ewm(span=26, adjust=False).mean()
+    diff = fast_ema - slow_ema
+    dea = diff.ewm(span=9, adjust=False).mean()
+    mcd = (diff - dea) * 2
+
+    cross_down = (mcd.shift(1) >= 0) & (mcd < 0)
+    cross_up = (mcd.shift(1) <= 0) & (mcd > 0)
+
+    n1 = _compute_barslast(cross_down, len(data))
+    mm1 = _compute_barslast(cross_up, len(data))
+    n1_safe = n1 + 1
+    mm1_safe = mm1 + 1
+
+    # HHV series for price and DIFF
+    ch1 = _compute_hhv(close, mm1_safe)
+    ch2 = _compute_ref(ch1, n1_safe)
+    difh1 = _compute_hhv(diff, mm1_safe)
+    difh2 = _compute_ref(difh1, n1_safe)
+
+    # Get MC signal mask
+    mc_signal = compute_mc_indicator(data).fillna(False).astype(bool)
+
+    # Initialize score series as NaN
+    score = pd.Series(np.nan, index=data.index)
+
+    signal_indices = np.where(mc_signal)[0]
+    if len(signal_indices) == 0:
+        return score
+
+    for idx in signal_indices:
+        # --- Component 1: Divergence Strength (raw 0-1) ---
+        d1 = difh1.iloc[idx]
+        d2 = difh2.iloc[idx]
+        if pd.notna(d1) and pd.notna(d2) and abs(d2) > 1e-10:
+            div_raw = min(max((d2 - d1) / abs(d2), 0.0), 1.0)
+        else:
+            div_raw = 0.5
+
+        # --- Component 2: Price Position (raw 0-1, higher price = higher score) ---
+        lookback = min(50, idx + 1)
+        if lookback > 1:
+            window_close = close.iloc[max(0, idx - lookback + 1):idx + 1]
+            w_range = window_close.max() - window_close.min()
+            if w_range > 1e-10:
+                price_raw = (close.iloc[idx] - window_close.min()) / w_range
+            else:
+                price_raw = 0.5
+        else:
+            price_raw = 0.5
+
+        # --- Component 3: Volume Confirmation (raw 0-1) ---
+        vol_avg = volume.iloc[max(0, idx - 19):idx + 1].mean()
+        if vol_avg > 0:
+            vol_raw = min(volume.iloc[idx] / vol_avg / 2.0, 1.0)
+        else:
+            vol_raw = 0.5
+
+        # Weighted sum
+        s = div_raw * w_div + price_raw * w_price + vol_raw * w_vol
+        score.iloc[idx] = round(min(max(s, 0.0), 100.0), 1)
+
+    return score
+
 def _compute_barslast(cross_events, length):
     barslast = np.zeros(length, dtype=int)
     last_event = -1

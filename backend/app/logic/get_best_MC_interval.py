@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
 from data_loader import download_stock_data
-from indicators import compute_mc_indicator, compute_cd_indicator
+from indicators import compute_mc_indicator, compute_cd_indicator, compute_mc_score
 import yfinance as yf
+from app.logic.scoring_config import get_mc_threshold
 
 # EMA warmup period - should match the value in indicators.py
 EMA_WARMUP_PERIOD = 0
@@ -155,6 +156,16 @@ def calculate_returns(data, mc_signals, periods=None, max_signals=MAX_SIGNALS_TH
     results = []
     # Handle NaN values by replacing them with False for boolean indexing
     mc_signals_bool = mc_signals.fillna(False).infer_objects(copy=False)
+    
+    # Compute MC signal scores and apply threshold filtering
+    mc_scores = compute_mc_score(data)
+    threshold = get_mc_threshold()
+    for ts in mc_signals_bool.index:
+        if mc_signals_bool[ts]:
+            sc = mc_scores.get(ts, np.nan)
+            if pd.isna(sc) or sc < threshold:
+                mc_signals_bool[ts] = False
+    
     signal_dates = data.index[mc_signals_bool]
     
     # Limit to the latest N signals to reduce noise from older signals
@@ -208,6 +219,7 @@ def calculate_returns(data, mc_signals, periods=None, max_signals=MAX_SIGNALS_TH
         results.append({
             'date': date,
             'entry_volume': entry_volume,
+            'signal_score': float(mc_scores.get(date, np.nan)) if pd.notna(mc_scores.get(date, np.nan)) else None,
             **returns,
             **volumes,
             **cd_info
@@ -269,12 +281,20 @@ def evaluate_interval(ticker, interval, data=None):
             
         # Compute MC signals
         mc_signals = compute_mc_indicator(data_frame)
-        # Handle NaN values for signal count calculation
-        signal_count = mc_signals.fillna(False).infer_objects(copy=False).sum()
+        mc_signals_bool = mc_signals.fillna(False).infer_objects(copy=False)
+        
+        # Apply score threshold filtering
+        mc_scores_eval = compute_mc_score(data_frame)
+        threshold = get_mc_threshold()
+        for ts in mc_signals_bool.index:
+            if mc_signals_bool[ts]:
+                sc = mc_scores_eval.get(ts, np.nan)
+                if pd.isna(sc) or sc < threshold:
+                    mc_signals_bool[ts] = False
+        
+        signal_count = mc_signals_bool.sum()
         
         # Get the latest signal date
-        # Handle NaN values by replacing them with False for boolean indexing
-        mc_signals_bool = mc_signals.fillna(False).infer_objects(copy=False)
         latest_signal_date = data_frame.index[mc_signals_bool].max() if signal_count > 0 else None
         latest_signal_str = latest_signal_date.strftime('%Y-%m-%d %H:%M:%S') if latest_signal_date else None
         latest_signal_price = round(float(data_frame.loc[latest_signal_date, 'Close']), 2) if latest_signal_date is not None else None  # Convert to Python float

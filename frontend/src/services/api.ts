@@ -11,6 +11,14 @@ export const api = axios.create({
     },
 });
 
+export interface ScoringConfig {
+    cd_component_weights: { divergence: number; price_position: number; volume: number };
+    mc_component_weights: { divergence: number; price_position: number; volume: number };
+    interval_weights: { '1h': number; '2h': number; '3h': number; '4h': number; '1d': number };
+    cd_threshold: number;
+    mc_threshold: number;
+}
+
 export interface StockList {
     filename: string;
     count: number;
@@ -96,12 +104,30 @@ export const analysisApi = {
         return response.data;
     },
 
-    getMarketBreadth: async (stockList: string) => {
+    getTickerSignals: async (ticker: string) => {
         const response = await api.get<{
-            cd_breadth: { date: string, count: number }[],
-            mc_breadth: { date: string, count: number }[],
+            cd_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
+            mc_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
             cd_signal_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
             mc_signal_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
+            cd_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+            mc_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+            cd_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+            mc_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+        }>(`/analysis/ticker_signals/${ticker}`);
+        return response.data;
+    },
+
+    getMarketBreadth: async (stockList: string) => {
+        const response = await api.get<{
+            cd_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
+            mc_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
+            cd_signal_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
+            mc_signal_breadth: { date: string, count_1h: number, count_2h: number, count_3h: number, count_4h: number, count_1d: number }[],
+            cd_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+            mc_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+            cd_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
+            mc_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
             run_id: number | null
         }>(`/analysis/market_breadth/${encodeURIComponent(stockList)}`);
         return response.data;
@@ -126,6 +152,21 @@ export const analysisApi = {
 
     runMultiIndex: async (indices: string[], end_date?: string) => {
         const response = await api.post<JobStatus>('/analysis/run_multi_index', { indices, end_date });
+        return response.data;
+    },
+
+    getScoringConfig: async () => {
+        const response = await api.get<ScoringConfig>('/analysis/config/scoring');
+        return response.data;
+    },
+
+    updateScoringConfig: async (config: Partial<ScoringConfig>) => {
+        const response = await api.put<ScoringConfig>('/analysis/config/scoring', config);
+        return response.data;
+    },
+
+    getScoringConfigDefaults: async () => {
+        const response = await api.get<ScoringConfig>('/analysis/config/scoring/defaults');
         return response.data;
     }
 };

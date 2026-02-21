@@ -38,5 +38,17 @@
   "KWEB": {
     "symbol": "KWEB",
     "stock_list": "stocks_zhonggai.tab"
+  },
+  "STORAGE": {
+    "symbol": "MU",
+    "stock_list": "stocks_storage.tab"
+  },
+  "LIGHT": {
+    "symbol": "LITE",
+    "stock_list": "stocks_light.tab"
+  },
+  "SAAS": {
+    "symbol": "IGV",
+    "stock_list": "stocks_saas.tab"
   }
 }

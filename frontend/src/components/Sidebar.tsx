@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Settings, Activity, ChevronLeft, ChevronRight, Play, RefreshCw, Clock, AlertCircle, Terminal } from 'lucide-react';
+import { LayoutDashboard, Settings, Activity, Play, RefreshCw, Clock, AlertCircle, Terminal, Menu } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { DateRangeCalendar } from './DateRangeCalendar';
 
@@ -47,21 +47,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 isCollapsed ? "w-20" : "w-72"
             )}
         >
-            {/* Toggle Button */}
-            <button
-                onClick={onToggle}
-                className="absolute -right-3 top-9 bg-primary text-primary-foreground rounded-full p-1 shadow-md hover:bg-primary/90 transition-colors z-50"
-            >
-                {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-            </button>
-
-            <div className={cn("p-6 border-b border-border flex items-center", isCollapsed ? "justify-center px-2" : "")}>
-                <div className="flex items-center gap-2 text-primary overflow-hidden whitespace-nowrap">
+            <div className={cn("p-4 md:p-6 border-b border-border flex items-center justify-between gap-2", isCollapsed ? "justify-center px-2" : "")}>
+                <div className={cn("flex items-center gap-2 text-primary overflow-hidden whitespace-nowrap", isCollapsed ? "hidden" : "")}>
                     <Activity className="w-6 h-6 shrink-0" />
-                    <span className={cn("font-bold text-xl transition-opacity duration-300", isCollapsed ? "opacity-0 w-0" : "opacity-100")}>
+                    <span className="font-bold text-xl">
                         WaveCatcher Pro
                     </span>
                 </div>
+                <button
+                    onClick={onToggle}
+                    className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
+                    title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                >
+                    <Menu className="w-5 h-5" />
+                </button>
             </div>
 
             <nav className="flex-1 p-4 space-y-2 overflow-y-auto">

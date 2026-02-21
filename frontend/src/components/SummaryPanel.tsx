@@ -1,14 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery, useQueries } from '@tanstack/react-query';
-import { analysisApi } from '../services/api';
+import { analysisApi, type ScoringConfig } from '../services/api';
 import { IndexSummaryCard } from './IndexSummaryCard';
 import { cn } from '../utils/cn';
-import { subYears, subMonths, subDays, parseISO, isAfter, format } from 'date-fns';
+import { subYears, parseISO, format } from 'date-fns';
 import { DetailedChartRow, InteractiveOptionChart } from '../pages/Dashboard';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
 const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bull' | 'bear', runId: number | undefined, onClose: () => void }) => {
-    // Fetch detailed data for this ticker
     const resultType = type === 'bull' ? 'cd_eval_custom_detailed' : 'mc_eval_custom_detailed';
+    const [fullscreen, setFullscreen] = React.useState(false);
 
     const { data: detailedData, isLoading } = useQuery({
         queryKey: ['detailedRowData', runId, resultType, row.ticker],
@@ -16,13 +17,10 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
         enabled: !!runId && !!row.ticker
     });
 
-    // Find the matching interval row from detailed data, enriched with original row's metrics
     const detailedRow = useMemo(() => {
         if (!detailedData || !Array.isArray(detailedData)) return null;
         const match = detailedData.find((d: any) => d.interval === row.interval) || detailedData[0];
         if (match) {
-            // Use the original row's metrics (from good_signals) which are already correctly signed,
-            // instead of extractBestMetrics which gives unsigned magnitudes from custom_detailed
             return {
                 ...match,
                 success_rate: row.success_rate,
@@ -33,19 +31,44 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
         return null;
     }, [detailedData, row.interval, row.success_rate, row.avg_return, row.test_count]);
 
-    return (
-        <div className="flex flex-col border rounded-lg bg-card overflow-hidden h-[800px] shadow-lg">
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        if (fullscreen) {
+            let el: HTMLElement | null = containerRef.current?.parentElement ?? null;
+            while (el) {
+                if (el.scrollTop > 0) { el.scrollTop = 0; break; }
+                el = el.parentElement;
+            }
+        }
+    }, [fullscreen]);
+
+    const containerClass = fullscreen
+        ? 'absolute inset-0 z-[9999] flex flex-col bg-card overflow-hidden'
+        : 'flex flex-col border rounded-lg bg-card overflow-hidden h-[800px] shadow-lg';
+
+    const body = (
+        <div ref={containerRef} className={containerClass}>
             <div className="p-3 border-b bg-muted/30 flex justify-between items-center sticky top-0 z-10 backdrop-blur">
                 <div>
                     <span className="font-medium pl-2 text-lg">{row.ticker}</span>
                     <span className="text-muted-foreground text-sm ml-2">({row.interval}) - {type === 'bull' ? 'Bullish' : 'Bearish'}</span>
                 </div>
-                <button
-                    onClick={onClose}
-                    className="px-3 py-1.5 text-sm hover:bg-red-500/10 hover:text-red-500 rounded border border-transparent hover:border-red-200 transition-colors"
-                >
-                    Close
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setFullscreen(!fullscreen)}
+                        className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/50 transition-colors"
+                        title={fullscreen ? 'Restore' : 'Maximize'}
+                    >
+                        {fullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="px-3 py-1.5 text-sm hover:bg-red-500/10 hover:text-red-500 rounded border border-transparent hover:border-red-200 transition-colors"
+                    >
+                        Close
+                    </button>
+                </div>
             </div>
             <div className="p-4 flex-1 overflow-y-auto space-y-6">
                 {isLoading ? (
@@ -55,8 +78,6 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
                 ) : detailedRow ? (
                     <>
                         <DetailedChartRow row={detailedRow} activeSubTab="summary" signalType={type} />
-
-                        {/* Option Chart */}
                         <div style={{ height: '350px' }} className="p-4 border rounded-lg bg-card/50 mt-6">
                             <InteractiveOptionChart ticker={row.ticker} />
                         </div>
@@ -70,6 +91,8 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
             </div>
         </div>
     );
+
+    return body;
 };
 
 // Helper to extract best metrics from detailed row (copied from Dashboard.tsx logic)
@@ -99,10 +122,9 @@ const extractBestMetrics = (row: any) => {
     };
 };
 
-// Chart view for 1234 signals - displays multiple intervals (1h, 2h, 3h + 1d)
 const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 'bull' | 'bear', runId: number | undefined, onClose: () => void }) => {
-    // Fetch detailed data for this ticker
     const resultType = type === 'bull' ? 'cd_eval_custom_detailed' : 'mc_eval_custom_detailed';
+    const [fullscreen, setFullscreen] = React.useState(false);
 
     const { data: detailedData, isLoading } = useQuery({
         queryKey: ['detailedRowData', runId, resultType, row.ticker],
@@ -110,40 +132,40 @@ const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 
         enabled: !!runId && !!row.ticker
     });
 
-    // Prepare rows for 1h, 2h, 3h, 1d sequence
     const detailedRows = useMemo(() => {
         if (!detailedData || !row.intervals) return [];
-
-        // Parse intervals string (e.g., "1,2,3") and add 'h' suffix
         const intervalNumbers = row.intervals.toString().split(',').map((s: string) => s.trim());
         let intervals = intervalNumbers.map((n: string) => `${n}h`);
-
-        // Explicitly add '1d' if not present
-        if (!intervals.includes('1d')) {
-            intervals.push('1d');
-        }
-
+        if (!intervals.includes('1d')) intervals.push('1d');
         return intervals.map((interval: string) => {
             const match = detailedData.find((d: any) => d.interval === interval);
             if (match) {
                 const metrics = extractBestMetrics(match);
-                // For bearish (MC) signals, negate the return (custom_detailed stores positive magnitudes)
                 if (type === 'bear') metrics.avg_return = -Math.abs(metrics.avg_return);
                 return { ...match, ...metrics };
             }
-            // Return dummy if data missing (price chart will still work)
-            return {
-                ticker: row.ticker,
-                interval: interval,
-                success_rate: 0,
-                avg_return: 0,
-                test_count: 0
-            };
+            return { ticker: row.ticker, interval, success_rate: 0, avg_return: 0, test_count: 0 };
         });
     }, [detailedData, row.intervals, type]);
 
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        if (fullscreen) {
+            let el: HTMLElement | null = containerRef.current?.parentElement ?? null;
+            while (el) {
+                if (el.scrollTop > 0) { el.scrollTop = 0; break; }
+                el = el.parentElement;
+            }
+        }
+    }, [fullscreen]);
+
+    const containerClass = fullscreen
+        ? 'absolute inset-0 z-[9999] flex flex-col bg-card overflow-hidden'
+        : 'flex flex-col border rounded-lg bg-card overflow-hidden h-[800px] shadow-lg';
+
     return (
-        <div className="flex flex-col border rounded-lg bg-card overflow-hidden h-[800px] shadow-lg">
+        <div ref={containerRef} className={containerClass}>
             <div className="p-3 border-b bg-muted/30 flex justify-between items-center sticky top-0 z-10 backdrop-blur">
                 <div>
                     <span className="font-medium pl-2 text-lg">{row.ticker}</span>
@@ -151,12 +173,21 @@ const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 
                         (1234 Signal: {row.intervals}) - {type === 'bull' ? 'Bullish' : 'Bearish'}
                     </span>
                 </div>
-                <button
-                    onClick={onClose}
-                    className="px-3 py-1.5 text-sm hover:bg-red-500/10 hover:text-red-500 rounded border border-transparent hover:border-red-200 transition-colors"
-                >
-                    Close
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setFullscreen(!fullscreen)}
+                        className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/50 transition-colors"
+                        title={fullscreen ? 'Restore' : 'Maximize'}
+                    >
+                        {fullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="px-3 py-1.5 text-sm hover:bg-red-500/10 hover:text-red-500 rounded border border-transparent hover:border-red-200 transition-colors"
+                    >
+                        Close
+                    </button>
+                </div>
             </div>
             <div className="p-4 flex-1 overflow-y-auto space-y-6">
                 {isLoading ? (
@@ -173,8 +204,6 @@ const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 
                                 signalType={type}
                             />
                         ))}
-
-                        {/* Option Chart */}
                         <div style={{ height: '350px' }} className="p-4 border rounded-lg bg-card/50 mt-6">
                             <InteractiveOptionChart ticker={row.ticker} />
                         </div>
@@ -195,11 +224,20 @@ interface SummaryPanelProps {
     onRowClick?: (row: any, type: 'bull' | 'bear') => void;
     selectedIndices?: string[];
     availableIndices?: { key: string, symbol: string, stock_list: string, tickers: string[] }[];
+    dateRange: { start: string; end: string };
 }
 
-export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [], availableIndices = [] }) => {
+export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [], availableIndices = [], dateRange }) => {
 
     // --- Data Fetching ---
+
+    // Scoring config state (for live weight updates)
+    const [scoringConfig, setScoringConfig] = useState<ScoringConfig | null>(null);
+
+    // Fetch scoring config on mount
+    useEffect(() => {
+        analysisApi.getScoringConfig().then(setScoringConfig).catch(console.error);
+    }, []);
 
     // State for In-Line Chart (High Return Opportunities)
     const [selectedRow, setSelectedRow] = React.useState<any | null>(null);
@@ -325,37 +363,26 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
         type: 'bull' | 'bear',
         onRowClick?: (row: any, type: 'bull' | 'bear') => void
     }) => {
-        if (!data || data.length === 0) return null;
-
-        // Take top 10 sorted by return magnitude, filtered by last 7 days
         const sorted = useMemo(() => {
-            const cutoffDate = subDays(new Date(), 7);
+            if (!data || data.length === 0) return [];
 
             return [...data]
                 .filter(row => {
                     if (!row.latest_signal) return false;
-                    // Assuming latest_signal is ISO-like string. parseISO handles it.
-                    // If it's just YYYY-MM-DD, it works too.
-                    try {
-                        const date = parseISO(row.latest_signal);
-                        return isAfter(date, cutoffDate);
-                    } catch (e) {
-                        return false;
-                    }
+                    const signalDate = String(row.latest_signal).split(' ')[0];
+                    return signalDate >= dateRange.start && signalDate <= dateRange.end;
                 })
                 .sort((a, b) =>
                     type === 'bull' ? b.avg_return - a.avg_return : a.avg_return - b.avg_return
                 )
                 .slice(0, 10);
-        }, [data, type]);
-
-        if (sorted.length === 0) return null;
+        }, [data, type, dateRange]);
 
         return (
             <div className="flex flex-col border rounded-lg bg-card overflow-hidden">
                 <div className="p-3 bg-muted/30 border-b font-medium flex justify-between">
                     <span>{title}</span>
-                    <span className="text-xs text-muted-foreground font-normal mt-1">(Last 7 Days)</span>
+                    <span className="text-xs text-muted-foreground font-normal mt-1">({dateRange.start} ~ {dateRange.end})</span>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -370,24 +397,32 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             </tr>
                         </thead>
                         <tbody>
-                            {sorted.map((row, i) => (
-                                <tr
-                                    key={i}
-                                    className="border-b last:border-0 hover:bg-muted/10 cursor-pointer transition-colors"
-                                    onClick={() => onRowClick?.(row, type)}
-                                >
-                                    <td className="p-2 font-medium">{row.ticker}</td>
-                                    <td className="p-2 text-muted-foreground text-xs">
-                                        {row.latest_signal ? format(parseISO(row.latest_signal), 'MM-dd HH:mm') : '-'}
+                            {sorted.length > 0 ? (
+                                sorted.map((row, i) => (
+                                    <tr
+                                        key={i}
+                                        className="border-b last:border-0 hover:bg-muted/10 cursor-pointer transition-colors"
+                                        onClick={() => onRowClick?.(row, type)}
+                                    >
+                                        <td className="p-2 font-medium">{row.ticker}</td>
+                                        <td className="p-2 text-muted-foreground text-xs">
+                                            {row.latest_signal ? format(parseISO(row.latest_signal), 'MM-dd HH:mm') : '-'}
+                                        </td>
+                                        <td className="p-2 text-muted-foreground">{row.interval}</td>
+                                        <td className={cn("p-2 text-right font-medium", row.avg_return >= 0 ? "text-green-500" : "text-red-500")}>
+                                            {formatPercent(row.avg_return)}
+                                        </td>
+                                        <td className="p-2 text-right">{formatPercent(row.success_rate)}</td>
+                                        <td className="p-2 text-right">{row.test_count}</td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                                        No signals in selected date range
                                     </td>
-                                    <td className="p-2 text-muted-foreground">{row.interval}</td>
-                                    <td className={cn("p-2 text-right font-medium", row.avg_return >= 0 ? "text-green-500" : "text-red-500")}>
-                                        {formatPercent(row.avg_return)}
-                                    </td>
-                                    <td className="p-2 text-right">{formatPercent(row.success_rate)}</td>
-                                    <td className="p-2 text-right">{row.test_count}</td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -403,10 +438,8 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
         onRowClick?: (row: any, type: 'bull' | 'bear') => void,
         detailedData: any[] | null
     }) => {
-        if (!data || data.length === 0) return null;
-
-        // Filter by last 7 days, calculate return, sort by return, take top 10
         const sorted = useMemo(() => {
+            if (!data || data.length === 0) return [];
             // Calculate average return for a row based on its intervals
             const calculateAvgReturn = (row: any) => {
                 if (!detailedData || !row.intervals) return 0;
@@ -435,17 +468,13 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                 return returns.reduce((a, b) => a + b, 0) / returns.length;
             };
 
-            const cutoffDate = subDays(new Date(), 7);
+
 
             const filtered = [...data]
                 .filter(row => {
                     if (!row.date) return false;
-                    try {
-                        const date = parseISO(row.date);
-                        return isAfter(date, cutoffDate);
-                    } catch {
-                        return false;
-                    }
+                    const signalDate = String(row.date).split(' ')[0];
+                    return signalDate >= dateRange.start && signalDate <= dateRange.end;
                 })
                 .map(row => {
                     const calculatedReturn = calculateAvgReturn(row);
@@ -465,15 +494,13 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                     return new Date(b.date).getTime() - new Date(a.date).getTime();
                 })
                 .slice(0, 10);
-        }, [data, detailedData, type]);
-
-        if (sorted.length === 0) return null;
+        }, [data, detailedData, type, dateRange]);
 
         return (
             <div className="flex flex-col border rounded-lg bg-card overflow-hidden">
                 <div className="p-3 bg-muted/30 border-b font-medium flex justify-between">
                     <span>{title}</span>
-                    <span className="text-xs text-muted-foreground font-normal mt-1">(Last 7 Days)</span>
+                    <span className="text-xs text-muted-foreground font-normal mt-1">({dateRange.start} ~ {dateRange.end})</span>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -487,34 +514,42 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             </tr>
                         </thead>
                         <tbody>
-                            {sorted.map((row, i) => (
-                                <tr
-                                    key={i}
-                                    className="border-b last:border-0 hover:bg-muted/10 cursor-pointer transition-colors"
-                                    onClick={() => onRowClick?.(row, type)}
-                                >
-                                    <td className="p-2 font-medium">{row.ticker}</td>
-                                    <td className="p-2 text-muted-foreground text-xs">
-                                        {row.date ? format(parseISO(row.date), 'MM-dd') : '-'}
-                                    </td>
-                                    <td className="p-2 text-muted-foreground">{row.intervals}</td>
-                                    <td className={cn("p-2 text-right font-medium", (row.calculatedReturn ?? 0) >= 0 ? "text-green-500" : "text-red-500")}>
-                                        {row.calculatedReturn !== null ? formatPercent(row.calculatedReturn) : '-'}
-                                    </td>
-                                    <td className={cn("p-2 text-center", row.nx_1d ? "text-green-500" : "text-red-500")}>
-                                        {row.nx_1d ? '▲' : '▼'}
+                            {sorted.length > 0 ? (
+                                sorted.map((row, i) => (
+                                    <tr
+                                        key={i}
+                                        className="border-b last:border-0 hover:bg-muted/10 cursor-pointer transition-colors"
+                                        onClick={() => onRowClick?.(row, type)}
+                                    >
+                                        <td className="p-2 font-medium">{row.ticker}</td>
+                                        <td className="p-2 text-muted-foreground text-xs">
+                                            {row.date ? format(parseISO(row.date), 'MM-dd') : '-'}
+                                        </td>
+                                        <td className="p-2 text-muted-foreground">{row.intervals}</td>
+                                        <td className={cn("p-2 text-right font-medium", (row.calculatedReturn ?? 0) >= 0 ? "text-green-500" : "text-red-500")}>
+                                            {row.calculatedReturn !== null ? formatPercent(row.calculatedReturn) : '-'}
+                                        </td>
+                                        <td className={cn("p-2 text-center", row.nx_1d ? "text-green-500" : "text-red-500")}>
+                                            {row.nx_1d ? '▲' : '▼'}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                                        No signals in selected date range
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>
-            </div >
+            </div>
         );
     };
 
     return (
-        <div className="p-4 md:p-6 h-full overflow-y-auto space-y-6">
+        <div className="p-4 md:p-6 h-full overflow-y-auto space-y-6 relative">
 
             {/* Market Index Summary Cards (click to flip to chart) */}
             <div className={cn(
@@ -534,9 +569,15 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             mcBreadth={breadth?.mc_breadth ?? []}
                             cdSignalBreadth={breadth?.cd_signal_breadth ?? []}
                             mcSignalBreadth={breadth?.mc_signal_breadth ?? []}
+                            cdScoreBreadth={breadth?.cd_score_breadth ?? []}
+                            mcScoreBreadth={breadth?.mc_score_breadth ?? []}
+                            cdBreakthroughScoreBreadth={breadth?.cd_breakthrough_score_breadth ?? []}
+                            mcBreakthroughScoreBreadth={breadth?.mc_breakthrough_score_breadth ?? []}
+                            intervalWeights={scoringConfig?.interval_weights}
                             minDate={oneYearAgo}
                             signals1234={signals}
                             tickers={idx.tickers}
+                            indexTicker={idx.symbol}
                         />
                     );
                 })}

@@ -328,11 +328,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
     }, [resize, stopResizing]);
 
     return (
-        <div className="p-4 md:p-6 h-full flex flex-col space-y-4 md:space-y-6">
+        <div className="h-full flex flex-col">
             <LogViewer isOpen={showLogs} onClose={() => setShowLogs(false)} />
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+            <div className="flex-1 flex flex-col bg-card overflow-hidden">
                 {/* Tabs */}
                 <div className="flex border-b border-border overflow-x-auto scrollbar-hide">
                     <button
@@ -390,6 +390,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         runId={currentRun?.id}
                         selectedIndices={selectedIndices}
                         availableIndices={availableIndices}
+                        dateRange={dateRange}
                         onRowClick={(row, type) => {
                             setActiveTab(type === 'bull' ? 'cd' : 'mc');
                             setActiveSubTab('best_intervals_50');
