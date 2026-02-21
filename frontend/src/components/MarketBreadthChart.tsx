@@ -701,7 +701,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     const validMin = spxMin === Infinity ? 0 : spxMin;
     const validMax = spxMax === -Infinity ? 100 : spxMax;
 
-    const spxPadding = (validMax - validMin) * 0.5; // 50% padding for signals visibility
+    const spxPadding = (validMax - validMin) * 0.25; // 50% padding for signals visibility
     const spxDomain = [validMin - spxPadding, validMax + spxPadding];
 
     const ReferenceBlock = () => (
@@ -718,7 +718,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
 
     return (
-        <div className="flex flex-col h-[850px] border rounded-lg bg-card p-4">
+        <div className="flex flex-col h-[828px] border rounded-lg bg-card p-4">
             <div className="flex justify-between items-center mb-2 gap-2">
                 <h3 className="text-lg font-semibold text-foreground shrink-0">
                     {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}
@@ -748,7 +748,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 onMouseDown={handleMouseDown}
             >
                 {/* 1. Price History (Candle) */}
-                <div className="flex-[2] min-h-0 border-b border-border/50 relative" style={{ zIndex: 100 }}>
+                <div className="flex-[2] min-h-0 border-b border-border/0 relative" style={{ zIndex: 100 }}>
                     <span className="absolute top-5 left-2 text-[10px] font-medium text-[#8884d8] z-10">Price</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>

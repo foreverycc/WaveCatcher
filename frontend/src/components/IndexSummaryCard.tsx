@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { analysisApi } from '../services/api';
 import { MarketBreadthChart } from './MarketBreadthChart';
 import { cn } from '../utils/cn';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
 interface BreadthDataPoint {
     date: string;
@@ -97,6 +98,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
 }) => {
     const [flipped, setFlipped] = useState(false);
     const [selectedTicker, setSelectedTicker] = useState<string>('');
+    const [chartFullscreen, setChartFullscreen] = useState(false);
 
     // Effective ticker is either the selected component or the index itself
     const effectiveTicker = selectedTicker || indexTicker;
@@ -310,221 +312,282 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     };
 
     return (
-        <div
-            className="relative cursor-pointer w-full"
-            style={{
-                perspective: '1200px',
-                height: flipped ? '898px' : 'auto',
-                minHeight: flipped ? '898px' : '380px', // Adjusted front face to hug content tightly
-                transition: 'height 0.4s ease, min-height 0.4s ease'
-            }}
-            onClick={() => setFlipped(!flipped)}
-        >
+        <>
             <div
-                className="w-full h-full transition-transform duration-500 ease-in-out relative"
+                className="relative cursor-pointer w-full"
                 style={{
-                    transformStyle: 'preserve-3d',
-                    transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
+                    perspective: '1200px',
+                    height: flipped ? '888px' : 'auto',
+                    minHeight: flipped ? '888px' : '380px', // Adjusted front face to hug content tightly
+                    transition: 'height 0.4s ease, min-height 0.4s ease'
                 }}
+                onClick={() => setFlipped(!flipped)}
             >
-                {/* === FRONT FACE === */}
                 <div
-                    className={cn(
-                        "border rounded-lg bg-card p-4 shadow-sm hover:shadow-md transition-shadow overflow-hidden",
-                        "w-full h-full", // Fill container
-                        flipped ? "absolute inset-0" : "relative"
-                    )}
+                    className="w-full h-full transition-transform duration-500 ease-in-out relative"
                     style={{
-                        backfaceVisibility: 'hidden',
-                        position: flipped ? 'absolute' : 'relative',
-                        top: 0, left: 0 // meaningful only if absolute
+                        transformStyle: 'preserve-3d',
+                        transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
                     }}
                 >
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-bold">{title}</h3>
-                        {priceInfo && (
-                            <div className="text-right">
-                                <span className="text-lg font-semibold">{priceInfo.close.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    {/* === FRONT FACE === */}
+                    <div
+                        className={cn(
+                            "border rounded-lg bg-card p-4 shadow-sm hover:shadow-md transition-shadow overflow-hidden",
+                            "w-full h-full", // Fill container
+                            flipped ? "absolute inset-0" : "relative"
+                        )}
+                        style={{
+                            backfaceVisibility: 'hidden',
+                            position: flipped ? 'absolute' : 'relative',
+                            top: 0, left: 0 // meaningful only if absolute
+                        }}
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-lg font-bold">{title}</h3>
+                            {priceInfo && (
+                                <div className="text-right">
+                                    <span className="text-lg font-semibold">{priceInfo.close.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                    <span className={cn(
+                                        "ml-2 text-sm font-medium",
+                                        priceInfo.change >= 0 ? "text-green-500" : "text-red-500"
+                                    )}>
+                                        {priceInfo.change >= 0 ? '+' : ''}{priceInfo.change.toFixed(2)}%
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* CD/MC Signals last 7 days */}
+                        <div className="mb-2">
+                            <div className="text-xs text-muted-foreground mb-1 font-medium">CD/MC Signals (7d)</div>
+                            <div className="flex gap-1.5 items-center flex-wrap">
+                                {recentSignals.map((s, i) => (
+                                    <div key={i} className="flex flex-col items-center gap-0.5">
+                                        <span className="text-[10px] text-muted-foreground">{s.date.slice(5)}</span>
+                                        <div className="flex gap-0.5">
+                                            <div className={cn(
+                                                "w-3 h-3 rounded-full border",
+                                                s.cd ? "bg-green-500 border-green-600" : "bg-muted border-border"
+                                            )} title={`CD ${s.cd ? 'Buy' : '-'}`} />
+                                            <div className={cn(
+                                                "w-3 h-3 rounded-full border",
+                                                s.mc ? "bg-red-500 border-red-600" : "bg-muted border-border"
+                                            )} title={`MC ${s.mc ? 'Sell' : '-'}`} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* 1234 Signals last 7 days */}
+                        <div className="mb-2">
+                            <div className="text-xs text-muted-foreground mb-1 font-medium">1234 Signals (7d)</div>
+                            <div className="flex gap-2 text-sm flex-wrap">
                                 <span className={cn(
-                                    "ml-2 text-sm font-medium",
-                                    priceInfo.change >= 0 ? "text-green-500" : "text-red-500"
+                                    "px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap",
+                                    recent1234.cd.length > 0 ? "bg-green-500/15 text-green-600" : "bg-muted text-muted-foreground"
                                 )}>
-                                    {priceInfo.change >= 0 ? '+' : ''}{priceInfo.change.toFixed(2)}%
+                                    Buy: {recent1234.cd.length > 0 ? recent1234.cd.map(d => format(parseISO(d), 'MM-dd')).join(', ') : 'None'}
+                                </span>
+                                <span className={cn(
+                                    "px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap",
+                                    recent1234.mc.length > 0 ? "bg-red-500/15 text-red-600" : "bg-muted text-muted-foreground"
+                                )}>
+                                    Sell: {recent1234.mc.length > 0 ? recent1234.mc.map(d => format(parseISO(d), 'MM-dd')).join(', ') : 'None'}
                                 </span>
                             </div>
-                        )}
-                    </div>
-
-                    {/* CD/MC Signals last 7 days */}
-                    <div className="mb-2">
-                        <div className="text-xs text-muted-foreground mb-1 font-medium">CD/MC Signals (7d)</div>
-                        <div className="flex gap-1.5 items-center flex-wrap">
-                            {recentSignals.map((s, i) => (
-                                <div key={i} className="flex flex-col items-center gap-0.5">
-                                    <span className="text-[10px] text-muted-foreground">{s.date.slice(5)}</span>
-                                    <div className="flex gap-0.5">
-                                        <div className={cn(
-                                            "w-3 h-3 rounded-full border",
-                                            s.cd ? "bg-green-500 border-green-600" : "bg-muted border-border"
-                                        )} title={`CD ${s.cd ? 'Buy' : '-'}`} />
-                                        <div className={cn(
-                                            "w-3 h-3 rounded-full border",
-                                            s.mc ? "bg-red-500 border-red-600" : "bg-muted border-border"
-                                        )} title={`MC ${s.mc ? 'Sell' : '-'}`} />
-                                    </div>
-                                </div>
-                            ))}
                         </div>
-                    </div>
 
-                    {/* 1234 Signals last 7 days */}
-                    <div className="mb-2">
-                        <div className="text-xs text-muted-foreground mb-1 font-medium">1234 Signals (7d)</div>
-                        <div className="flex gap-2 text-sm flex-wrap">
-                            <span className={cn(
-                                "px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap",
-                                recent1234.cd.length > 0 ? "bg-green-500/15 text-green-600" : "bg-muted text-muted-foreground"
-                            )}>
-                                Buy: {recent1234.cd.length > 0 ? recent1234.cd.map(d => format(parseISO(d), 'MM-dd')).join(', ') : 'None'}
-                            </span>
-                            <span className={cn(
-                                "px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap",
-                                recent1234.mc.length > 0 ? "bg-red-500/15 text-red-600" : "bg-muted text-muted-foreground"
-                            )}>
-                                Sell: {recent1234.mc.length > 0 ? recent1234.mc.map(d => format(parseISO(d), 'MM-dd')).join(', ') : 'None'}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Panel 1: CD/MC (Signal Breadth) */}
-                    <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">CD/MC</div>
-                        <PercentileMeter
-                            percentile={signalStats.cd.percentile}
-                            label="Buy"
-                            value={`${signalStats.cd.today} / ${signalStats.cd.avg}`}
-                            color="green"
-                        />
-                        <PercentileMeter
-                            percentile={signalStats.mc.percentile}
-                            label="Sell"
-                            value={`${signalStats.mc.today} / ${signalStats.mc.avg}`}
-                            color="red"
-                        />
-                    </div>
-
-                    {/* Panel 2: CD/MC Score (Score Breadth) */}
-                    <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">CD/MC Score</div>
-                        <PercentileMeter
-                            percentile={scoreStats.cd.percentile}
-                            label="Buy"
-                            value={`${scoreStats.cd.today.toFixed(0)} / ${scoreStats.cd.avg.toFixed(0)}`}
-                            color="green"
-                        />
-                        <PercentileMeter
-                            percentile={scoreStats.mc.percentile}
-                            label="Sell"
-                            value={`${scoreStats.mc.today.toFixed(0)} / ${scoreStats.mc.avg.toFixed(0)}`}
-                            color="red"
-                        />
-                    </div>
-
-                    {/* Panel 3: CD/MC Breakthrough (was Buy/Sell) */}
-                    <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">CD/MC Breakthrough</div>
-                        <PercentileMeter
-                            percentile={breadthStats.cd.percentile}
-                            label="Buy"
-                            value={`${breadthStats.cd.today} / ${breadthStats.cd.avg}`}
-                            color="green"
-                        />
-                        <PercentileMeter
-                            percentile={breadthStats.mc.percentile}
-                            label="Sell"
-                            value={`${breadthStats.mc.today} / ${breadthStats.mc.avg}`}
-                            color="red"
-                        />
-                    </div>
-
-                    {/* Panel 4: CD/MC Breakthrough Score + Volume */}
-                    <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">CD/MC Breakthrough Score</div>
-                        <PercentileMeter
-                            percentile={breakthroughScoreStats.cd.percentile}
-                            label="Buy"
-                            value={`${breakthroughScoreStats.cd.today.toFixed(0)} / ${breakthroughScoreStats.cd.avg.toFixed(0)}`}
-                            color="green"
-                        />
-                        <PercentileMeter
-                            percentile={breakthroughScoreStats.mc.percentile}
-                            label="Sell"
-                            value={`${breakthroughScoreStats.mc.today.toFixed(0)} / ${breakthroughScoreStats.mc.avg.toFixed(0)}`}
-                            color="red"
-                        />
-                        {volumeStats && (
+                        {/* Panel 1: CD/MC (Signal Breadth) */}
+                        <div className="space-y-1 pb-1">
+                            <div className="text-xs text-muted-foreground font-medium">CD/MC</div>
                             <PercentileMeter
-                                percentile={volumeStats.percentile}
-                                label="Vol"
-                                value={`${formatVol(volumeStats.today)} / ${formatVol(volumeStats.avg)}`}
-                                color="blue"
+                                percentile={signalStats.cd.percentile}
+                                label="Buy"
+                                value={`${signalStats.cd.today} / ${signalStats.cd.avg}`}
+                                color="green"
                             />
-                        )}
-                    </div>
-
-
-                </div>
-
-                {/* === BACK FACE (Chart) === */}
-                <div
-                    className={cn(
-                        "rounded-lg bg-card overflow-hidden",
-                        "absolute inset-0 w-full h-full" // Always absolute to fill container
-                    )}
-                    style={{
-                        backfaceVisibility: 'hidden',
-                        transform: 'rotateY(180deg)',
-                        opacity: flipped ? 1 : 0 // improve rendering
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="border rounded-lg bg-card overflow-hidden h-full flex flex-col">
-                        <div
-                            className="p-2 border-b bg-muted/30 flex justify-between items-center cursor-pointer shrink-0"
-                            onClick={() => setFlipped(false)}
-                        >
-                            <span className="text-sm font-medium">{title} — Market Breadth</span>
-                            <span className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                                ← Back to summary
-                            </span>
+                            <PercentileMeter
+                                percentile={signalStats.mc.percentile}
+                                label="Sell"
+                                value={`${signalStats.mc.today} / ${signalStats.mc.avg}`}
+                                color="red"
+                            />
                         </div>
-                        <div className="p-1 flex-1 min-h-0">
-                            {flipped && (
-                                <MarketBreadthChart
-                                    title={title}
-                                    spxData={selectedTicker && stockData ? stockData : spxData}
-                                    cdBreadth={effectiveCdBreadth}
-                                    mcBreadth={effectiveMcBreadth}
-                                    cdSignalBreadth={effectiveCdSignalBreadth}
-                                    mcSignalBreadth={effectiveMcSignalBreadth}
-                                    cdScoreBreadth={effectiveCdScoreBreadth}
-                                    mcScoreBreadth={effectiveMcScoreBreadth}
-                                    cdBreakthroughScoreBreadth={effectiveCdBtScoreBreadth}
-                                    mcBreakthroughScoreBreadth={effectiveMcBtScoreBreadth}
-                                    intervalWeights={intervalWeights}
-                                    minDate={minDate}
-                                    signals1234={selectedTicker ? undefined : signals1234}
-                                    tickers={tickers}
-                                    selectedTicker={selectedTicker}
-                                    onTickerChange={setSelectedTicker}
-                                    indexTitle={title}
+
+                        {/* Panel 2: CD/MC Score (Score Breadth) */}
+                        <div className="space-y-1 pb-1">
+                            <div className="text-xs text-muted-foreground font-medium">CD/MC Score</div>
+                            <PercentileMeter
+                                percentile={scoreStats.cd.percentile}
+                                label="Buy"
+                                value={`${scoreStats.cd.today.toFixed(0)} / ${scoreStats.cd.avg.toFixed(0)}`}
+                                color="green"
+                            />
+                            <PercentileMeter
+                                percentile={scoreStats.mc.percentile}
+                                label="Sell"
+                                value={`${scoreStats.mc.today.toFixed(0)} / ${scoreStats.mc.avg.toFixed(0)}`}
+                                color="red"
+                            />
+                        </div>
+
+                        {/* Panel 3: CD/MC Breakthrough (was Buy/Sell) */}
+                        <div className="space-y-1 pb-1">
+                            <div className="text-xs text-muted-foreground font-medium">CD/MC Breakthrough</div>
+                            <PercentileMeter
+                                percentile={breadthStats.cd.percentile}
+                                label="Buy"
+                                value={`${breadthStats.cd.today} / ${breadthStats.cd.avg}`}
+                                color="green"
+                            />
+                            <PercentileMeter
+                                percentile={breadthStats.mc.percentile}
+                                label="Sell"
+                                value={`${breadthStats.mc.today} / ${breadthStats.mc.avg}`}
+                                color="red"
+                            />
+                        </div>
+
+                        {/* Panel 4: CD/MC Breakthrough Score + Volume */}
+                        <div className="space-y-1 pb-1">
+                            <div className="text-xs text-muted-foreground font-medium">CD/MC Breakthrough Score</div>
+                            <PercentileMeter
+                                percentile={breakthroughScoreStats.cd.percentile}
+                                label="Buy"
+                                value={`${breakthroughScoreStats.cd.today.toFixed(0)} / ${breakthroughScoreStats.cd.avg.toFixed(0)}`}
+                                color="green"
+                            />
+                            <PercentileMeter
+                                percentile={breakthroughScoreStats.mc.percentile}
+                                label="Sell"
+                                value={`${breakthroughScoreStats.mc.today.toFixed(0)} / ${breakthroughScoreStats.mc.avg.toFixed(0)}`}
+                                color="red"
+                            />
+                            {volumeStats && (
+                                <PercentileMeter
+                                    percentile={volumeStats.percentile}
+                                    label="Vol"
+                                    value={`${formatVol(volumeStats.today)} / ${formatVol(volumeStats.avg)}`}
+                                    color="blue"
                                 />
                             )}
+                        </div>
+
+
+                    </div>
+
+                    {/* === BACK FACE (Chart) === */}
+                    <div
+                        className={cn(
+                            "rounded-lg bg-card overflow-hidden",
+                            "absolute inset-0 w-full h-full"
+                        )}
+                        style={{
+                            backfaceVisibility: 'hidden',
+                            transform: 'rotateY(180deg)',
+                            opacity: flipped ? 1 : 0
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="border rounded-lg bg-card overflow-hidden h-full flex flex-col">
+                            <div
+                                className="p-2 border-b bg-muted/30 flex justify-between items-center shrink-0"
+                            >
+                                <span className="text-sm font-medium">{title} — Market Breadth</span>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setChartFullscreen(true)}
+                                        className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/50 transition-colors"
+                                        title="Maximize"
+                                    >
+                                        <Maximize2 className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => setFlipped(false)}
+                                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                    >
+                                        ← Back to summary
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="p-1 flex-1 min-h-0">
+                                {flipped && (
+                                    <MarketBreadthChart
+                                        title={title}
+                                        spxData={selectedTicker && stockData ? stockData : spxData}
+                                        cdBreadth={effectiveCdBreadth}
+                                        mcBreadth={effectiveMcBreadth}
+                                        cdSignalBreadth={effectiveCdSignalBreadth}
+                                        mcSignalBreadth={effectiveMcSignalBreadth}
+                                        cdScoreBreadth={effectiveCdScoreBreadth}
+                                        mcScoreBreadth={effectiveMcScoreBreadth}
+                                        cdBreakthroughScoreBreadth={effectiveCdBtScoreBreadth}
+                                        mcBreakthroughScoreBreadth={effectiveMcBtScoreBreadth}
+                                        intervalWeights={intervalWeights}
+                                        minDate={minDate}
+                                        signals1234={selectedTicker ? undefined : signals1234}
+                                        tickers={tickers}
+                                        selectedTicker={selectedTicker}
+                                        onTickerChange={setSelectedTicker}
+                                        indexTitle={title}
+                                    />
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            {/* === FULLSCREEN OVERLAY === */}
+            {chartFullscreen && (
+                <div
+                    className="absolute inset-0 z-[9999] flex flex-col bg-card overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="p-2 border-b bg-muted/30 flex justify-between items-center shrink-0">
+                        <span className="text-sm font-medium">{title} — Market Breadth</span>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setChartFullscreen(false)}
+                                className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/50 transition-colors"
+                                title="Restore"
+                            >
+                                <Minimize2 className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => { setChartFullscreen(false); setFlipped(false); }}
+                                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                                ← Back to summary
+                            </button>
+                        </div>
+                    </div>
+                    <div className="p-1 flex-1 min-h-0 overflow-hidden">
+                        <MarketBreadthChart
+                            title={title}
+                            spxData={selectedTicker && stockData ? stockData : spxData}
+                            cdBreadth={effectiveCdBreadth}
+                            mcBreadth={effectiveMcBreadth}
+                            cdSignalBreadth={effectiveCdSignalBreadth}
+                            mcSignalBreadth={effectiveMcSignalBreadth}
+                            cdScoreBreadth={effectiveCdScoreBreadth}
+                            mcScoreBreadth={effectiveMcScoreBreadth}
+                            cdBreakthroughScoreBreadth={effectiveCdBtScoreBreadth}
+                            mcBreakthroughScoreBreadth={effectiveMcBtScoreBreadth}
+                            intervalWeights={intervalWeights}
+                            minDate={minDate}
+                            signals1234={selectedTicker ? undefined : signals1234}
+                            tickers={tickers}
+                            selectedTicker={selectedTicker}
+                            onTickerChange={setSelectedTicker}
+                            indexTitle={title}
+                        />
+                    </div>
+                </div>
+            )}
+        </>
     );
 };

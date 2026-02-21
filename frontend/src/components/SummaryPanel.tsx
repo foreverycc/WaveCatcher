@@ -5,10 +5,11 @@ import { IndexSummaryCard } from './IndexSummaryCard';
 import { cn } from '../utils/cn';
 import { subYears, subMonths, subDays, parseISO, isAfter, format } from 'date-fns';
 import { DetailedChartRow, InteractiveOptionChart } from '../pages/Dashboard';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
 const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bull' | 'bear', runId: number | undefined, onClose: () => void }) => {
-    // Fetch detailed data for this ticker
     const resultType = type === 'bull' ? 'cd_eval_custom_detailed' : 'mc_eval_custom_detailed';
+    const [fullscreen, setFullscreen] = React.useState(false);
 
     const { data: detailedData, isLoading } = useQuery({
         queryKey: ['detailedRowData', runId, resultType, row.ticker],
@@ -16,13 +17,10 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
         enabled: !!runId && !!row.ticker
     });
 
-    // Find the matching interval row from detailed data, enriched with original row's metrics
     const detailedRow = useMemo(() => {
         if (!detailedData || !Array.isArray(detailedData)) return null;
         const match = detailedData.find((d: any) => d.interval === row.interval) || detailedData[0];
         if (match) {
-            // Use the original row's metrics (from good_signals) which are already correctly signed,
-            // instead of extractBestMetrics which gives unsigned magnitudes from custom_detailed
             return {
                 ...match,
                 success_rate: row.success_rate,
@@ -33,19 +31,44 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
         return null;
     }, [detailedData, row.interval, row.success_rate, row.avg_return, row.test_count]);
 
-    return (
-        <div className="flex flex-col border rounded-lg bg-card overflow-hidden h-[800px] shadow-lg">
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        if (fullscreen) {
+            let el: HTMLElement | null = containerRef.current?.parentElement ?? null;
+            while (el) {
+                if (el.scrollTop > 0) { el.scrollTop = 0; break; }
+                el = el.parentElement;
+            }
+        }
+    }, [fullscreen]);
+
+    const containerClass = fullscreen
+        ? 'absolute inset-0 z-[9999] flex flex-col bg-card overflow-hidden'
+        : 'flex flex-col border rounded-lg bg-card overflow-hidden h-[800px] shadow-lg';
+
+    const body = (
+        <div ref={containerRef} className={containerClass}>
             <div className="p-3 border-b bg-muted/30 flex justify-between items-center sticky top-0 z-10 backdrop-blur">
                 <div>
                     <span className="font-medium pl-2 text-lg">{row.ticker}</span>
                     <span className="text-muted-foreground text-sm ml-2">({row.interval}) - {type === 'bull' ? 'Bullish' : 'Bearish'}</span>
                 </div>
-                <button
-                    onClick={onClose}
-                    className="px-3 py-1.5 text-sm hover:bg-red-500/10 hover:text-red-500 rounded border border-transparent hover:border-red-200 transition-colors"
-                >
-                    Close
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setFullscreen(!fullscreen)}
+                        className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/50 transition-colors"
+                        title={fullscreen ? 'Restore' : 'Maximize'}
+                    >
+                        {fullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="px-3 py-1.5 text-sm hover:bg-red-500/10 hover:text-red-500 rounded border border-transparent hover:border-red-200 transition-colors"
+                    >
+                        Close
+                    </button>
+                </div>
             </div>
             <div className="p-4 flex-1 overflow-y-auto space-y-6">
                 {isLoading ? (
@@ -55,8 +78,6 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
                 ) : detailedRow ? (
                     <>
                         <DetailedChartRow row={detailedRow} activeSubTab="summary" signalType={type} />
-
-                        {/* Option Chart */}
                         <div style={{ height: '350px' }} className="p-4 border rounded-lg bg-card/50 mt-6">
                             <InteractiveOptionChart ticker={row.ticker} />
                         </div>
@@ -70,6 +91,8 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
             </div>
         </div>
     );
+
+    return body;
 };
 
 // Helper to extract best metrics from detailed row (copied from Dashboard.tsx logic)
@@ -99,10 +122,9 @@ const extractBestMetrics = (row: any) => {
     };
 };
 
-// Chart view for 1234 signals - displays multiple intervals (1h, 2h, 3h + 1d)
 const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 'bull' | 'bear', runId: number | undefined, onClose: () => void }) => {
-    // Fetch detailed data for this ticker
     const resultType = type === 'bull' ? 'cd_eval_custom_detailed' : 'mc_eval_custom_detailed';
+    const [fullscreen, setFullscreen] = React.useState(false);
 
     const { data: detailedData, isLoading } = useQuery({
         queryKey: ['detailedRowData', runId, resultType, row.ticker],
@@ -110,40 +132,40 @@ const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 
         enabled: !!runId && !!row.ticker
     });
 
-    // Prepare rows for 1h, 2h, 3h, 1d sequence
     const detailedRows = useMemo(() => {
         if (!detailedData || !row.intervals) return [];
-
-        // Parse intervals string (e.g., "1,2,3") and add 'h' suffix
         const intervalNumbers = row.intervals.toString().split(',').map((s: string) => s.trim());
         let intervals = intervalNumbers.map((n: string) => `${n}h`);
-
-        // Explicitly add '1d' if not present
-        if (!intervals.includes('1d')) {
-            intervals.push('1d');
-        }
-
+        if (!intervals.includes('1d')) intervals.push('1d');
         return intervals.map((interval: string) => {
             const match = detailedData.find((d: any) => d.interval === interval);
             if (match) {
                 const metrics = extractBestMetrics(match);
-                // For bearish (MC) signals, negate the return (custom_detailed stores positive magnitudes)
                 if (type === 'bear') metrics.avg_return = -Math.abs(metrics.avg_return);
                 return { ...match, ...metrics };
             }
-            // Return dummy if data missing (price chart will still work)
-            return {
-                ticker: row.ticker,
-                interval: interval,
-                success_rate: 0,
-                avg_return: 0,
-                test_count: 0
-            };
+            return { ticker: row.ticker, interval, success_rate: 0, avg_return: 0, test_count: 0 };
         });
     }, [detailedData, row.intervals, type]);
 
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        if (fullscreen) {
+            let el: HTMLElement | null = containerRef.current?.parentElement ?? null;
+            while (el) {
+                if (el.scrollTop > 0) { el.scrollTop = 0; break; }
+                el = el.parentElement;
+            }
+        }
+    }, [fullscreen]);
+
+    const containerClass = fullscreen
+        ? 'absolute inset-0 z-[9999] flex flex-col bg-card overflow-hidden'
+        : 'flex flex-col border rounded-lg bg-card overflow-hidden h-[800px] shadow-lg';
+
     return (
-        <div className="flex flex-col border rounded-lg bg-card overflow-hidden h-[800px] shadow-lg">
+        <div ref={containerRef} className={containerClass}>
             <div className="p-3 border-b bg-muted/30 flex justify-between items-center sticky top-0 z-10 backdrop-blur">
                 <div>
                     <span className="font-medium pl-2 text-lg">{row.ticker}</span>
@@ -151,12 +173,21 @@ const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 
                         (1234 Signal: {row.intervals}) - {type === 'bull' ? 'Bullish' : 'Bearish'}
                     </span>
                 </div>
-                <button
-                    onClick={onClose}
-                    className="px-3 py-1.5 text-sm hover:bg-red-500/10 hover:text-red-500 rounded border border-transparent hover:border-red-200 transition-colors"
-                >
-                    Close
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setFullscreen(!fullscreen)}
+                        className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/50 transition-colors"
+                        title={fullscreen ? 'Restore' : 'Maximize'}
+                    >
+                        {fullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                    </button>
+                    <button
+                        onClick={onClose}
+                        className="px-3 py-1.5 text-sm hover:bg-red-500/10 hover:text-red-500 rounded border border-transparent hover:border-red-200 transition-colors"
+                    >
+                        Close
+                    </button>
+                </div>
             </div>
             <div className="p-4 flex-1 overflow-y-auto space-y-6">
                 {isLoading ? (
@@ -173,8 +204,6 @@ const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 
                                 signalType={type}
                             />
                         ))}
-
-                        {/* Option Chart */}
                         <div style={{ height: '350px' }} className="p-4 border rounded-lg bg-card/50 mt-6">
                             <InteractiveOptionChart ticker={row.ticker} />
                         </div>
@@ -522,7 +551,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
     };
 
     return (
-        <div className="p-4 md:p-6 h-full overflow-y-auto space-y-6">
+        <div className="p-4 md:p-6 h-full overflow-y-auto space-y-6 relative">
 
             {/* Market Index Summary Cards (click to flip to chart) */}
             <div className={cn(
