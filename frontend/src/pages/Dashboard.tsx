@@ -390,6 +390,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         runId={currentRun?.id}
                         selectedIndices={selectedIndices}
                         availableIndices={availableIndices}
+                        dateRange={dateRange}
                         onRowClick={(row, type) => {
                             setActiveTab(type === 'bull' ? 'cd' : 'mc');
                             setActiveSubTab('best_intervals_50');

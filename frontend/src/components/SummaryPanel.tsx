@@ -3,7 +3,7 @@ import { useQuery, useQueries } from '@tanstack/react-query';
 import { analysisApi, type ScoringConfig } from '../services/api';
 import { IndexSummaryCard } from './IndexSummaryCard';
 import { cn } from '../utils/cn';
-import { subYears, subMonths, subDays, parseISO, isAfter, format } from 'date-fns';
+import { subYears, parseISO, format } from 'date-fns';
 import { DetailedChartRow, InteractiveOptionChart } from '../pages/Dashboard';
 import { Maximize2, Minimize2 } from 'lucide-react';
 
@@ -224,9 +224,10 @@ interface SummaryPanelProps {
     onRowClick?: (row: any, type: 'bull' | 'bear') => void;
     selectedIndices?: string[];
     availableIndices?: { key: string, symbol: string, stock_list: string, tickers: string[] }[];
+    dateRange: { start: string; end: string };
 }
 
-export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [], availableIndices = [] }) => {
+export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [], availableIndices = [], dateRange }) => {
 
     // --- Data Fetching ---
 
@@ -364,31 +365,24 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
     }) => {
         const sorted = useMemo(() => {
             if (!data || data.length === 0) return [];
-            const cutoffDate = subDays(new Date(), 7);
 
             return [...data]
                 .filter(row => {
                     if (!row.latest_signal) return false;
-                    // Assuming latest_signal is ISO-like string. parseISO handles it.
-                    // If it's just YYYY-MM-DD, it works too.
-                    try {
-                        const date = parseISO(row.latest_signal);
-                        return isAfter(date, cutoffDate);
-                    } catch (e) {
-                        return false;
-                    }
+                    const signalDate = String(row.latest_signal).split(' ')[0];
+                    return signalDate >= dateRange.start && signalDate <= dateRange.end;
                 })
                 .sort((a, b) =>
                     type === 'bull' ? b.avg_return - a.avg_return : a.avg_return - b.avg_return
                 )
                 .slice(0, 10);
-        }, [data, type]);
+        }, [data, type, dateRange]);
 
         return (
             <div className="flex flex-col border rounded-lg bg-card overflow-hidden">
                 <div className="p-3 bg-muted/30 border-b font-medium flex justify-between">
                     <span>{title}</span>
-                    <span className="text-xs text-muted-foreground font-normal mt-1">(Last 7 Days)</span>
+                    <span className="text-xs text-muted-foreground font-normal mt-1">({dateRange.start} ~ {dateRange.end})</span>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -474,17 +468,13 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                 return returns.reduce((a, b) => a + b, 0) / returns.length;
             };
 
-            const cutoffDate = subDays(new Date(), 7);
+
 
             const filtered = [...data]
                 .filter(row => {
                     if (!row.date) return false;
-                    try {
-                        const date = parseISO(row.date);
-                        return isAfter(date, cutoffDate);
-                    } catch {
-                        return false;
-                    }
+                    const signalDate = String(row.date).split(' ')[0];
+                    return signalDate >= dateRange.start && signalDate <= dateRange.end;
                 })
                 .map(row => {
                     const calculatedReturn = calculateAvgReturn(row);
@@ -504,13 +494,13 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                     return new Date(b.date).getTime() - new Date(a.date).getTime();
                 })
                 .slice(0, 10);
-        }, [data, detailedData, type]);
+        }, [data, detailedData, type, dateRange]);
 
         return (
             <div className="flex flex-col border rounded-lg bg-card overflow-hidden">
                 <div className="p-3 bg-muted/30 border-b font-medium flex justify-between">
                     <span>{title}</span>
-                    <span className="text-xs text-muted-foreground font-normal mt-1">(Last 7 Days)</span>
+                    <span className="text-xs text-muted-foreground font-normal mt-1">({dateRange.start} ~ {dateRange.end})</span>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
