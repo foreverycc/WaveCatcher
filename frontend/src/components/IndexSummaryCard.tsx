@@ -190,37 +190,43 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         const latestDate = spxData && spxData.length > 0
             ? spxData[spxData.length - 1]?.time?.split('T')[0] ?? ''
             : '';
+        const divisor = tickers.length > 0 ? tickers.length : 1;
+        // Total trading days from spxData (cdBreadth is sparse — only days with signals)
+        const totalDays = spxData ? spxData.length : 0;
 
         const computeStats = (data: BreadthDataPoint[]) => {
-            if (!data || data.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
-            const totalCount = (d: BreadthDataPoint) => (d.count_1h || 0) + (d.count_2h || 0) + (d.count_3h || 0) + (d.count_4h || 0) + (d.count_1d || 0);
-            // Find today's count by matching the latest trading date (default to 0 if no entry)
+            if (!data || data.length === 0 || totalDays === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
+            const totalCount = (d: BreadthDataPoint) => ((d.count_1h || 0) + (d.count_2h || 0) + (d.count_3h || 0) + (d.count_4h || 0) + (d.count_1d || 0)) / divisor;
             const todayEntry = data.find(d => d.date === latestDate);
             const today = todayEntry ? totalCount(todayEntry) : 0;
-            const counts = data.map(d => totalCount(d));
+            // Pad with zeros for days not in the sparse BT data
+            const signalCounts = data.map(d => totalCount(d));
+            const zeroPadding = new Array(Math.max(0, totalDays - signalCounts.length)).fill(0);
+            const counts = [...signalCounts, ...zeroPadding];
             const avg = counts.reduce((a, b) => a + b, 0) / counts.length;
             const sorted = [...counts].sort((a, b) => a - b);
             const median = sorted.length % 2 === 0
                 ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
                 : sorted[Math.floor(sorted.length / 2)];
             const percentile = computePercentile(today, counts);
-            return { today, avg: Math.round(avg * 10) / 10, median, percentile };
+            return { today, avg, median, percentile };
         };
         return {
             cd: computeStats(cdBreadth),
             mc: computeStats(mcBreadth)
         };
-    }, [cdBreadth, mcBreadth, spxData]);
+    }, [cdBreadth, mcBreadth, spxData, tickers]);
 
     // Signal Breadth stats (Today vs Avg + Percentile)
     const signalStats = useMemo(() => {
         const latestDate = spxData && spxData.length > 0
             ? spxData[spxData.length - 1]?.time?.split('T')[0] ?? ''
             : '';
+        const divisor = tickers.length > 0 ? tickers.length : 1;
 
         const computeStats = (data: any[]) => {
             if (!data || data.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
-            const totalCount = (d: any) => (d.count_1h || 0) + (d.count_2h || 0) + (d.count_3h || 0) + (d.count_4h || 0) + (d.count_1d || 0);
+            const totalCount = (d: any) => ((d.count_1h || 0) + (d.count_2h || 0) + (d.count_3h || 0) + (d.count_4h || 0) + (d.count_1d || 0)) / divisor;
             const todayEntry = data.find(d => d.date === latestDate);
             const today = todayEntry ? totalCount(todayEntry) : 0;
             const counts = data.map(d => totalCount(d));
@@ -230,23 +236,29 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                 ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
                 : sorted[Math.floor(sorted.length / 2)];
             const percentile = computePercentile(today, counts);
-            return { today, avg: Math.round(avg * 10) / 10, median, percentile };
+            return { today, avg, median, percentile };
         };
         return {
             cd: computeStats(cdSignalBreadth),
             mc: computeStats(mcSignalBreadth)
         };
-    }, [cdSignalBreadth, mcSignalBreadth, spxData]);
+    }, [cdSignalBreadth, mcSignalBreadth, spxData, tickers]);
 
     // Score Breadth stats (Today vs Avg + Percentile)
     const scoreStats = useMemo(() => {
         const latestDate = spxData && spxData.length > 0
             ? spxData[spxData.length - 1]?.time?.split('T')[0] ?? ''
             : '';
+        const divisor = tickers.length > 0 ? tickers.length : 1;
+        const effectiveWeights = intervalWeights || { '1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32 };
+        const totalScore = (d: any) => {
+            return ((d.score_1h || 0) * effectiveWeights['1h'] + (d.score_2h || 0) * effectiveWeights['2h']
+                + (d.score_3h || 0) * effectiveWeights['3h'] + (d.score_4h || 0) * effectiveWeights['4h']
+                + (d.score_1d || 0) * effectiveWeights['1d']) / divisor;
+        };
 
         const computeStats = (data: any[]) => {
             if (!data || data.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
-            const totalScore = (d: any) => d.total_score || 0;
             const todayEntry = data.find(d => d.date === latestDate);
             const today = todayEntry ? totalScore(todayEntry) : 0;
             const scores = data.map(d => totalScore(d));
@@ -256,42 +268,47 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                 ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
                 : sorted[Math.floor(sorted.length / 2)];
             const percentile = computePercentile(today, scores);
-            return { today, avg: Math.round(avg * 10) / 10, median, percentile };
+            return { today, avg, median, percentile };
         };
         return {
             cd: computeStats(cdScoreBreadth),
             mc: computeStats(mcScoreBreadth)
         };
-    }, [cdScoreBreadth, mcScoreBreadth, spxData]);
+    }, [cdScoreBreadth, mcScoreBreadth, spxData, tickers, intervalWeights]);
 
     // Breakthrough Score stats (same approach as scoreStats)
     const breakthroughScoreStats = useMemo(() => {
         if (!spxData || spxData.length === 0) return { cd: { today: 0, avg: 0, median: 0, percentile: 0 }, mc: { today: 0, avg: 0, median: 0, percentile: 0 } };
         const latestDate = spxData[spxData.length - 1]?.time?.split('T')[0] ?? '';
         const effectiveWeights = intervalWeights || { '1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32 };
+        const divisor = tickers.length > 0 ? tickers.length : 1;
+        const totalDays = spxData.length;
         const totalScore = (d: any) => {
-            return (d.score_1h || 0) * effectiveWeights['1h'] + (d.score_2h || 0) * effectiveWeights['2h']
+            return ((d.score_1h || 0) * effectiveWeights['1h'] + (d.score_2h || 0) * effectiveWeights['2h']
                 + (d.score_3h || 0) * effectiveWeights['3h'] + (d.score_4h || 0) * effectiveWeights['4h']
-                + (d.score_1d || 0) * effectiveWeights['1d'];
+                + (d.score_1d || 0) * effectiveWeights['1d']) / divisor;
         };
         const computeStats = (data: any[]) => {
             if (!data || data.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
             const todayEntry = data.find(d => d.date === latestDate);
             const today = todayEntry ? totalScore(todayEntry) : 0;
-            const scores = data.map(d => totalScore(d));
+            // Pad with zeros for days not in the sparse BT score data
+            const signalScores = data.map(d => totalScore(d));
+            const zeroPadding = new Array(Math.max(0, totalDays - signalScores.length)).fill(0);
+            const scores = [...signalScores, ...zeroPadding];
             const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
             const sorted = [...scores].sort((a, b) => a - b);
             const median = sorted.length % 2 === 0
                 ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
                 : sorted[Math.floor(sorted.length / 2)];
             const percentile = computePercentile(today, scores);
-            return { today, avg: Math.round(avg * 10) / 10, median, percentile };
+            return { today, avg, median, percentile };
         };
         return {
             cd: computeStats(cdBreakthroughScoreBreadth),
             mc: computeStats(mcBreakthroughScoreBreadth)
         };
-    }, [cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, spxData, intervalWeights]);
+    }, [cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, spxData, intervalWeights, tickers]);
 
     // Volume: today vs 1yr average + percentile
     const volumeStats = useMemo(() => {
@@ -411,13 +428,13 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             <PercentileMeter
                                 percentile={signalStats.cd.percentile}
                                 label="Buy"
-                                value={`${signalStats.cd.today} / ${signalStats.cd.avg}`}
+                                value={`${signalStats.cd.today.toFixed(2)} / ${signalStats.cd.avg.toFixed(2)}`}
                                 color="green"
                             />
                             <PercentileMeter
                                 percentile={signalStats.mc.percentile}
                                 label="Sell"
-                                value={`${signalStats.mc.today} / ${signalStats.mc.avg}`}
+                                value={`${signalStats.mc.today.toFixed(2)} / ${signalStats.mc.avg.toFixed(2)}`}
                                 color="red"
                             />
                         </div>
@@ -428,13 +445,13 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             <PercentileMeter
                                 percentile={scoreStats.cd.percentile}
                                 label="Buy"
-                                value={`${scoreStats.cd.today.toFixed(0)} / ${scoreStats.cd.avg.toFixed(0)}`}
+                                value={`${scoreStats.cd.today.toFixed(1)} / ${scoreStats.cd.avg.toFixed(1)}`}
                                 color="green"
                             />
                             <PercentileMeter
                                 percentile={scoreStats.mc.percentile}
                                 label="Sell"
-                                value={`${scoreStats.mc.today.toFixed(0)} / ${scoreStats.mc.avg.toFixed(0)}`}
+                                value={`${scoreStats.mc.today.toFixed(1)} / ${scoreStats.mc.avg.toFixed(1)}`}
                                 color="red"
                             />
                         </div>
@@ -445,13 +462,13 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             <PercentileMeter
                                 percentile={breadthStats.cd.percentile}
                                 label="Buy"
-                                value={`${breadthStats.cd.today} / ${breadthStats.cd.avg}`}
+                                value={`${breadthStats.cd.today.toFixed(2)} / ${breadthStats.cd.avg.toFixed(2)}`}
                                 color="green"
                             />
                             <PercentileMeter
                                 percentile={breadthStats.mc.percentile}
                                 label="Sell"
-                                value={`${breadthStats.mc.today} / ${breadthStats.mc.avg}`}
+                                value={`${breadthStats.mc.today.toFixed(2)} / ${breadthStats.mc.avg.toFixed(2)}`}
                                 color="red"
                             />
                         </div>
@@ -462,13 +479,13 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             <PercentileMeter
                                 percentile={breakthroughScoreStats.cd.percentile}
                                 label="Buy"
-                                value={`${breakthroughScoreStats.cd.today.toFixed(0)} / ${breakthroughScoreStats.cd.avg.toFixed(0)}`}
+                                value={`${breakthroughScoreStats.cd.today.toFixed(1)} / ${breakthroughScoreStats.cd.avg.toFixed(1)}`}
                                 color="green"
                             />
                             <PercentileMeter
                                 percentile={breakthroughScoreStats.mc.percentile}
                                 label="Sell"
-                                value={`${breakthroughScoreStats.mc.today.toFixed(0)} / ${breakthroughScoreStats.mc.avg.toFixed(0)}`}
+                                value={`${breakthroughScoreStats.mc.today.toFixed(1)} / ${breakthroughScoreStats.mc.avg.toFixed(1)}`}
                                 color="red"
                             />
                             {volumeStats && (
