@@ -3,8 +3,9 @@ import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { analysisApi } from '../services/api';
 import { MarketBreadthChart } from './MarketBreadthChart';
+import { BreadthHistogramPanel } from './BreadthHistogramPanel';
 import { cn } from '../utils/cn';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface BreadthDataPoint {
     date: string;
@@ -98,9 +99,10 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     tickers = [],
     indexTicker
 }) => {
-    const [flipped, setFlipped] = useState(false);
+    const [cardView, setCardView] = useState<'summary' | 'histogram' | 'chart'>('summary');
     const [selectedTicker, setSelectedTicker] = useState<string>('');
     const [chartFullscreen, setChartFullscreen] = useState(false);
+    const [histogramFullscreen, setHistogramFullscreen] = useState(false);
 
     // Effective ticker is either the selected component or the index itself
     const effectiveTicker = selectedTicker || indexTicker;
@@ -110,7 +112,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         queryKey: ['stockPriceHistory', selectedTicker, '1d'],
         queryFn: () => analysisApi.getPriceHistory(selectedTicker, '1d'),
         staleTime: 1000 * 60 * 60, // 1 hour
-        enabled: !!selectedTicker && flipped
+        enabled: !!selectedTicker && cardView === 'chart'
     });
 
     // Fetch per-ticker signal/score data across all intervals (for component OR index)
@@ -118,7 +120,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         queryKey: ['tickerSignals', effectiveTicker],
         queryFn: () => effectiveTicker ? analysisApi.getTickerSignals(effectiveTicker) : null,
         staleTime: 1000 * 60 * 60,
-        enabled: !!effectiveTicker && flipped
+        enabled: !!effectiveTicker && cardView === 'chart'
     });
 
     // When a ticker is selected, swap index-level breadth with per-ticker data
@@ -365,235 +367,252 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     return (
         <>
             <div
-                className="relative cursor-pointer w-full"
+                className="relative w-full"
                 style={{
-                    perspective: '1200px',
-                    height: flipped ? '888px' : 'auto',
-                    minHeight: flipped ? '888px' : '435px', // Adjusted front face to hug content tightly
+                    height: cardView !== 'summary' ? '888px' : 'auto',
+                    minHeight: cardView !== 'summary' ? '888px' : '435px',
                     transition: 'height 0.4s ease, min-height 0.4s ease'
                 }}
-                onClick={() => setFlipped(!flipped)}
             >
+                {/* === SUMMARY VIEW === */}
                 <div
-                    className="w-full h-full transition-transform duration-500 ease-in-out relative"
-                    style={{
-                        transformStyle: 'preserve-3d',
-                        transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)'
-                    }}
+                    className={cn(
+                        "border rounded-lg bg-card p-4 shadow-sm hover:shadow-md transition-all overflow-hidden",
+                        "w-full",
+                        cardView === 'summary' ? 'relative opacity-100' : 'absolute inset-0 opacity-0 pointer-events-none'
+                    )}
                 >
-                    {/* === FRONT FACE === */}
-                    <div
-                        className={cn(
-                            "border rounded-lg bg-card p-4 shadow-sm hover:shadow-md transition-shadow overflow-hidden",
-                            "w-full h-full", // Fill container
-                            flipped ? "absolute inset-0" : "relative"
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-bold">{title}</h3>
+                        {priceInfo && (
+                            <div className="text-right">
+                                <span className="text-lg font-semibold">{priceInfo.close.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                                <span className={cn(
+                                    "ml-2 text-sm font-medium",
+                                    priceInfo.change >= 0 ? "text-green-500" : "text-red-500"
+                                )}>
+                                    {priceInfo.change >= 0 ? '+' : ''}{priceInfo.change.toFixed(2)}%
+                                </span>
+                            </div>
                         )}
-                        style={{
-                            backfaceVisibility: 'hidden',
-                            position: flipped ? 'absolute' : 'relative',
-                            top: 0, left: 0 // meaningful only if absolute
-                        }}
-                    >
-                        {/* Header */}
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-lg font-bold">{title}</h3>
-                            {priceInfo && (
-                                <div className="text-right">
-                                    <span className="text-lg font-semibold">{priceInfo.close.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                                    <span className={cn(
-                                        "ml-2 text-sm font-medium",
-                                        priceInfo.change >= 0 ? "text-green-500" : "text-red-500"
-                                    )}>
-                                        {priceInfo.change >= 0 ? '+' : ''}{priceInfo.change.toFixed(2)}%
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* CD/MC Signals last 7 days */}
-                        <div className="mb-2 flex items-center gap-4">
-                            <span className="text-xs text-muted-foreground font-medium shrink-0">idx CD/MC</span>
-                            <div className="flex gap-2 items-center flex-wrap">
-                                {recentSignals.map((s, i) => (
-                                    <div key={i} className="flex flex-col items-center gap-0.5">
-                                        <span className="text-[10px] text-muted-foreground">{s.date.slice(5)}</span>
-                                        <div className="flex gap-0.5">
-                                            <div className={cn(
-                                                "w-3 h-3 rounded-full border",
-                                                s.cd ? "bg-green-500 border-green-600" : "bg-muted border-border"
-                                            )} title={`CD ${s.cd ? 'Buy' : '-'}`} />
-                                            <div className={cn(
-                                                "w-3 h-3 rounded-full border",
-                                                s.mc ? "bg-red-500 border-red-600" : "bg-muted border-border"
-                                            )} title={`MC ${s.mc ? 'Sell' : '-'}`} />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* 1234 Signals last 7 days */}
-                        <div className="mb-2 flex items-center gap-7">
-                            <span className="text-xs text-muted-foreground font-medium shrink-0">idx 1234</span>
-                            <div className="flex gap-2 items-center flex-wrap">
-                                {recent1234Dots.map((s, i) => (
-                                    <div key={i} className="flex flex-col items-center gap-0.5">
-                                        <span className="text-[10px] text-muted-foreground">{s.date.slice(5)}</span>
-                                        <div className="flex gap-0.5">
-                                            <div className={cn(
-                                                "w-3 h-3 rounded-full border",
-                                                s.cd ? "bg-green-500 border-green-600" : "bg-muted border-border"
-                                            )} title={`1234 CD ${s.cd ? 'Buy' : '-'}`} />
-                                            <div className={cn(
-                                                "w-3 h-3 rounded-full border",
-                                                s.mc ? "bg-red-500 border-red-600" : "bg-muted border-border"
-                                            )} title={`1234 MC ${s.mc ? 'Sell' : '-'}`} />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Panel 1: CD/MC (Signal Breadth) */}
-                        <div className="space-y-1 pb-1">
-                            <div className="text-xs text-muted-foreground font-medium">CD/MC</div>
-                            <PercentileMeter
-                                percentile={signalStats.cd.percentile}
-                                label="Buy"
-                                value={`${signalStats.cd.today.toFixed(2)} / ${signalStats.cd.avg.toFixed(2)}`}
-                                color="green"
-                            />
-                            <PercentileMeter
-                                percentile={signalStats.mc.percentile}
-                                label="Sell"
-                                value={`${signalStats.mc.today.toFixed(2)} / ${signalStats.mc.avg.toFixed(2)}`}
-                                color="red"
-                            />
-                        </div>
-
-                        {/* Panel 2: CD/MC Score (Score Breadth) */}
-                        <div className="space-y-1 pb-1">
-                            <div className="text-xs text-muted-foreground font-medium">CD/MC Score</div>
-                            <PercentileMeter
-                                percentile={scoreStats.cd.percentile}
-                                label="Buy"
-                                value={`${scoreStats.cd.today.toFixed(1)} / ${scoreStats.cd.avg.toFixed(1)}`}
-                                color="green"
-                            />
-                            <PercentileMeter
-                                percentile={scoreStats.mc.percentile}
-                                label="Sell"
-                                value={`${scoreStats.mc.today.toFixed(1)} / ${scoreStats.mc.avg.toFixed(1)}`}
-                                color="red"
-                            />
-                        </div>
-
-                        {/* Panel 3: CD/MC Breakthrough (was Buy/Sell) */}
-                        <div className="space-y-1 pb-1">
-                            <div className="text-xs text-muted-foreground font-medium">CD/MC BT</div>
-                            <PercentileMeter
-                                percentile={breadthStats.cd.percentile}
-                                label="Buy"
-                                value={`${breadthStats.cd.today.toFixed(2)} / ${breadthStats.cd.avg.toFixed(2)}`}
-                                color="green"
-                            />
-                            <PercentileMeter
-                                percentile={breadthStats.mc.percentile}
-                                label="Sell"
-                                value={`${breadthStats.mc.today.toFixed(2)} / ${breadthStats.mc.avg.toFixed(2)}`}
-                                color="red"
-                            />
-                        </div>
-
-                        {/* Panel 4: CD/MC Breakthrough Score + Volume */}
-                        <div className="space-y-1 pb-1">
-                            <div className="text-xs text-muted-foreground font-medium">CD/MC BT Score</div>
-                            <PercentileMeter
-                                percentile={breakthroughScoreStats.cd.percentile}
-                                label="Buy"
-                                value={`${breakthroughScoreStats.cd.today.toFixed(1)} / ${breakthroughScoreStats.cd.avg.toFixed(1)}`}
-                                color="green"
-                            />
-                            <PercentileMeter
-                                percentile={breakthroughScoreStats.mc.percentile}
-                                label="Sell"
-                                value={`${breakthroughScoreStats.mc.today.toFixed(1)} / ${breakthroughScoreStats.mc.avg.toFixed(1)}`}
-                                color="red"
-                            />
-                            {volumeStats && (
-                                <PercentileMeter
-                                    percentile={volumeStats.percentile}
-                                    label="Vol"
-                                    value={`${formatVol(volumeStats.today)} / ${formatVol(volumeStats.avg)}`}
-                                    color="blue"
-                                />
-                            )}
-                        </div>
-                        {/* Flip hint */}
-                        <div className="absolute bottom-2 right-3 text-[10px] text-muted-foreground/60">
-                            Click to view chart →
-                        </div>
-
                     </div>
 
-                    {/* === BACK FACE (Chart) === */}
-                    <div
-                        className={cn(
-                            "rounded-lg bg-card overflow-hidden",
-                            "absolute inset-0 w-full h-full"
-                        )}
-                        style={{
-                            backfaceVisibility: 'hidden',
-                            transform: 'rotateY(180deg)',
-                            opacity: flipped ? 1 : 0
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="border rounded-lg bg-card overflow-hidden h-full flex flex-col">
-                            <div
-                                className="p-2 border-b bg-muted/30 flex justify-between items-center shrink-0"
-                            >
-                                <span className="text-sm font-medium">{title} — Market Breadth</span>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => setChartFullscreen(true)}
-                                        className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/50 transition-colors"
-                                        title="Maximize"
-                                    >
-                                        <Maximize2 className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => setFlipped(false)}
-                                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                                    >
-                                        ← Back to summary
-                                    </button>
+                    {/* CD/MC Signals last 7 days */}
+                    <div className="mb-2 flex items-center gap-4">
+                        <span className="text-xs text-muted-foreground font-medium shrink-0">idx CD/MC</span>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            {recentSignals.map((s, i) => (
+                                <div key={i} className="flex flex-col items-center gap-0.5">
+                                    <span className="text-[10px] text-muted-foreground">{s.date.slice(5)}</span>
+                                    <div className="flex gap-0.5">
+                                        <div className={cn(
+                                            "w-3 h-3 rounded-full border",
+                                            s.cd ? "bg-green-500 border-green-600" : "bg-muted border-border"
+                                        )} title={`CD ${s.cd ? 'Buy' : '-'}`} />
+                                        <div className={cn(
+                                            "w-3 h-3 rounded-full border",
+                                            s.mc ? "bg-red-500 border-red-600" : "bg-muted border-border"
+                                        )} title={`MC ${s.mc ? 'Sell' : '-'}`} />
+                                    </div>
                                 </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* 1234 Signals last 7 days */}
+                    <div className="mb-2 flex items-center gap-7">
+                        <span className="text-xs text-muted-foreground font-medium shrink-0">idx 1234</span>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            {recent1234Dots.map((s, i) => (
+                                <div key={i} className="flex flex-col items-center gap-0.5">
+                                    <span className="text-[10px] text-muted-foreground">{s.date.slice(5)}</span>
+                                    <div className="flex gap-0.5">
+                                        <div className={cn(
+                                            "w-3 h-3 rounded-full border",
+                                            s.cd ? "bg-green-500 border-green-600" : "bg-muted border-border"
+                                        )} title={`1234 CD ${s.cd ? 'Buy' : '-'}`} />
+                                        <div className={cn(
+                                            "w-3 h-3 rounded-full border",
+                                            s.mc ? "bg-red-500 border-red-600" : "bg-muted border-border"
+                                        )} title={`1234 MC ${s.mc ? 'Sell' : '-'}`} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Panel 1: CD/MC (Signal Breadth) */}
+                    <div className="space-y-1 pb-1">
+                        <div className="text-xs text-muted-foreground font-medium">CD/MC</div>
+                        <PercentileMeter
+                            percentile={signalStats.cd.percentile}
+                            label="Buy"
+                            value={`${signalStats.cd.today.toFixed(2)} / ${signalStats.cd.avg.toFixed(2)}`}
+                            color="green"
+                        />
+                        <PercentileMeter
+                            percentile={signalStats.mc.percentile}
+                            label="Sell"
+                            value={`${signalStats.mc.today.toFixed(2)} / ${signalStats.mc.avg.toFixed(2)}`}
+                            color="red"
+                        />
+                    </div>
+
+                    {/* Panel 2: CD/MC Score (Score Breadth) */}
+                    <div className="space-y-1 pb-1">
+                        <div className="text-xs text-muted-foreground font-medium">CD/MC Score</div>
+                        <PercentileMeter
+                            percentile={scoreStats.cd.percentile}
+                            label="Buy"
+                            value={`${scoreStats.cd.today.toFixed(1)} / ${scoreStats.cd.avg.toFixed(1)}`}
+                            color="green"
+                        />
+                        <PercentileMeter
+                            percentile={scoreStats.mc.percentile}
+                            label="Sell"
+                            value={`${scoreStats.mc.today.toFixed(1)} / ${scoreStats.mc.avg.toFixed(1)}`}
+                            color="red"
+                        />
+                    </div>
+
+                    {/* Panel 3: CD/MC Breakthrough (was Buy/Sell) */}
+                    <div className="space-y-1 pb-1">
+                        <div className="text-xs text-muted-foreground font-medium">CD/MC BT</div>
+                        <PercentileMeter
+                            percentile={breadthStats.cd.percentile}
+                            label="Buy"
+                            value={`${breadthStats.cd.today.toFixed(2)} / ${breadthStats.cd.avg.toFixed(2)}`}
+                            color="green"
+                        />
+                        <PercentileMeter
+                            percentile={breadthStats.mc.percentile}
+                            label="Sell"
+                            value={`${breadthStats.mc.today.toFixed(2)} / ${breadthStats.mc.avg.toFixed(2)}`}
+                            color="red"
+                        />
+                    </div>
+
+                    {/* Panel 4: CD/MC Breakthrough Score + Volume */}
+                    <div className="space-y-1 pb-1">
+                        <div className="text-xs text-muted-foreground font-medium">CD/MC BT Score</div>
+                        <PercentileMeter
+                            percentile={breakthroughScoreStats.cd.percentile}
+                            label="Buy"
+                            value={`${breakthroughScoreStats.cd.today.toFixed(1)} / ${breakthroughScoreStats.cd.avg.toFixed(1)}`}
+                            color="green"
+                        />
+                        <PercentileMeter
+                            percentile={breakthroughScoreStats.mc.percentile}
+                            label="Sell"
+                            value={`${breakthroughScoreStats.mc.today.toFixed(1)} / ${breakthroughScoreStats.mc.avg.toFixed(1)}`}
+                            color="red"
+                        />
+                        {volumeStats && (
+                            <PercentileMeter
+                                percentile={volumeStats.percentile}
+                                label="Vol"
+                                value={`${formatVol(volumeStats.today)} / ${formatVol(volumeStats.avg)}`}
+                                color="blue"
+                            />
+                        )}
+                    </div>
+                    {/* Navigation arrows */}
+                    <div className="flex items-center justify-between mt-1">
+                        <button
+                            onClick={() => setCardView('histogram')}
+                            className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                        >
+                            <ChevronLeft className="w-3 h-3" /> Distributions
+                        </button>
+                        <button
+                            onClick={() => setCardView('chart')}
+                            className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                        >
+                            Market Breadth <ChevronRight className="w-3 h-3" />
+                        </button>
+                    </div>
+
+                </div>
+
+                {/* === HISTOGRAM VIEW === */}
+                <div
+                    className={cn(
+                        "border rounded-lg bg-card overflow-hidden",
+                        cardView === 'histogram' ? 'relative opacity-100 w-full h-full' : 'absolute inset-0 opacity-0 pointer-events-none'
+                    )}
+                >
+                    {cardView === 'histogram' && (
+                        <BreadthHistogramPanel
+                            title={title}
+                            cdSignalBreadth={filterByDateRange(cdSignalBreadth)}
+                            mcSignalBreadth={filterByDateRange(mcSignalBreadth)}
+                            cdScoreBreadth={filterByDateRange(cdScoreBreadth)}
+                            mcScoreBreadth={filterByDateRange(mcScoreBreadth)}
+                            cdBreadth={filterByDateRange(cdBreadth)}
+                            mcBreadth={filterByDateRange(mcBreadth)}
+                            cdBreakthroughScoreBreadth={filterByDateRange(cdBreakthroughScoreBreadth)}
+                            mcBreakthroughScoreBreadth={filterByDateRange(mcBreakthroughScoreBreadth)}
+                            intervalWeights={intervalWeights}
+                            tickers={tickers}
+                            filteredSpxData={filteredSpxData}
+                            onNavigateRight={() => setCardView('summary')}
+                            onMaximize={() => setHistogramFullscreen(true)}
+                        />
+                    )}
+                </div>
+
+                {/* === CHART VIEW === */}
+                <div
+                    className={cn(
+                        "border rounded-lg bg-card overflow-hidden",
+                        cardView === 'chart' ? 'relative opacity-100 w-full h-full' : 'absolute inset-0 opacity-0 pointer-events-none'
+                    )}
+                >
+                    <div className="border rounded-lg bg-card overflow-hidden h-full flex flex-col">
+                        <div
+                            className="p-2 border-b bg-muted/30 flex justify-between items-center shrink-0"
+                        >
+                            <span className="text-sm font-medium">{title} — Market Breadth</span>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setChartFullscreen(true)}
+                                    className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/50 transition-colors"
+                                    title="Maximize"
+                                >
+                                    <Maximize2 className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setCardView('summary')}
+                                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    ← Back to summary
+                                </button>
                             </div>
-                            <div className="p-1 flex-1 min-h-0">
-                                {flipped && (
-                                    <MarketBreadthChart
-                                        title={title}
-                                        spxData={selectedTicker && stockData ? stockData : spxData}
-                                        cdBreadth={effectiveCdBreadth}
-                                        mcBreadth={effectiveMcBreadth}
-                                        cdSignalBreadth={effectiveCdSignalBreadth}
-                                        mcSignalBreadth={effectiveMcSignalBreadth}
-                                        cdScoreBreadth={effectiveCdScoreBreadth}
-                                        mcScoreBreadth={effectiveMcScoreBreadth}
-                                        cdBreakthroughScoreBreadth={effectiveCdBtScoreBreadth}
-                                        mcBreakthroughScoreBreadth={effectiveMcBtScoreBreadth}
-                                        intervalWeights={intervalWeights}
-                                        minDate={minDate}
-                                        maxDate={maxDate}
-                                        signals1234={selectedTicker ? undefined : signals1234}
-                                        tickers={tickers}
-                                        selectedTicker={selectedTicker}
-                                        onTickerChange={setSelectedTicker}
-                                        indexTitle={title}
-                                    />
-                                )}
-                            </div>
+                        </div>
+                        <div className="p-1 flex-1 min-h-0">
+                            {cardView === 'chart' && (
+                                <MarketBreadthChart
+                                    title={title}
+                                    spxData={selectedTicker && stockData ? stockData : spxData}
+                                    cdBreadth={effectiveCdBreadth}
+                                    mcBreadth={effectiveMcBreadth}
+                                    cdSignalBreadth={effectiveCdSignalBreadth}
+                                    mcSignalBreadth={effectiveMcSignalBreadth}
+                                    cdScoreBreadth={effectiveCdScoreBreadth}
+                                    mcScoreBreadth={effectiveMcScoreBreadth}
+                                    cdBreakthroughScoreBreadth={effectiveCdBtScoreBreadth}
+                                    mcBreakthroughScoreBreadth={effectiveMcBtScoreBreadth}
+                                    intervalWeights={intervalWeights}
+                                    minDate={minDate}
+                                    maxDate={maxDate}
+                                    signals1234={selectedTicker ? undefined : signals1234}
+                                    tickers={tickers}
+                                    selectedTicker={selectedTicker}
+                                    onTickerChange={setSelectedTicker}
+                                    indexTitle={title}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -616,7 +635,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                 <Minimize2 className="w-4 h-4" />
                             </button>
                             <button
-                                onClick={() => { setChartFullscreen(false); setFlipped(false); }}
+                                onClick={() => { setChartFullscreen(false); setCardView('summary'); }}
                                 className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                             >
                                 ← Back to summary
@@ -645,6 +664,32 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             indexTitle={title}
                         />
                     </div>
+                </div>
+            )}
+
+            {/* === HISTOGRAM FULLSCREEN OVERLAY === */}
+            {histogramFullscreen && (
+                <div
+                    className="absolute inset-0 z-[9999] flex flex-col bg-card overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <BreadthHistogramPanel
+                        title={title}
+                        cdSignalBreadth={filterByDateRange(cdSignalBreadth)}
+                        mcSignalBreadth={filterByDateRange(mcSignalBreadth)}
+                        cdScoreBreadth={filterByDateRange(cdScoreBreadth)}
+                        mcScoreBreadth={filterByDateRange(mcScoreBreadth)}
+                        cdBreadth={filterByDateRange(cdBreadth)}
+                        mcBreadth={filterByDateRange(mcBreadth)}
+                        cdBreakthroughScoreBreadth={filterByDateRange(cdBreakthroughScoreBreadth)}
+                        mcBreakthroughScoreBreadth={filterByDateRange(mcBreakthroughScoreBreadth)}
+                        intervalWeights={intervalWeights}
+                        tickers={tickers}
+                        filteredSpxData={filteredSpxData}
+                        onNavigateRight={() => { setHistogramFullscreen(false); setCardView('summary'); }}
+                        onMaximize={() => setHistogramFullscreen(false)}
+                        isFullscreen={true}
+                    />
                 </div>
             )}
         </>
