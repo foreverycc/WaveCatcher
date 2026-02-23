@@ -478,7 +478,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
 
                     {/* Panel 3: CD/MC Breakthrough (was Buy/Sell) */}
                     <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">CD/MC BT</div>
+                        <div className="text-xs text-muted-foreground font-medium">CD/MC HQ</div>
                         <PercentileMeter
                             percentile={breadthStats.cd.percentile}
                             label="Buy"
@@ -495,7 +495,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
 
                     {/* Panel 4: CD/MC Breakthrough Score + Volume */}
                     <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">CD/MC BT Score</div>
+                        <div className="text-xs text-muted-foreground font-medium">CD/MC HQ Score</div>
                         <PercentileMeter
                             percentile={breakthroughScoreStats.cd.percentile}
                             label="Buy"
