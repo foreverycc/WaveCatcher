@@ -136,8 +136,8 @@ const MiniHistogram = ({ data, height = 140, isFullscreen = false }: { data: His
                         tickLine={{ strokeWidth: 0.5 }}
                         axisLine={{ strokeWidth: 0.5 }}
                         interval="preserveStartEnd"
-                        tickFormatter={(value, index) => {
-                            const d = chartData[index];
+                        tickFormatter={(value) => {
+                            const d = chartData[parseInt(value)];
                             return d ? fmt(d.midpoint) : value;
                         }}
                     />
