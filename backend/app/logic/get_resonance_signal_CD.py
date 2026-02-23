@@ -1,5 +1,5 @@
 import pandas as pd
-from indicators import compute_cd_indicator, compute_nx_break_through, compute_cd_score
+from indicators import compute_cd_indicator, compute_cd_break_through, compute_cd_score
 from utils import calculate_current_nx_values, get_trading_day_window_end
 from app.logic.scoring_config import get_cd_threshold
     
@@ -53,7 +53,7 @@ def process_ticker_1234(ticker, data_ticker=None):
         
         try:
             cd = compute_cd_indicator(data)
-            breakthrough = compute_nx_break_through(data)
+            breakthrough = compute_cd_break_through(data)
             # Handle NaN values by replacing them with False for boolean operations
             cd_bool = cd.fillna(False).infer_objects(copy=False).astype(bool)
             buy_signals = (cd_bool & breakthrough) | (cd_bool & breakthrough.rolling(10).apply(lambda x: x.iloc[0] if x.any() else False))   

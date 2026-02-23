@@ -123,6 +123,11 @@ def compute_mc_indicator(data):
     return result
 
 def compute_nx_break_through(data):
+    """Upward breakthrough (legacy alias for compute_cd_break_through)."""
+    return compute_cd_break_through(data)
+
+def compute_cd_break_through(data):
+    """CD (bullish) breakthrough: Close crosses above EMA24(High)."""
     # Ensure we get Series, not DataFrame columns
     high = data['High']
     close = data['Close']
@@ -133,6 +138,20 @@ def compute_nx_break_through(data):
     
     short_upper = high.ewm(span=24, adjust=False).mean()
     break_through = (close > short_upper) & (close.shift(1) <= short_upper.shift(1))
+    return break_through
+
+def compute_mc_break_through(data):
+    """MC (bearish) breakthrough: Close crosses below EMA24(Low)."""
+    # Ensure we get Series, not DataFrame columns
+    low = data['Low']
+    close = data['Close']
+    if isinstance(low, pd.DataFrame):
+        low = low.iloc[:, 0]
+    if isinstance(close, pd.DataFrame):
+        close = close.iloc[:, 0]
+    
+    short_lower = low.ewm(span=24, adjust=False).mean()
+    break_through = (close < short_lower) & (close.shift(1) >= short_lower.shift(1))
     return break_through
 
 

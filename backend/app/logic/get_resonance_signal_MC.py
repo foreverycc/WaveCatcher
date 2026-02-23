@@ -1,5 +1,5 @@
 import pandas as pd
-from indicators import compute_mc_indicator, compute_nx_break_through, compute_mc_score
+from indicators import compute_mc_indicator, compute_mc_break_through, compute_mc_score
 from utils import calculate_current_nx_values, get_trading_day_window_end
 from app.logic.scoring_config import get_mc_threshold
     
@@ -54,7 +54,7 @@ def process_ticker_mc_1234(ticker, data_ticker=None):
         
         try:
             mc = compute_mc_indicator(data)  # Use MC indicator instead of CD
-            breakthrough = compute_nx_break_through(data)
+            breakthrough = compute_mc_break_through(data)
             
             # Handle NaN values by replacing them with False for boolean operations
             mc_bool = mc.fillna(False).infer_objects(copy=False).astype(bool)
