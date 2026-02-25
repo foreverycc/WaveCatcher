@@ -1,8 +1,7 @@
 import React from 'react';
-import { LayoutDashboard, Settings, Activity, Play, RefreshCw, Clock, AlertCircle, Terminal, Menu, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { LayoutDashboard, Settings, Activity, Play, RefreshCw, Clock, AlertCircle, Terminal, Menu, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { DateRangeCalendar } from './DateRangeCalendar';
-import { analysisApi } from '../services/api';
 
 interface SidebarProps {
     activePage: 'dashboard' | 'configuration';
@@ -232,26 +231,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         </button>
                     )}
 
-                    {/* Clean Database Button */}
-                    <button
-                        onClick={async () => {
-                            if (!window.confirm('This will delete all analysis runs, results, cached price data, and option chain data. Continue?')) return;
-                            try {
-                                const result = await analysisApi.cleanupDatabase();
-                                alert(`Database cleaned: ${result.deleted.analysis_runs} runs, ${result.deleted.analysis_results} results, ${result.deleted.price_history} price bars deleted.`);
-                            } catch (e) {
-                                alert('Failed to clean database.');
-                            }
-                        }}
-                        className={cn(
-                            "flex items-center gap-2 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition-all shadow-sm",
-                            isCollapsed ? "p-3 justify-center" : "w-full px-4 py-2 justify-center"
-                        )}
-                        title="Clean Database"
-                    >
-                        <Trash2 className="w-4 h-4 shrink-0" />
-                        {!isCollapsed && <span className="text-sm">Clean DB</span>}
-                    </button>
+
+
 
                     {/* Logs Button */}
                     <button

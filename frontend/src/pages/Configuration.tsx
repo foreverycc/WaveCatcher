@@ -15,6 +15,9 @@ export const Configuration: React.FC = () => {
     const [badTickers, setBadTickers] = useState<string[]>([]);
     const [validationMessage, setValidationMessage] = useState('');
     const [isValidating, setIsValidating] = useState(false);
+    const [cleanupTables, setCleanupTables] = useState<string[]>(['analysis_runs', 'analysis_results', 'price_history', 'option_chains']);
+    const [isCleaningDb, setIsCleaningDb] = useState(false);
+    const [updateIndicesSelection, setUpdateIndicesSelection] = useState<string[]>(['sp500', 'nasdaq100', 'dowjones']);
 
     // --- Index config state ---
     const [addingIndex, setAddingIndex] = useState(false);
@@ -95,7 +98,7 @@ export const Configuration: React.FC = () => {
     });
 
     const updateIndicesMutation = useMutation({
-        mutationFn: analysisApi.updateIndices,
+        mutationFn: (indices?: string[]) => analysisApi.updateIndices(indices),
         onSuccess: (data) => {
             if (data.status === 'success') {
                 alert('Indices updated successfully!\n' + (data.output || ''));
@@ -360,14 +363,101 @@ export const Configuration: React.FC = () => {
                         <h3 className="font-semibold mb-4 flex items-center gap-2">
                             <RefreshCw className="w-4 h-4" /> System Maintenance
                         </h3>
-                        <button
-                            onClick={() => updateIndicesMutation.mutate()}
-                            disabled={updateIndicesMutation.isPending}
-                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-all font-medium disabled:opacity-50"
-                        >
-                            <RefreshCw className={cn("w-4 h-4", updateIndicesMutation.isPending ? "animate-spin" : "")} />
-                            {updateIndicesMutation.isPending ? 'Updating...' : 'Update Indices (SP500, Nasdaq 100, Dow Jones, Russell 2000)'}
-                        </button>
+                        <div className="space-y-4">
+                            {/* Update Indices */}
+                            <div>
+                                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                                    <RefreshCw className="w-4 h-4" /> Update Index Stock Lists
+                                </h4>
+                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                    {[
+                                        { key: 'sp500', label: 'S&P 500' },
+                                        { key: 'nasdaq100', label: 'Nasdaq 100' },
+                                        { key: 'dowjones', label: 'Dow Jones' },
+                                        { key: 'russell2000', label: 'Russell 2000' },
+                                    ].map(idx => (
+                                        <label key={idx.key} className="flex items-center gap-2 cursor-pointer hover:bg-muted rounded px-2 py-1.5 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                checked={updateIndicesSelection.includes(idx.key)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setUpdateIndicesSelection([...updateIndicesSelection, idx.key]);
+                                                    } else {
+                                                        setUpdateIndicesSelection(updateIndicesSelection.filter((k: string) => k !== idx.key));
+                                                    }
+                                                }}
+                                                className="w-3.5 h-3.5 rounded border-input accent-primary"
+                                            />
+                                            <span>{idx.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => updateIndicesMutation.mutate(updateIndicesSelection)}
+                                    disabled={updateIndicesMutation.isPending || updateIndicesSelection.length === 0}
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <RefreshCw className={cn("w-4 h-4", updateIndicesMutation.isPending ? "animate-spin" : "")} />
+                                    {updateIndicesMutation.isPending ? 'Updating...' : `Update Selected (${updateIndicesSelection.length}/4)`}
+                                </button>
+                            </div>
+
+                            {/* Database Cleanup */}
+                            <div className="border-t border-border pt-4">
+                                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                                    <Trash2 className="w-4 h-4 text-destructive" /> Database Cleanup
+                                </h4>
+                                <div className="grid grid-cols-2 gap-2 mb-3">
+                                    {[
+                                        { key: 'analysis_runs', label: 'Analysis Runs' },
+                                        { key: 'analysis_results', label: 'Analysis Results' },
+                                        { key: 'price_history', label: 'Price History' },
+                                        { key: 'option_chains', label: 'Option Chains' },
+                                    ].map(table => (
+                                        <label key={table.key} className="flex items-center gap-2 cursor-pointer hover:bg-muted rounded px-2 py-1.5 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                checked={cleanupTables.includes(table.key)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setCleanupTables([...cleanupTables, table.key]);
+                                                    } else {
+                                                        setCleanupTables(cleanupTables.filter((t: string) => t !== table.key));
+                                                    }
+                                                }}
+                                                className="w-3.5 h-3.5 rounded border-input accent-destructive"
+                                            />
+                                            <span>{table.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={async () => {
+                                        if (cleanupTables.length === 0) return;
+                                        const tableLabels = cleanupTables.join(', ');
+                                        if (!window.confirm(`This will delete all data from: ${tableLabels}. Continue?`)) return;
+                                        setIsCleaningDb(true);
+                                        try {
+                                            const result = await analysisApi.cleanupDatabase(cleanupTables);
+                                            const summary = Object.entries(result.deleted)
+                                                .map(([table, count]) => `${table}: ${count} rows`)
+                                                .join(', ');
+                                            alert(`Database cleaned: ${summary}`);
+                                        } catch (e) {
+                                            alert('Failed to clean database.');
+                                        } finally {
+                                            setIsCleaningDb(false);
+                                        }
+                                    }}
+                                    disabled={cleanupTables.length === 0 || isCleaningDb}
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isCleaningDb ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                    {isCleaningDb ? 'Cleaning...' : `Clean Selected (${cleanupTables.length}/4)`}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

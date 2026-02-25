@@ -92,30 +92,41 @@ def save_to_tab(stocks, filename):
     print(f"Saved {len(stocks)} tickers to ./backend/{filepath}")
 
 if __name__ == "__main__":
-    print("Fetching S&P 500...")
-    try:
-        sp500 = fetch_sp500()
-        save_to_tab(sp500, 'stocks_sp500.tab')
-    except Exception as e:
-        print(f"Error fetching S&P 500: {e}")
+    import sys
+    
+    # If arguments are provided, only fetch those indices
+    # Valid keys: sp500, nasdaq100, dowjones, russell2000
+    selected = set(sys.argv[1:]) if len(sys.argv) > 1 else {'sp500', 'nasdaq100', 'dowjones', 'russell2000'}
+    
+    if 'sp500' in selected:
+        print("Fetching S&P 500...")
+        try:
+            sp500 = fetch_sp500()
+            save_to_tab(sp500, 'stocks_sp500.tab')
+        except Exception as e:
+            print(f"Error fetching S&P 500: {e}")
 
-    print("Fetching Nasdaq 100...")
-    try:
-        nasdaq100 = fetch_nasdaq100()
-        save_to_tab(nasdaq100, 'stocks_nasdaq100.tab')
-    except Exception as e:
-        print(f"Error fetching Nasdaq 100: {e}")
+    if 'nasdaq100' in selected:
+        print("Fetching Nasdaq 100...")
+        try:
+            nasdaq100 = fetch_nasdaq100()
+            save_to_tab(nasdaq100, 'stocks_nasdaq100.tab')
+        except Exception as e:
+            print(f"Error fetching Nasdaq 100: {e}")
 
-    print("Fetching Russell 2000...")
-    try:
-        russell2000 = fetch_russell2000()
-        save_to_tab(russell2000, 'stocks_russell2000.tab')
-    except Exception as e:
-        print(f"Error fetching Russell 2000: {e}")
+    if 'russell2000' in selected:
+        print("Fetching Russell 2000...")
+        try:
+            russell2000 = fetch_russell2000()
+            save_to_tab(russell2000, 'stocks_russell2000.tab')
+        except Exception as e:
+            print(f"Error fetching Russell 2000: {e}")
 
-    print("Fetching Dow Jones 30...")
-    try:
-        dowjones = fetch_dowjones()
-        save_to_tab(dowjones, 'stocks_dowjones.tab')
-    except Exception as e:
-        print(f"Error fetching Dow Jones 30: {e}")
+    if 'dowjones' in selected:
+        print("Fetching Dow Jones 30...")
+        try:
+            dowjones = fetch_dowjones()
+            save_to_tab(dowjones, 'stocks_dowjones.tab')
+        except Exception as e:
+            print(f"Error fetching Dow Jones 30: {e}")
+

@@ -91,7 +91,14 @@ export const analysisApi = {
         const response = await api.get<AnalysisRun[]>('/analysis/runs');
         return response.data;
     },
-    updateIndices: () => fetch(`${API_BASE_URL}/analysis/update-indices`, { method: 'POST' }).then(res => res.json()),
+    updateIndices: (indices?: string[]) => {
+        const body = indices && indices.length > 0 ? { indices } : {};
+        return fetch(`${API_BASE_URL}/analysis/update-indices`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        }).then(res => res.json());
+    },
     getResult: async (runId: number, resultType: string, ticker?: string) => {
         const response = await api.get<any[]>(`/analysis/runs/${runId}/results/${resultType}`, {
             params: { ticker }
@@ -182,8 +189,9 @@ export const analysisApi = {
         const response = await api.get<ScoringConfig>('/analysis/config/scoring/defaults');
         return response.data;
     },
-    cleanupDatabase: async () => {
-        const response = await api.delete('/analysis/cleanup-database');
+    cleanupDatabase: async (tables?: string[]) => {
+        const params = tables && tables.length > 0 ? { tables: tables.join(',') } : {};
+        const response = await api.delete('/analysis/cleanup-database', { params });
         return response.data;
     },
 };

@@ -28,30 +28,28 @@ import subprocess
 import sys
 
 @router.post("/update-indices")
-async def update_indices():
-    """Run the script to update SP500 and Nasdaq 100 indices."""
+async def update_indices(body: Optional[Dict[str, Any]] = None):
+    """Run the script to update index stock lists.
+    
+    Args:
+        body: Optional JSON body with 'indices' key containing list of index keys
+              to update. Valid keys: sp500, nasdaq100, dowjones, russell2000.
+              If not specified, all indices are updated.
+    """
     try:
-        # Assuming the script is in backend/scripts/fetch_indices.py
-        # and we are running from the project root or backend root.
-        # Let's use absolute path or relative from where uvicorn runs.
-        # Usually uvicorn runs from backend/ or project root.
-        # Safest is to find relative to this file? Or just assume standard layout.
-        
-        # We are in backend/app/api/endpoints/analysis.py
-        # script is in backend/scripts/fetch_indices.py
-        # cmd: python3 backend/scripts/fetch_indices.py
-        
-        # Let's try to locate it relative to current working directory of the process
         script_path = os.path.join("backend", "scripts", "fetch_indices.py")
         if not os.path.exists(script_path):
-             # Try without 'backend' prefix if running from inside backend
              script_path = os.path.join("scripts", "fetch_indices.py")
 
         if not os.path.exists(script_path):
             return {"status": "error", "message": f"Script not found at {script_path}"}
 
-        # Use sys.executable to ensure we use the same python environment
-        result = subprocess.run([sys.executable, script_path], capture_output=True, text=True)
+        cmd = [sys.executable, script_path]
+        # Pass selected indices as arguments if specified
+        if body and 'indices' in body and body['indices']:
+            cmd.extend(body['indices'])
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
         
         if result.returncode == 0:
             return {"status": "success", "message": "Indices updated successfully", "output": result.stdout}
@@ -980,25 +978,41 @@ async def get_scoring_defaults():
 
 
 @router.delete("/cleanup-database")
-async def cleanup_database(db: Session = Depends(get_db)):
-    """Delete all analysis runs, results, and price history to allow a fresh re-run."""
+async def cleanup_database(tables: Optional[str] = None, db: Session = Depends(get_db)):
+    """Delete data from selected tables to allow a fresh re-run.
+    
+    Args:
+        tables: Comma-separated list of tables to clean. 
+                Valid values: analysis_runs, analysis_results, price_history, option_chains.
+                If not specified, all tables are cleaned.
+    """
     try:
-        results_deleted = db.query(AnalysisResult).delete()
-        runs_deleted = db.query(AnalysisRun).delete()
-        prices_deleted = db.query(PriceBar).delete()
-        options_deleted = db.query(OptionChain).delete()
+        # Determine which tables to clean
+        all_tables = {'analysis_runs', 'analysis_results', 'price_history', 'option_chains'}
+        if tables:
+            selected = {t.strip() for t in tables.split(',')}
+            selected = selected & all_tables  # Only allow valid table names
+        else:
+            selected = all_tables
+
+        deleted = {}
+        # Delete analysis_results before analysis_runs (foreign key dependency)
+        if 'analysis_results' in selected:
+            deleted['analysis_results'] = db.query(AnalysisResult).delete()
+        if 'analysis_runs' in selected:
+            deleted['analysis_runs'] = db.query(AnalysisRun).delete()
+        if 'price_history' in selected:
+            deleted['price_history'] = db.query(PriceBar).delete()
+        if 'option_chains' in selected:
+            deleted['option_chains'] = db.query(OptionChain).delete()
+
         db.commit()
         # VACUUM to reclaim disk space (SQLite keeps allocated space after DELETE)
         db.execute(text("VACUUM"))
-        logger.info(f"Database cleanup: {runs_deleted} runs, {results_deleted} results, {prices_deleted} price bars, {options_deleted} option chains deleted")
+        logger.info(f"Database cleanup: {deleted}")
         return {
             "status": "success",
-            "deleted": {
-                "analysis_runs": runs_deleted,
-                "analysis_results": results_deleted,
-                "price_history": prices_deleted,
-                "option_chains": options_deleted,
-            }
+            "deleted": deleted
         }
     except Exception as e:
         db.rollback()
