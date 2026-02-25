@@ -17,6 +17,13 @@ export interface ScoringConfig {
     interval_weights: { '1h': number; '2h': number; '3h': number; '4h': number; '1d': number };
     cd_threshold: number;
     mc_threshold: number;
+    hq_algorithm: 'breakthrough' | 'high_return';
+    hq_high_return: {
+        lookback_signals: number;
+        lookback_bars: number;
+        cd_return_threshold: number;
+        mc_return_threshold: number;
+    };
 }
 
 export interface StockList {
@@ -174,5 +181,9 @@ export const analysisApi = {
     getScoringConfigDefaults: async () => {
         const response = await api.get<ScoringConfig>('/analysis/config/scoring/defaults');
         return response.data;
-    }
+    },
+    cleanupDatabase: async () => {
+        const response = await api.delete('/analysis/cleanup-database');
+        return response.data;
+    },
 };

@@ -352,7 +352,7 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                 return []
 
         # Helper: aggregate raw signal details by date and interval
-        def aggregate_signals_by_interval(raw_details, metric_name):
+        def aggregate_signals_by_interval(raw_details, metric_name, ticker_list=None):
             """Aggregate raw signal details by date and interval.
             Returns list of {date, count_1h, count_2h, count_3h, count_4h, count_1d}."""
             if not raw_details:
@@ -361,6 +361,12 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                 df = pd.DataFrame(raw_details)
                 if df.empty or 'signal_date' not in df.columns or 'interval' not in df.columns:
                     return []
+                # Filter to specific tickers if provided
+                if ticker_list is not None:
+                    ticker_set = set(ticker_list)
+                    df = df[df['ticker'].isin(ticker_set)]
+                    if df.empty:
+                        return []
                 df['date'] = pd.to_datetime(df['signal_date']).dt.strftime('%Y-%m-%d')
                 # Count unique tickers per (date, interval)
                 counts = df.groupby(['date', 'interval'])['ticker'].nunique().reset_index()
@@ -382,7 +388,7 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         # Helper: aggregate indicator scores by date and interval
         SCORE_INTERVAL_WEIGHTS = {'1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32}
 
-        def aggregate_scores_by_interval(raw_details, metric_name):
+        def aggregate_scores_by_interval(raw_details, metric_name, ticker_list=None):
             """Aggregate indicator_score * interval_weight by date.
             Returns list of {date, score_1h, score_2h, ..., score_1d, total_score}."""
             if not raw_details:
@@ -393,6 +399,12 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                     return []
                 if 'indicator_score' not in df.columns:
                     return []
+                # Filter to specific tickers if provided
+                if ticker_list is not None:
+                    ticker_set = set(ticker_list)
+                    df = df[df['ticker'].isin(ticker_set)]
+                    if df.empty:
+                        return []
                 df['date'] = pd.to_datetime(df['signal_date']).dt.strftime('%Y-%m-%d')
                 # Drop rows without valid score
                 df = df.dropna(subset=['indicator_score'])
@@ -423,13 +435,14 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         df_breakout_1234 = identify_1234(cd_results_1234, all_ticker_data)
         if not df_breakout_1234.empty:
             save_analysis_result(run_id, "ALL", "ALL", 'cd_breakout_candidates_summary_1234', df_breakout_1234.to_dict(orient='records'))
-            
-            # Aggregate Breadth for CD 1234
-            breadth_cd_1234 = aggregate_signals(df_breakout_1234, 'CD 1234')
-            if breadth_cd_1234:
-                save_analysis_result(run_id, "ALL", "ALL", 'cd_market_breadth_1234', breadth_cd_1234)
         
-        # Aggregate CD signals by interval (from raw details)
+        # Aggregate HQ breadth using is_hq flag (respects configured HQ algorithm)
+        cd_hq_results = [r for r in cd_results_1234 if r.get('is_hq', False)]
+        cd_hq_breadth = aggregate_signals_by_interval(cd_hq_results, 'CD HQ')
+        if cd_hq_breadth:
+            save_analysis_result(run_id, "ALL", "ALL", 'cd_market_breadth_1234', cd_hq_breadth)
+        
+        # Aggregate CD signals by interval (from ALL raw details — not HQ filtered)
         cd_signal_by_interval = aggregate_signals_by_interval(cd_results_1234, 'CD signals')
         if cd_signal_by_interval:
             save_analysis_result(run_id, "ALL", "ALL", 'cd_signal_breadth_by_interval', cd_signal_by_interval)
@@ -441,17 +454,18 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         if not df_mc_breakout_1234.empty:
             save_analysis_result(run_id, "ALL", "ALL", 'mc_breakout_candidates_summary_1234', df_mc_breakout_1234.to_dict(orient='records'))
 
-            # Aggregate Breadth for MC 1234
-            breadth_mc_1234 = aggregate_signals(df_mc_breakout_1234, 'MC 1234')
-            if breadth_mc_1234:
-                save_analysis_result(run_id, "ALL", "ALL", 'mc_market_breadth_1234', breadth_mc_1234)
+        # Aggregate HQ breadth using is_hq flag
+        mc_hq_results = [r for r in mc_results_1234 if r.get('is_hq', False)]
+        mc_hq_breadth = aggregate_signals_by_interval(mc_hq_results, 'MC HQ')
+        if mc_hq_breadth:
+            save_analysis_result(run_id, "ALL", "ALL", 'mc_market_breadth_1234', mc_hq_breadth)
 
-        # Aggregate MC signals by interval (from raw details)
+        # Aggregate MC signals by interval (from ALL raw details — not HQ filtered)
         mc_signal_by_interval = aggregate_signals_by_interval(mc_results_1234, 'MC signals')
         if mc_signal_by_interval:
             save_analysis_result(run_id, "ALL", "ALL", 'mc_signal_breadth_by_interval', mc_signal_by_interval)
 
-        # Aggregate CD/MC indicator scores by interval
+        # Aggregate CD/MC indicator scores by interval (from ALL raw details)
         cd_score_by_interval = aggregate_scores_by_interval(cd_results_1234, 'CD scores')
         if cd_score_by_interval:
             save_analysis_result(run_id, "ALL", "ALL", 'cd_score_breadth_by_interval', cd_score_by_interval)
@@ -460,39 +474,14 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         if mc_score_by_interval:
             save_analysis_result(run_id, "ALL", "ALL", 'mc_score_breadth_by_interval', mc_score_by_interval)
 
-        # Aggregate CD/MC Breakthrough Scores (scores only for signals that are also breakthroughs)
-        def filter_to_breakthrough(raw_details, df_breakout):
-            """Filter raw signal details to only those matching breakthrough (ticker, date) pairs."""
-            if not raw_details or df_breakout.empty:
-                return []
-            bt_pairs = set()
-            for _, row in df_breakout.iterrows():
-                date_val = row.get('date', '')
-                if hasattr(date_val, 'strftime'):
-                    date_str = date_val.strftime('%Y-%m-%d')
-                else:
-                    date_str = str(date_val)[:10]
-                bt_pairs.add((row['ticker'], date_str))
-            filtered = []
-            for detail in raw_details:
-                sig_date = detail.get('signal_date', '')
-                if hasattr(sig_date, 'strftime'):
-                    sig_date_str = sig_date.strftime('%Y-%m-%d')
-                else:
-                    sig_date_str = str(sig_date)[:10]
-                if (detail.get('ticker', ''), sig_date_str) in bt_pairs:
-                    filtered.append(detail)
-            return filtered
+        # Aggregate HQ Scores (scores only for HQ signals)
+        cd_hq_score = aggregate_scores_by_interval(cd_hq_results, 'CD HQ scores')
+        if cd_hq_score:
+            save_analysis_result(run_id, "ALL", "ALL", 'cd_breakthrough_score_by_interval', cd_hq_score)
 
-        cd_bt_details = filter_to_breakthrough(cd_results_1234, df_breakout_1234)
-        cd_bt_score = aggregate_scores_by_interval(cd_bt_details, 'CD breakthrough scores')
-        if cd_bt_score:
-            save_analysis_result(run_id, "ALL", "ALL", 'cd_breakthrough_score_by_interval', cd_bt_score)
-
-        mc_bt_details = filter_to_breakthrough(mc_results_1234, df_mc_breakout_1234)
-        mc_bt_score = aggregate_scores_by_interval(mc_bt_details, 'MC breakthrough scores')
-        if mc_bt_score:
-            save_analysis_result(run_id, "ALL", "ALL", 'mc_breakthrough_score_by_interval', mc_bt_score)
+        mc_hq_score = aggregate_scores_by_interval(mc_hq_results, 'MC HQ scores')
+        if mc_hq_score:
+            save_analysis_result(run_id, "ALL", "ALL", 'mc_breakthrough_score_by_interval', mc_hq_score)
 
         # 5. Save CD evaluation results
         logger.info("Saving CD evaluation results...")
@@ -1199,17 +1188,19 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
             
             logger.info(f"Computing breadth for {idx_key} with {len(idx_tickers)} tickers")
             
-            # CD 1234 breadth for this index
-            cd_breadth = aggregate_signals_for_tickers(df_breakout_1234, idx_tickers, f'CD 1234 {idx_key}')
-            if cd_breadth:
-                save_analysis_result(run_id, stock_list_name, "ALL", 'cd_market_breadth_1234', cd_breadth)
-                logger.info(f"Saved CD breadth for {idx_key}: {len(cd_breadth)} days")
+            # CD HQ breadth for this index (using is_hq flag)
+            cd_hq_for_idx = [r for r in cd_results_1234 if r.get('is_hq', False) and r.get('ticker', '') in set(idx_tickers)]
+            cd_hq_breadth = aggregate_signals_by_interval(cd_hq_for_idx, f'CD HQ {idx_key}')
+            if cd_hq_breadth:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'cd_market_breadth_1234', cd_hq_breadth)
+                logger.info(f"Saved CD HQ breadth for {idx_key}: {len(cd_hq_breadth)} days")
             
-            # MC 1234 breadth for this index
-            mc_breadth = aggregate_signals_for_tickers(df_mc_breakout_1234, idx_tickers, f'MC 1234 {idx_key}')
-            if mc_breadth:
-                save_analysis_result(run_id, stock_list_name, "ALL", 'mc_market_breadth_1234', mc_breadth)
-                logger.info(f"Saved MC breadth for {idx_key}: {len(mc_breadth)} days")
+            # MC HQ breadth for this index (using is_hq flag)
+            mc_hq_for_idx = [r for r in mc_results_1234 if r.get('is_hq', False) and r.get('ticker', '') in set(idx_tickers)]
+            mc_hq_breadth = aggregate_signals_by_interval(mc_hq_for_idx, f'MC HQ {idx_key}')
+            if mc_hq_breadth:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'mc_market_breadth_1234', mc_hq_breadth)
+                logger.info(f"Saved MC HQ breadth for {idx_key}: {len(mc_hq_breadth)} days")
             
             # CD signal breadth by interval for this index
             cd_sig_by_intv = aggregate_signals_by_interval(cd_results_1234, f'CD signals {idx_key}', ticker_list=idx_tickers)
@@ -1235,49 +1226,17 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                 save_analysis_result(run_id, stock_list_name, "ALL", 'mc_score_breadth_by_interval', mc_score_by_intv)
                 logger.info(f"Saved MC score breadth by interval for {idx_key}: {len(mc_score_by_intv)} days")
             
-            # CD breakthrough score by interval for this index
-            # Filter raw details to only breakthrough signals for this index's tickers
-            def filter_to_breakthrough_multi(raw_details, df_breakout, tickers):
-                """Filter raw signal details to breakthrough (ticker, date) pairs within a ticker list."""
-                if not raw_details or df_breakout.empty:
-                    return []
-                tickers_set = set(tickers) if tickers else None
-                bt_pairs = set()
-                for _, row in df_breakout.iterrows():
-                    t = row.get('ticker', '')
-                    if tickers_set and t not in tickers_set:
-                        continue
-                    date_val = row.get('date', '')
-                    if hasattr(date_val, 'strftime'):
-                        date_str = date_val.strftime('%Y-%m-%d')
-                    else:
-                        date_str = str(date_val)[:10]
-                    bt_pairs.add((t, date_str))
-                filtered = []
-                for detail in raw_details:
-                    t = detail.get('ticker', '')
-                    if tickers_set and t not in tickers_set:
-                        continue
-                    sig_date = detail.get('signal_date', '')
-                    if hasattr(sig_date, 'strftime'):
-                        sig_date_str = sig_date.strftime('%Y-%m-%d')
-                    else:
-                        sig_date_str = str(sig_date)[:10]
-                    if (t, sig_date_str) in bt_pairs:
-                        filtered.append(detail)
-                return filtered
+            # CD HQ score by interval for this index
+            cd_hq_score = aggregate_scores_by_interval(cd_hq_for_idx, f'CD HQ scores {idx_key}')
+            if cd_hq_score:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'cd_breakthrough_score_by_interval', cd_hq_score)
+                logger.info(f"Saved CD HQ score by interval for {idx_key}: {len(cd_hq_score)} days")
 
-            cd_bt_details = filter_to_breakthrough_multi(cd_results_1234, df_breakout_1234, idx_tickers)
-            cd_bt_score = aggregate_scores_by_interval(cd_bt_details, f'CD breakthrough scores {idx_key}')
-            if cd_bt_score:
-                save_analysis_result(run_id, stock_list_name, "ALL", 'cd_breakthrough_score_by_interval', cd_bt_score)
-                logger.info(f"Saved CD breakthrough score by interval for {idx_key}: {len(cd_bt_score)} days")
-
-            mc_bt_details = filter_to_breakthrough_multi(mc_results_1234, df_mc_breakout_1234, idx_tickers)
-            mc_bt_score = aggregate_scores_by_interval(mc_bt_details, f'MC breakthrough scores {idx_key}')
-            if mc_bt_score:
-                save_analysis_result(run_id, stock_list_name, "ALL", 'mc_breakthrough_score_by_interval', mc_bt_score)
-                logger.info(f"Saved MC breakthrough score by interval for {idx_key}: {len(mc_bt_score)} days")
+            # MC HQ score by interval for this index
+            mc_hq_score = aggregate_scores_by_interval(mc_hq_for_idx, f'MC HQ scores {idx_key}')
+            if mc_hq_score:
+                save_analysis_result(run_id, stock_list_name, "ALL", 'mc_breakthrough_score_by_interval', mc_hq_score)
+                logger.info(f"Saved MC HQ score by interval for {idx_key}: {len(mc_hq_score)} days")
         
         if progress_callback:
             progress_callback(100)

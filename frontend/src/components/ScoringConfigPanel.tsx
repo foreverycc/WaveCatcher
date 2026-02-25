@@ -188,6 +188,82 @@ const ScoringConfigPanel: React.FC<ScoringConfigPanelProps> = ({ onConfigChange 
                     </div>
                 </div>
 
+                {/* HQ Algorithm */}
+                <div className="mt-2 mb-4">
+                    <div className="text-sm font-medium mb-2">HQ Algorithm
+                        <span className="text-xs font-normal text-muted-foreground ml-2">
+                            (selects how high-quality signals are filtered)
+                        </span>
+                    </div>
+                    <select
+                        value={config.hq_algorithm}
+                        onChange={e => updateField('hq_algorithm', e.target.value)}
+                        className="w-full text-sm bg-background border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+                    >
+                        <option value="breakthrough">Breakthrough (price crosses EMA envelope)</option>
+                        <option value="high_return">High Return (previous signals had favorable returns)</option>
+                    </select>
+
+                    {config.hq_algorithm === 'high_return' && (
+                        <div className="mt-3 p-3 rounded-lg bg-muted/30 border border-border/50">
+                            <div className="grid grid-cols-4 gap-3">
+                                <div>
+                                    <label className="text-xs text-muted-foreground block mb-1">Lookback Signals</label>
+                                    <input
+                                        type="number"
+                                        min={1} max={10} step={1}
+                                        value={config.hq_high_return.lookback_signals}
+                                        onChange={e => updateField('hq_high_return', {
+                                            ...config.hq_high_return,
+                                            lookback_signals: Number(e.target.value)
+                                        })}
+                                        className="w-full text-sm text-center bg-background border border-input rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground block mb-1">Lookback Bars</label>
+                                    <input
+                                        type="number"
+                                        min={1} max={100} step={1}
+                                        value={config.hq_high_return.lookback_bars}
+                                        onChange={e => updateField('hq_high_return', {
+                                            ...config.hq_high_return,
+                                            lookback_bars: Number(e.target.value)
+                                        })}
+                                        className="w-full text-sm text-center bg-background border border-input rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground block mb-1">CD Threshold (%)</label>
+                                    <input
+                                        type="number"
+                                        min={0} max={50} step={0.5}
+                                        value={config.hq_high_return.cd_return_threshold}
+                                        onChange={e => updateField('hq_high_return', {
+                                            ...config.hq_high_return,
+                                            cd_return_threshold: Number(e.target.value)
+                                        })}
+                                        className="w-full text-sm text-center bg-background border border-input rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground block mb-1">MC Threshold (%)</label>
+                                    <input
+                                        type="number"
+                                        min={-50} max={0} step={0.5}
+                                        value={config.hq_high_return.mc_return_threshold}
+                                        onChange={e => updateField('hq_high_return', {
+                                            ...config.hq_high_return,
+                                            mc_return_threshold: Number(e.target.value)
+                                        })}
+                                        className="w-full text-sm text-center bg-background border border-input rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleSave}

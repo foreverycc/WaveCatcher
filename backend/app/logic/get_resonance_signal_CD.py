@@ -1,7 +1,8 @@
 import pandas as pd
 from indicators import compute_cd_indicator, compute_cd_break_through, compute_cd_score
 from utils import calculate_current_nx_values, get_trading_day_window_end
-from app.logic.scoring_config import get_cd_threshold
+from app.logic.scoring_config import get_cd_threshold, get_hq_algorithm, get_hq_high_return_config
+from app.logic.hq_filters import compute_high_return_cd
     
 def calculate_score(data, interval, signal_date):
     interval_weights = {
@@ -53,27 +54,40 @@ def process_ticker_1234(ticker, data_ticker=None):
         
         try:
             cd = compute_cd_indicator(data)
-            breakthrough = compute_cd_break_through(data)
             # Handle NaN values by replacing them with False for boolean operations
             cd_bool = cd.fillna(False).infer_objects(copy=False).astype(bool)
-            buy_signals = (cd_bool & breakthrough) | (cd_bool & breakthrough.rolling(10).apply(lambda x: x.iloc[0] if x.any() else False))   
+            
+            # HQ signal selection (configurable algorithm)
+            hq_algo = get_hq_algorithm()
+            if hq_algo == "high_return":
+                hr_cfg = get_hq_high_return_config()
+                cd_hq = compute_high_return_cd(data, cd_bool, **hr_cfg)
+                buy_signals = cd_bool & cd_hq
+            else:
+                breakthrough = compute_cd_break_through(data)
+                buy_signals = (cd_bool & breakthrough) | (cd_bool & breakthrough.rolling(10).apply(lambda x: x.iloc[0] if x.any() else False))
+            
             signal_dates = data.index[buy_signals]
+            # For breakthrough_dates, always compute breakthrough for backward compat
+            breakthrough = compute_cd_break_through(data)
             breakthrough_dates = data.index[breakthrough]
             
             # Compute indicator-level CD scores
             cd_scores = compute_cd_score(data)
             
-            # Filter out NaN values for signal processing
+            # Build a set of HQ signal timestamps for quick lookup
+            hq_dates = set(signal_dates)
+            
+            # Iterate over ALL valid signals (not just HQ) for signal/score breadth
             valid_cd_signals = cd.fillna(False).infer_objects(copy=False)
             for date in data.index[valid_cd_signals]:
-                score = calculate_score(data, interval, date)
                 ind_score = cd_scores.get(date)
                 ind_score_val = round(float(ind_score), 1) if pd.notna(ind_score) else None
                 # Skip signals below score threshold
                 if ind_score_val is None or ind_score_val < get_cd_threshold():
                     continue
-                signal_price = data.loc[date, 'Close']  # Get the Close price at signal date
-                # Find the next breakthrough date after the signal date
+                score = calculate_score(data, interval, date)
+                signal_price = data.loc[date, 'Close']
                 future_breakthroughs = breakthrough_dates[breakthrough_dates >= date]
                 next_breakthrough = future_breakthroughs[0] if len(future_breakthroughs) > 0 else None
 
@@ -84,7 +98,8 @@ def process_ticker_1234(ticker, data_ticker=None):
                     'indicator_score': ind_score_val,
                     'signal_date': date.strftime('%Y-%m-%d %H:%M:%S'),
                     'signal_price': round(signal_price, 2),
-                    'breakthrough_date': next_breakthrough.strftime('%Y-%m-%d %H:%M:%S') if next_breakthrough is not None else None
+                    'breakthrough_date': next_breakthrough.strftime('%Y-%m-%d %H:%M:%S') if next_breakthrough is not None else None,
+                    'is_hq': date in hq_dates
                 })
         except Exception as e:
             print(f"Error processing {ticker} {interval}: {e}")

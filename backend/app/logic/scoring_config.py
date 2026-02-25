@@ -29,7 +29,14 @@ DEFAULT_CONFIG = {
         "1d": 32
     },
     "cd_threshold": 40,
-    "mc_threshold": 50
+    "mc_threshold": 50,
+    "hq_algorithm": "breakthrough",
+    "hq_high_return": {
+        "lookback_signals": 3,
+        "lookback_bars": 20,
+        "cd_return_threshold": 5.0,
+        "mc_return_threshold": -5.0
+    }
 }
 
 # Config file location
@@ -82,6 +89,26 @@ def save_config(config: dict) -> dict:
         if key in config:
             validated[key] = max(0, min(100, float(config[key])))
     
+    # Validate HQ algorithm
+    if 'hq_algorithm' in config:
+        algo = config['hq_algorithm']
+        if algo in ('breakthrough', 'high_return'):
+            validated['hq_algorithm'] = algo
+    
+    # Validate HQ high-return params
+    if 'hq_high_return' in config and isinstance(config['hq_high_return'], dict):
+        hr = config['hq_high_return']
+        hr_validated = validated['hq_high_return'].copy()
+        if 'lookback_signals' in hr:
+            hr_validated['lookback_signals'] = max(1, min(10, int(hr['lookback_signals'])))
+        if 'lookback_bars' in hr:
+            hr_validated['lookback_bars'] = max(1, min(100, int(hr['lookback_bars'])))
+        if 'cd_return_threshold' in hr:
+            hr_validated['cd_return_threshold'] = max(0, min(50, float(hr['cd_return_threshold'])))
+        if 'mc_return_threshold' in hr:
+            hr_validated['mc_return_threshold'] = max(-50, min(0, float(hr['mc_return_threshold'])))
+        validated['hq_high_return'] = hr_validated
+    
     with open(_CONFIG_FILE, 'w') as f:
         json.dump(validated, f, indent=2)
     
@@ -118,3 +145,18 @@ def get_mc_threshold() -> float:
     """Return MC score threshold. Signals below this are ignored."""
     config = get_config()
     return config.get('mc_threshold', DEFAULT_CONFIG['mc_threshold'])
+
+
+def get_hq_algorithm() -> str:
+    """Return the HQ algorithm: 'breakthrough' or 'high_return'."""
+    config = get_config()
+    algo = config.get('hq_algorithm', 'breakthrough')
+    if algo not in ('breakthrough', 'high_return'):
+        return 'breakthrough'
+    return algo
+
+
+def get_hq_high_return_config() -> dict:
+    """Return the high-return HQ configuration parameters."""
+    config = get_config()
+    return config.get('hq_high_return', DEFAULT_CONFIG['hq_high_return'])

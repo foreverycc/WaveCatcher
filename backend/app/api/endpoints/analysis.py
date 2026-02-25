@@ -9,15 +9,16 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, text
 
 from app.services.engine import job_manager
 from app.logic.indicators import compute_cd_indicator, compute_mc_indicator, compute_cd_break_through, compute_mc_break_through, compute_cd_score, compute_mc_score
 from app.db.database import SessionLocal
-from app.db.models import AnalysisRun, AnalysisResult, PriceBar
+from app.db.models import AnalysisRun, AnalysisResult, PriceBar, OptionChain
 from app.logic.db_utils import save_price_history
 from app.logic.options import get_option_data
-from app.logic.scoring_config import get_config as get_scoring_config, save_config as save_scoring_config, DEFAULT_CONFIG as SCORING_DEFAULTS, get_cd_threshold, get_mc_threshold
+from app.logic.scoring_config import get_config as get_scoring_config, save_config as save_scoring_config, DEFAULT_CONFIG as SCORING_DEFAULTS, get_cd_threshold, get_mc_threshold, get_hq_algorithm, get_hq_high_return_config
+from app.logic.hq_filters import compute_high_return_cd, compute_high_return_mc
 
 logger = logging.getLogger(__name__)
 
@@ -529,14 +530,20 @@ async def get_price_history(
                 if pd.isna(sc) or sc < mc_thresh:
                     mc_signals[ts] = False
 
-        # 1234 Logic: (Signal & Breakthrough) | (Signal & Recent Breakthrough)
-        # Recent Breakthrough: occurred between 1 and 10 bars ago (inclusive)
-        # We use a rolling window of 10 bars (covering t-1 to t-10) shifted by 1
-        cd_recent_bt = cd_breakthrough.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
-        mc_recent_bt = mc_breakthrough.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
-        
-        cd_1234 = (cd_signals & cd_breakthrough) | (cd_signals & cd_recent_bt)
-        mc_1234 = (mc_signals & mc_breakthrough) | (mc_signals & mc_recent_bt)
+        # HQ signal selection (configurable algorithm)
+        hq_algo = get_hq_algorithm()
+        if hq_algo == "high_return":
+            hr_cfg = get_hq_high_return_config()
+            cd_hq = compute_high_return_cd(df, cd_signals, **hr_cfg)
+            mc_hq = compute_high_return_mc(df, mc_signals, **hr_cfg)
+            cd_1234 = cd_signals & cd_hq
+            mc_1234 = mc_signals & mc_hq
+        else:
+            # Default: breakthrough algorithm
+            cd_recent_bt = cd_breakthrough.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
+            mc_recent_bt = mc_breakthrough.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
+            cd_1234 = (cd_signals & cd_breakthrough) | (cd_signals & cd_recent_bt)
+            mc_1234 = (mc_signals & mc_breakthrough) | (mc_signals & mc_recent_bt)
 
         # Vegas Channel EMAs
         df['ema_13'] = df['Close'].ewm(span=13, adjust=False).mean()
@@ -670,15 +677,24 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
                     if pd.isna(sc) or sc < mc_thresh:
                         mc_sig[ts] = False
 
-            # 1234 logic (same as price_history endpoint)
-            cd_bt = compute_cd_break_through(df).fillna(False).astype(bool)
-            mc_bt = compute_mc_break_through(df).fillna(False).astype(bool)
-            # Recent Breakthrough: occurred between 1 and 10 bars ago (inclusive)
-            cd_recent_bt = cd_bt.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
-            mc_recent_bt = mc_bt.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
-            
-            cd_1234 = (cd_sig & cd_bt) | (cd_sig & cd_recent_bt)
-            mc_1234 = (mc_sig & mc_bt) | (mc_sig & mc_recent_bt)
+            # HQ signal selection (configurable algorithm)
+            hq_algo = get_hq_algorithm()
+            if hq_algo == "high_return":
+                hr_cfg = get_hq_high_return_config()
+                cd_hq = compute_high_return_cd(df, cd_sig, **hr_cfg)
+                mc_hq = compute_high_return_mc(df, mc_sig, **hr_cfg)
+                cd_1234 = cd_sig & cd_hq
+                mc_1234 = mc_sig & mc_hq
+                logger.info(f"[HQ] {ticker}/{interval}: algo=high_return, cd_sig={cd_sig.sum()}, cd_hq={cd_hq.sum()}, cd_1234={cd_1234.sum()}, mc_sig={mc_sig.sum()}, mc_hq={mc_hq.sum()}, mc_1234={mc_1234.sum()}")
+            else:
+                # Default: breakthrough algorithm
+                cd_bt = compute_cd_break_through(df).fillna(False).astype(bool)
+                mc_bt = compute_mc_break_through(df).fillna(False).astype(bool)
+                cd_recent_bt = cd_bt.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
+                mc_recent_bt = mc_bt.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
+                cd_1234 = (cd_sig & cd_bt) | (cd_sig & cd_recent_bt)
+                mc_1234 = (mc_sig & mc_bt) | (mc_sig & mc_recent_bt)
+                logger.info(f"[HQ] {ticker}/{interval}: algo=breakthrough, cd_sig={cd_sig.sum()}, cd_1234={cd_1234.sum()}, mc_sig={mc_sig.sum()}, mc_1234={mc_1234.sum()}")
         except Exception as e:
             logger.warning(f"Error computing signals for {ticker}/{interval}: {e}")
             continue
@@ -961,3 +977,30 @@ async def update_scoring_weights(config: Dict[str, Any]):
 async def get_scoring_defaults():
     """Return the default scoring weight configuration."""
     return SCORING_DEFAULTS
+
+
+@router.delete("/cleanup-database")
+async def cleanup_database(db: Session = Depends(get_db)):
+    """Delete all analysis runs, results, and price history to allow a fresh re-run."""
+    try:
+        results_deleted = db.query(AnalysisResult).delete()
+        runs_deleted = db.query(AnalysisRun).delete()
+        prices_deleted = db.query(PriceBar).delete()
+        options_deleted = db.query(OptionChain).delete()
+        db.commit()
+        # VACUUM to reclaim disk space (SQLite keeps allocated space after DELETE)
+        db.execute(text("VACUUM"))
+        logger.info(f"Database cleanup: {runs_deleted} runs, {results_deleted} results, {prices_deleted} price bars, {options_deleted} option chains deleted")
+        return {
+            "status": "success",
+            "deleted": {
+                "analysis_runs": runs_deleted,
+                "analysis_results": results_deleted,
+                "price_history": prices_deleted,
+                "option_chains": options_deleted,
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Database cleanup failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
