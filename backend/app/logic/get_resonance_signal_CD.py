@@ -65,7 +65,7 @@ def process_ticker_1234(ticker, data_ticker=None):
                 buy_signals = cd_bool & cd_hq
             else:
                 breakthrough = compute_cd_break_through(data)
-                buy_signals = (cd_bool & breakthrough) | (cd_bool & breakthrough.rolling(10).apply(lambda x: x.iloc[0] if x.any() else False))
+                buy_signals = breakthrough | breakthrough.rolling(10).apply(lambda x: x.iloc[0] if x.any() else False).fillna(False).astype(bool)
             
             signal_dates = data.index[buy_signals]
             # For breakthrough_dates, always compute breakthrough for backward compat
