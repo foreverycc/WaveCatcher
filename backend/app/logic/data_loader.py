@@ -1,6 +1,9 @@
 import pandas as pd
 import yfinance as yf
+import logging
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 def load_stock_list(file_path):
     return pd.read_csv(file_path, sep='\t', header=None, names=['ticker'])['ticker'].tolist()
@@ -93,6 +96,10 @@ def download_stock_data(ticker, end_date=None):
                 if not data_ticker[interval_key].empty:
                     print(f"Truncated {interval_key} data for {ticker}: {len(data_ticker[interval_key])}/{original_count} records up to {end_date.strftime('%Y-%m-%d')}")
     
+    # Validate: check that 1h data covers all trading days in 1d data
+    warnings = validate_intraday_coverage(ticker, data_ticker)
+    data_ticker['_warnings'] = warnings
+    
     # Generate derived timeframes from base downloads
     # Process 1h to create 2h, 3h, 4h
     if not data_ticker['1h'].empty:
@@ -100,6 +107,41 @@ def download_stock_data(ticker, end_date=None):
             data_ticker[interval] = transform_1h_data(data_ticker['1h'], interval)
     
     return data_ticker
+
+
+def validate_intraday_coverage(ticker, data_ticker):
+    """Check that 1h data covers all trading days present in 1d data.
+    Returns a list of warning strings for any missing dates."""
+    warnings = []
+    df_1h = data_ticker.get('1h', pd.DataFrame())
+    df_1d = data_ticker.get('1d', pd.DataFrame())
+    
+    if df_1h.empty or df_1d.empty:
+        return warnings
+    
+    # Get unique trading dates from each
+    dates_1h = set(str(d) for d in df_1h.index.date)
+    dates_1d = set(str(d) for d in df_1d.index.date)
+    
+    # Only check dates within the 1h data range (1h may have shorter history than 1d)
+    if df_1h.index.tz is not None:
+        first_1h_date = df_1h.index[0].date()
+    else:
+        first_1h_date = df_1h.index[0].date()
+    
+    # Filter 1d dates to only those on or after the first 1h date
+    dates_1d_in_range = set(d for d in dates_1d if d >= str(first_1h_date))
+    
+    # Find dates in 1d but missing from 1h
+    missing_dates = sorted(dates_1d_in_range - dates_1h)
+    
+    if missing_dates:
+        msg = f"⚠️ {ticker}: Missing 1h data for {len(missing_dates)} trading day(s): {', '.join(missing_dates)}"
+        logger.warning(msg)
+        print(msg)
+        warnings.append(msg)
+    
+    return warnings
 
 def transform_1h_data(df_1h, new_interval = '2h'):
     if df_1h.empty:

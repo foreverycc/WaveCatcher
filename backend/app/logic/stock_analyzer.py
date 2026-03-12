@@ -154,12 +154,20 @@ def process_ticker_all(ticker, end_date=None):
         data = download_stock_data(ticker, end_date=end_date)
         
         # Skip if no data available
-        if all(df.empty for df in data.values()):
+        if all(df.empty for key, df in data.items() if isinstance(df, pd.DataFrame)):
             print(f"No data available for {ticker}")
             return ticker, None, None, [], [], None
             
+        # Log any data quality warnings
+        data_warnings = data.get('_warnings', [])
+        if data_warnings:
+            for w in data_warnings:
+                logger.warning(w)
+            
         # Save downloaded data to database (replacing cache files)
         for interval, df in data.items():
+            if interval.startswith('_'):
+                continue
             if not df.empty:
                 save_price_history(ticker, interval, df)
         
@@ -1241,11 +1249,28 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
         if progress_callback:
             progress_callback(100)
         
+        # Collect and save data quality warnings
+        all_warnings = []
+        for t, t_data in all_ticker_data.items():
+            if isinstance(t_data, dict):
+                t_warnings = t_data.get('_warnings', [])
+                all_warnings.extend(t_warnings)
+        
+        quality_report = {
+            'warnings': all_warnings,
+            'failed_tickers': failed_tickers,
+            'total_tickers': len(tickers),
+            'successful_tickers': len(all_ticker_data),
+        }
+        save_analysis_result(run_id, "ALL", "ALL", 'data_quality_warnings', quality_report)
+        
+        if all_warnings:
+            logger.warning(f"Data quality: {len(all_warnings)} warning(s) across tickers")
+        if failed_tickers:
+            logger.warning(f"Failed tickers ({len(failed_tickers)}): {', '.join(failed_tickers)}")
+        
         update_analysis_run_status(run_id, "completed")
         logger.info(f"Multi-index analysis completed. Run ID: {run_id}")
-        
-        if failed_tickers:
-            logger.warning(f"Failed tickers: {', '.join(failed_tickers)}")
         
     except Exception as e:
         logger.error(f"Multi-index analysis failed: {e}")

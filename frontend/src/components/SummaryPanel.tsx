@@ -5,7 +5,7 @@ import { IndexSummaryCard } from './IndexSummaryCard';
 import { cn } from '../utils/cn';
 import { parseISO, format } from 'date-fns';
 import { DetailedChartRow, InteractiveOptionChart } from '../pages/Dashboard';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { Maximize2, Minimize2, AlertTriangle, X, ChevronDown, ChevronRight } from 'lucide-react';
 
 const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bull' | 'bear', runId: number | undefined, onClose: () => void }) => {
     const resultType = type === 'bull' ? 'cd_eval_custom_detailed' : 'mc_eval_custom_detailed';
@@ -550,8 +550,72 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
         );
     };
 
+    // Extract data quality warnings from the first breadth query that has them
+    const dataQuality = useMemo(() => {
+        for (const q of breadthQueries) {
+            const dq = q?.data?.data_quality;
+            if (dq && (dq.warnings?.length > 0 || dq.failed_tickers?.length > 0)) {
+                return dq;
+            }
+        }
+        return null;
+    }, [breadthQueries]);
+
+    const [warningsDismissed, setWarningsDismissed] = useState(false);
+    const [warningsExpanded, setWarningsExpanded] = useState(false);
+
     return (
         <div className="p-4 md:p-6 h-full overflow-y-auto space-y-6 relative">
+
+            {/* Data Quality Warning Banner */}
+            {dataQuality && !warningsDismissed && (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 relative">
+                    <div className="flex items-start gap-2">
+                        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-amber-600 dark:text-amber-400">Data Quality Issues</span>
+                                <span className="text-xs text-muted-foreground">
+                                    ({dataQuality.successful_tickers}/{dataQuality.total_tickers} tickers OK)
+                                </span>
+                                <button
+                                    onClick={() => setWarningsExpanded(!warningsExpanded)}
+                                    className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-0.5"
+                                >
+                                    {warningsExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                                    {warningsExpanded ? 'Hide' : 'Details'}
+                                </button>
+                            </div>
+                            {!warningsExpanded && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    {(dataQuality.warnings?.length || 0)} missing data warning(s)
+                                    {dataQuality.failed_tickers?.length > 0 && `, ${dataQuality.failed_tickers.length} failed ticker(s)`}
+                                </p>
+                            )}
+                            {warningsExpanded && (
+                                <div className="mt-2 space-y-1.5 text-xs max-h-48 overflow-y-auto">
+                                    {dataQuality.failed_tickers?.length > 0 && (
+                                        <div className="text-red-500">
+                                            <span className="font-medium">Failed tickers: </span>
+                                            {dataQuality.failed_tickers.join(', ')}
+                                        </div>
+                                    )}
+                                    {dataQuality.warnings?.map((w: string, i: number) => (
+                                        <div key={i} className="text-amber-600 dark:text-amber-400 font-mono">{w}</div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <button
+                            onClick={() => setWarningsDismissed(true)}
+                            className="text-muted-foreground hover:text-foreground p-0.5 rounded"
+                            title="Dismiss"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Market Index Summary Cards (click to flip to chart) */}
             <div className={cn(

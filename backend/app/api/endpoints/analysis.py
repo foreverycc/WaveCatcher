@@ -363,6 +363,17 @@ async def get_market_breadth_by_stock_list(
             ).first()
             mc_breakthrough_score_breadth = mc_bts_result.data if mc_bts_result and mc_bts_result.data else []
     
+    # Fetch data quality warnings for this run
+    data_quality = {}
+    for rid, ticker_key in run_ticker_pairs:
+        if not data_quality:
+            dq_result = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == rid,
+                AnalysisResult.result_type == "data_quality_warnings",
+                AnalysisResult.ticker == "ALL"
+            ).first()
+            data_quality = dq_result.data if dq_result and dq_result.data else {}
+    
     return {
         "cd_breadth": cd_breadth,
         "mc_breadth": mc_breadth,
@@ -372,6 +383,7 @@ async def get_market_breadth_by_stock_list(
         "mc_score_breadth": mc_score_breadth,
         "cd_breakthrough_score_breadth": cd_breakthrough_score_breadth,
         "mc_breakthrough_score_breadth": mc_breakthrough_score_breadth,
+        "data_quality": data_quality,
         "run_id": run_id
     }
 
