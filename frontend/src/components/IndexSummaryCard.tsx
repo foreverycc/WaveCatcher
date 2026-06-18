@@ -166,9 +166,11 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     // Latest close price + daily change
     const priceInfo = useMemo(() => {
         if (!filteredSpxData || filteredSpxData.length === 0) return null;
-        const latest = filteredSpxData[filteredSpxData.length - 1];
-        const prev = filteredSpxData.length > 1 ? filteredSpxData[filteredSpxData.length - 2] : null;
-        const change = prev ? ((latest.close - prev.close) / prev.close) * 100 : 0;
+        const validPriceData = filteredSpxData.filter(d => d && d.close !== null && d.close !== undefined);
+        if (validPriceData.length === 0) return null;
+        const latest = validPriceData[validPriceData.length - 1];
+        const prev = validPriceData.length > 1 ? validPriceData[validPriceData.length - 2] : null;
+        const change = prev && prev.close ? ((latest.close - prev.close) / prev.close) * 100 : 0;
         return {
             close: latest.close,
             change,
@@ -347,9 +349,10 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     // Volume: today vs 1yr average + percentile
     const volumeStats = useMemo(() => {
         if (!filteredSpxData || filteredSpxData.length === 0) return null;
-        const todayVol = filteredSpxData[filteredSpxData.length - 1]?.volume ?? 0;
-        const volumes = filteredSpxData.map((d: any) => d.volume).filter((v: number) => v > 0);
-        if (volumes.length === 0) return null;
+        const validVolumeData = filteredSpxData.filter(d => d && d.volume !== null && d.volume !== undefined && d.volume > 0);
+        if (validVolumeData.length === 0) return null;
+        const todayVol = validVolumeData[validVolumeData.length - 1].volume;
+        const volumes = validVolumeData.map((d: any) => d.volume);
         const avg = volumes.reduce((a: number, b: number) => a + b, 0) / volumes.length;
         const ratio = avg > 0 ? ((todayVol - avg) / avg) * 100 : 0;
         const percentile = computePercentile(todayVol, volumes);

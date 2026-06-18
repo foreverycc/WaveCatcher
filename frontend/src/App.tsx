@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { QueryClient, QueryClientProvider, useQuery, useMutation } from '@tanstack/react-query';
+import React, { useState, useEffect, useRef } from 'react';
+import { QueryClient, QueryClientProvider, useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './pages/Dashboard';
 import { Configuration } from './pages/Configuration';
@@ -9,6 +9,7 @@ import { subDays, subYears, format } from 'date-fns';
 const queryClient = new QueryClient();
 
 function AppContent() {
+  const qc = useQueryClient();
   const [activePage, setActivePage] = useState<'dashboard' | 'configuration'>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -99,20 +100,22 @@ function AppContent() {
     refetchInterval: (query) => (query.state.data?.status === 'running' ? 1000 : false)
   });
 
-  // Auto-refresh runs when job completes
+  // Auto-refresh data when job completes (without reloading the page)
+  const lastProcessedJobRef = useRef<string | null>(
+    localStorage.getItem('lastProcessedJobId')
+  );
+
   useEffect(() => {
     if (jobStatus?.status === 'completed' && jobStatus.job_id) {
-      const lastProcessed = localStorage.getItem('lastProcessedJobId');
-      if (lastProcessed !== jobStatus.job_id) {
-        console.log("Job completed, forcing refresh...");
+      if (lastProcessedJobRef.current !== jobStatus.job_id) {
+        console.log("Job completed, invalidating queries for fresh data...");
+        lastProcessedJobRef.current = jobStatus.job_id;
         localStorage.setItem('lastProcessedJobId', jobStatus.job_id);
-        // Small delay to ensure DB writes are fully committed/propagated if needed
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        // Invalidate all queries so React Query re-fetches fresh data
+        qc.invalidateQueries();
       }
     }
-  }, [jobStatus]);
+  }, [jobStatus, qc]);
 
   // Run analysis mutation
 
@@ -203,10 +206,53 @@ function AppContent() {
   );
 }
 
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('ErrorBoundary caught:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 40, fontFamily: 'monospace', color: '#ff4444', background: '#111', minHeight: '100vh' }}>
+          <h1>⚠️ App Crashed</h1>
+          <pre style={{ whiteSpace: 'pre-wrap', marginTop: 20, color: '#ff8888' }}>
+            {this.state.error?.message}
+          </pre>
+          <pre style={{ whiteSpace: 'pre-wrap', marginTop: 10, color: '#888', fontSize: 12 }}>
+            {this.state.error?.stack}
+          </pre>
+          <button
+            onClick={() => window.location.reload()}
+            style={{ marginTop: 20, padding: '10px 20px', cursor: 'pointer', background: '#333', color: '#fff', border: '1px solid #555', borderRadius: 4 }}
+          >
+            Reload Page
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <ErrorBoundary>
+        <AppContent />
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 }
