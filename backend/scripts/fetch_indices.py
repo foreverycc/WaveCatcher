@@ -38,26 +38,17 @@ def fetch_nasdaq100():
     return []
 
 def fetch_russell2000():
-    url = "https://www.ishares.com/us/products/239710/ishares-russell-2000-etf/1467271812596.ajax?fileType=csv&fileName=IWM_holdings&dataType=fund"
+    url = "https://www.ishares.com/us/products/239710/ishares-russell-2000-etf/latest-holdings.csv"
     content = get_html_content(url)
-    # The CSV usually has 9 lines of header info before the actual table
-    try:
-        df = pd.read_csv(io.BytesIO(content), skiprows=9)
-    except Exception:
-        # Fallback: try finding the header line dynamically if skiprows=9 fails (though likely stable)
-        df = pd.read_csv(io.BytesIO(content), header=0) # naive try
-    
-    if 'Ticker' not in df.columns:
-        # If header wasn't found at line 10, try reading with no header and finding the row with 'Ticker'
-        df = pd.read_csv(io.BytesIO(content), header=None)
-        # Find row index where first column is 'Ticker'
-        header_row = df[df[0] == 'Ticker'].index
-        if not header_row.empty:
-            df = pd.read_csv(io.BytesIO(content), skiprows=header_row[0]+1, header=None)
-            # Re-read with correct header? Or just set columns?
-            # Easier to re-read
-            df = pd.read_csv(io.BytesIO(content), skiprows=header_row[0])
-            
+    # The CSV has several lines of fund info before the actual table;
+    # locate the header line starting with "Ticker" dynamically.
+    text = content.decode("utf-8-sig", errors="replace")
+    lines = text.splitlines()
+    header_idx = next((i for i, l in enumerate(lines) if l.startswith('"Ticker"') or l.startswith('Ticker')), None)
+    if header_idx is None:
+        return []
+    df = pd.read_csv(io.StringIO("\n".join(lines[header_idx:])), on_bad_lines="skip")
+
     if 'Ticker' in df.columns:
         stocks = df['Ticker'].dropna().tolist()
         # Filter out non-string or placeholders
