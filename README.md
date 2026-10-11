@@ -43,7 +43,7 @@ cd backend
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-python app/main.py
+python -m app.main
 ```
 The backend server will run at `http://localhost:8000`. You can access the API documentation at `http://localhost:8000/docs`.
 
