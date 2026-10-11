@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import requests
 import io
+import re
 
 def get_html_content(url):
     headers = {
@@ -110,6 +111,41 @@ def fetch_nasa():
     tickers = _clean_tickers(df['ticker'].dropna().tolist())
     return sorted(t for t in tickers if ' ' not in t)
 
+def fetch_roundhill_holdings(account):
+    """Fetch US-listed equity tickers for a Roundhill ETF (e.g. 'LYTE', 'DRAM').
+
+    Roundhill publishes one daily CSV with all its funds (column 'Account'),
+    named by date. Walk back from today until a file is found.
+    """
+    from datetime import date, timedelta
+    base = "https://www.roundhillinvestments.com/assets/data/FilepointRoundhill.40RU.RU_Holdings_{}.csv"
+    df = None
+    for back in range(15):
+        url = base.format((date.today() - timedelta(days=back)).strftime('%m%d%Y'))
+        try:
+            content = get_html_content(url)
+        except requests.RequestException:
+            continue
+        if content.lstrip().startswith(b'<'):  # HTML error page, not the CSV
+            continue
+        df = pd.read_csv(io.BytesIO(content), on_bad_lines="skip")
+        break
+    if df is None or 'Account' not in df.columns:
+        return []
+    df = df[df['Account'] == account]
+    # Drop money-market funds, cash lines, T-bills and swaps (e.g. "BD761B9 TRS ... GS").
+    df = df[df['MoneyMarketFlag'].isna() | (df['MoneyMarketFlag'] != 'Y')]
+    df = df[~df['CUSIP'].astype(str).str.startswith('CASH')]
+    df = df[~df['SecurityName'].astype(str).str.contains('SWAP|Treasury', case=False, regex=True)]
+    tickers = _clean_tickers(df['StockTicker'].dropna().tolist())
+    # Keep US-listed tickers only: plain letters. Foreign lines look like "3081 TT" / "300308 C2".
+    return sorted(t for t in tickers if re.fullmatch(r'[A-Z]{1,5}(-[A-Z])?', t))
+
+def fetch_lyte():
+    return fetch_roundhill_holdings('LYTE')
+
+def fetch_dram():
+    return fetch_roundhill_holdings('DRAM')
 
 def fetch_xbi():
     url = "https://www.ssga.com/us/en/intermediary/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xbi.xlsx"
@@ -151,8 +187,8 @@ if __name__ == "__main__":
     import sys
     
     # If arguments are provided, only fetch those indices
-    # Valid keys: sp500, nasdaq100, dowjones, russell2000, soxx, xbi, igv, nasa
-    selected = set(sys.argv[1:]) if len(sys.argv) > 1 else {'sp500', 'nasdaq100', 'dowjones', 'russell2000', 'soxx', 'xbi', 'igv', 'nasa'}
+    # Valid keys: sp500, nasdaq100, dowjones, russell2000, soxx, xbi, igv, nasa, lyte, dram
+    selected = set(sys.argv[1:]) if len(sys.argv) > 1 else {'sp500', 'nasdaq100', 'dowjones', 'russell2000', 'soxx', 'xbi', 'igv', 'nasa', 'lyte', 'dram'}
     
     if 'sp500' in selected:
         print("Fetching S&P 500...")
@@ -191,6 +227,8 @@ if __name__ == "__main__":
         ('xbi', fetch_xbi, 'stocks_xbi.tab', 'XBI'),
         ('igv', fetch_igv, 'stocks_saas.tab', 'IGV'),
         ('nasa', fetch_nasa, 'stocks_space.tab', 'NASA'),
+        ('lyte', fetch_lyte, 'stocks_light.tab', 'LYTE'),
+        ('dram', fetch_dram, 'stocks_storage.tab', 'DRAM'),
     ]:
         if key in selected:
             print(f"Fetching {label}...")
