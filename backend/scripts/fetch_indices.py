@@ -22,7 +22,7 @@ def fetch_sp500():
     return sorted(stocks)
 
 def fetch_nasdaq100():
-    url = "https://en.wikipedia.org/wiki/Nasdaq-100"
+    url = "https://en.wikipedia.org/wiki/List_of_NASDAQ-100_companies"
     content = get_html_content(url)
     tables = pd.read_html(io.BytesIO(content))
     # The table index might vary, usually it's the 4th table (index 4) or search for "Ticker"
@@ -67,7 +67,7 @@ def fetch_russell2000():
     return []
 
 def fetch_dowjones():
-    url = "https://en.wikipedia.org/wiki/Dow_Jones_Industrial_Average"
+    url = "https://en.wikipedia.org/wiki/List_of_Dow_Jones_Industrial_Average_companies"
     content = get_html_content(url)
     tables = pd.read_html(io.BytesIO(content))
     # Find the table with stock components
