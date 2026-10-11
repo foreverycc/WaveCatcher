@@ -147,6 +147,24 @@ def fetch_lyte():
 def fetch_dram():
     return fetch_roundhill_holdings('DRAM')
 
+def fetch_qtup():
+    """Defiance Long Pure Quantum ETF (QTUP). Full holdings table published as HTML on /qtup-full-holdings/."""
+    url = "https://www.defianceetfs.com/qtup-full-holdings/"
+    content = get_html_content(url)
+    tables = pd.read_html(io.BytesIO(content))
+    if not tables:
+        return []
+    df = tables[0]
+    if 'Ticker' not in df.columns:
+        return []
+    # Drop money market / cash lines
+    df = df[~df['Ticker'].astype(str).str.contains('FGXXX|Cash', case=False, regex=True)]
+    # Drop swap lines (e.g. 74768A104-TRS-03/31/33-L-QTUP)
+    df = df[~df['Ticker'].astype(str).str.contains('TRS|SWAP', case=False, regex=True)]
+    tickers = _clean_tickers(df['Ticker'].dropna().tolist())
+    # Keep US-listed tickers: standard 1-5 letter symbols
+    return sorted(t for t in tickers if re.fullmatch(r'[A-Z]{1,5}(-[A-Z])?', t))
+
 def fetch_xbi():
     url = "https://www.ssga.com/us/en/intermediary/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xbi.xlsx"
     content = get_html_content(url)
@@ -187,8 +205,8 @@ if __name__ == "__main__":
     import sys
     
     # If arguments are provided, only fetch those indices
-    # Valid keys: sp500, nasdaq100, dowjones, russell2000, soxx, xbi, igv, nasa, lyte, dram
-    selected = set(sys.argv[1:]) if len(sys.argv) > 1 else {'sp500', 'nasdaq100', 'dowjones', 'russell2000', 'soxx', 'xbi', 'igv', 'nasa', 'lyte', 'dram'}
+    # Valid keys: sp500, nasdaq100, dowjones, russell2000, soxx, xbi, igv, nasa, lyte, dram, qtup
+    selected = set(sys.argv[1:]) if len(sys.argv) > 1 else {'sp500', 'nasdaq100', 'dowjones', 'russell2000', 'soxx', 'xbi', 'igv', 'nasa', 'lyte', 'dram', 'qtup'}
     
     if 'sp500' in selected:
         print("Fetching S&P 500...")
@@ -229,6 +247,7 @@ if __name__ == "__main__":
         ('nasa', fetch_nasa, 'stocks_space.tab', 'NASA'),
         ('lyte', fetch_lyte, 'stocks_light.tab', 'LYTE'),
         ('dram', fetch_dram, 'stocks_storage.tab', 'DRAM'),
+        ('qtup', fetch_qtup, 'stocks_quantum.tab', 'QTUP'),
     ]:
         if key in selected:
             print(f"Fetching {label}...")
