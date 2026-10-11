@@ -382,6 +382,7 @@ export const Configuration: React.FC = () => {
                                         { key: 'lyte', label: 'LYTE' },
                                         { key: 'dram', label: 'DRAM' },
                                         { key: 'qtup', label: 'QTUP' },
+                                        { key: 'kweb', label: 'KWEB' },
                                     ].map(idx => (
                                         <label key={idx.key} className="flex items-center gap-2 cursor-pointer hover:bg-muted rounded px-2 py-1.5 text-sm">
                                             <input
@@ -406,7 +407,7 @@ export const Configuration: React.FC = () => {
                                     className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <RefreshCw className={cn("w-4 h-4", updateIndicesMutation.isPending ? "animate-spin" : "")} />
-                                    {updateIndicesMutation.isPending ? 'Updating...' : `Update Selected (${updateIndicesSelection.length}/11)`}
+                                    {updateIndicesMutation.isPending ? 'Updating...' : `Update Selected (${updateIndicesSelection.length}/12)`}
                                 </button>
                             </div>
 

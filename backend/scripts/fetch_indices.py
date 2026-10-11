@@ -6,7 +6,7 @@ import re
 
 def get_html_content(url):
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
     response = requests.get(url, headers=headers)
     response.raise_for_status()
@@ -165,6 +165,53 @@ def fetch_qtup():
     # Keep US-listed tickers: standard 1-5 letter symbols
     return sorted(t for t in tickers if re.fullmatch(r'[A-Z]{1,5}(-[A-Z])?', t))
 
+def fetch_kweb():
+    """KraneShares CSI China Internet ETF (KWEB).
+    
+    The holdings CSV URL is date-stamped on kraneshares.com/kweb/.
+    Maps HK-listed internet giants (e.g. 9988 Alibaba, 700 Tencent) to their corresponding US ADR tickers.
+    """
+    page = get_html_content("https://kraneshares.com/kweb/").decode("utf-8", errors="replace")
+    links = re.findall(r'https://kraneshares\.com/csv/[0-9_]+kweb_holdings\.csv', page)
+    if not links:
+        return []
+    
+    content = get_html_content(links[0])
+    df = pd.read_csv(io.BytesIO(content), skiprows=1)
+    if 'Ticker' not in df.columns:
+        return []
+
+    # Map HK-listed codes to their liquid US ADR symbols
+    hk_to_us = {
+        '700': 'TCEHY',   # Tencent Holdings
+        '9988': 'BABA',   # Alibaba Group
+        '3690': 'MPNGY',  # Meituan
+        '9999': 'NTES',   # NetEase
+        '992': 'LNVGY',   # Lenovo Group
+        '2423': 'BEKE',   # KE Holdings (Beike)
+        '9618': 'JD',     # JD.com
+        '9961': 'TCOM',   # Trip.com Group
+        '9888': 'BIDU',   # Baidu
+        '1024': 'KUASF',  # Kuaishou Technology
+        '9626': 'BILI',   # Bilibili
+        '9698': 'GDS',    # GDS Holdings
+        '3896': 'KC',     # Kingsoft Cloud
+    }
+
+    result = []
+    for _, row in df.iterrows():
+        raw_tk = str(row['Ticker']).strip()
+        if raw_tk in hk_to_us:
+            result.append(hk_to_us[raw_tk])
+        elif re.fullmatch(r'[A-Z]{1,5}(-[A-Z])?', raw_tk):
+            result.append(raw_tk)
+
+    # Supplementary US-listed Chinese tech stocks (fintech/EV not in pure internet index)
+    extra_adr = ['FUTU', 'LI', 'NIO', 'XPEV']
+    result.extend(extra_adr)
+
+    return _clean_tickers(result)
+
 def fetch_xbi():
     url = "https://www.ssga.com/us/en/intermediary/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xbi.xlsx"
     content = get_html_content(url)
@@ -205,8 +252,8 @@ if __name__ == "__main__":
     import sys
     
     # If arguments are provided, only fetch those indices
-    # Valid keys: sp500, nasdaq100, dowjones, russell2000, soxx, xbi, igv, nasa, lyte, dram, qtup
-    selected = set(sys.argv[1:]) if len(sys.argv) > 1 else {'sp500', 'nasdaq100', 'dowjones', 'russell2000', 'soxx', 'xbi', 'igv', 'nasa', 'lyte', 'dram', 'qtup'}
+    # Valid keys: sp500, nasdaq100, dowjones, russell2000, soxx, xbi, igv, nasa, lyte, dram, qtup, kweb
+    selected = set(sys.argv[1:]) if len(sys.argv) > 1 else {'sp500', 'nasdaq100', 'dowjones', 'russell2000', 'soxx', 'xbi', 'igv', 'nasa', 'lyte', 'dram', 'qtup', 'kweb'}
     
     if 'sp500' in selected:
         print("Fetching S&P 500...")
@@ -248,6 +295,7 @@ if __name__ == "__main__":
         ('lyte', fetch_lyte, 'stocks_light.tab', 'LYTE'),
         ('dram', fetch_dram, 'stocks_storage.tab', 'DRAM'),
         ('qtup', fetch_qtup, 'stocks_quantum.tab', 'QTUP'),
+        ('kweb', fetch_kweb, 'stocks_zhonggai.tab', 'KWEB'),
     ]:
         if key in selected:
             print(f"Fetching {label}...")
