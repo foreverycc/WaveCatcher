@@ -24,6 +24,8 @@ interface SidebarProps {
     selectedIndices: string[];
     setSelectedIndices: (indices: string[]) => void;
     handleRunMultiIndexAnalysis: () => void;
+    handleUpdateIndices?: () => void;
+    isUpdatingIndices?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -42,7 +44,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     availableIndices,
     selectedIndices,
     setSelectedIndices,
-    handleRunMultiIndexAnalysis
+    handleRunMultiIndexAnalysis,
+    handleUpdateIndices,
+    isUpdatingIndices
 }) => {
     const [isDateRangeExpanded, setIsDateRangeExpanded] = React.useState(false);
 
@@ -228,6 +232,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         >
                             <Play className="w-4 h-4 shrink-0" />
                             {!isCollapsed && <span>Run Analysis</span>}
+                        </button>
+                    )}
+
+                    {/* Update Index Stock Lists Button */}
+                    {handleUpdateIndices && (
+                        <button
+                            onClick={handleUpdateIndices}
+                            disabled={isUpdatingIndices || selectedIndices.length === 0}
+                            className={cn(
+                                "flex items-center gap-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-all shadow-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed",
+                                isCollapsed ? "p-3 justify-center" : "w-full px-4 py-2.5 justify-center"
+                            )}
+                            title="Update Index Stock Lists"
+                        >
+                            <RefreshCw className={cn("w-4 h-4 shrink-0", isUpdatingIndices ? "animate-spin" : "")} />
+                            {!isCollapsed && (
+                                <span className="text-sm">
+                                    {isUpdatingIndices ? 'Updating Lists...' : `Update Stock Lists (${selectedIndices.length})`}
+                                </span>
+                            )}
                         </button>
                     )}
 

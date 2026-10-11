@@ -17,7 +17,6 @@ export const Configuration: React.FC = () => {
     const [isValidating, setIsValidating] = useState(false);
     const [cleanupTables, setCleanupTables] = useState<string[]>(['analysis_runs', 'analysis_results', 'price_history', 'option_chains']);
     const [isCleaningDb, setIsCleaningDb] = useState(false);
-    const [updateIndicesSelection, setUpdateIndicesSelection] = useState<string[]>(['sp500', 'nasdaq100', 'dowjones']);
 
     // --- Index config state ---
     const [addingIndex, setAddingIndex] = useState(false);
@@ -95,19 +94,6 @@ export const Configuration: React.FC = () => {
             alert('Deleted successfully!');
         },
         onError: (error) => alert(`Error deleting: ${error}`)
-    });
-
-    const updateIndicesMutation = useMutation({
-        mutationFn: (indices?: string[]) => analysisApi.updateIndices(indices),
-        onSuccess: (data) => {
-            if (data.status === 'success') {
-                alert('Indices updated successfully!\n' + (data.output || ''));
-                queryClient.invalidateQueries({ queryKey: ['stockFiles'] });
-            } else {
-                alert('Failed to update indices: ' + data.message);
-            }
-        },
-        onError: (error) => alert(`Error triggering update: ${error}`)
     });
 
     // --- Index CRUD mutations ---
@@ -364,55 +350,8 @@ export const Configuration: React.FC = () => {
                             <RefreshCw className="w-4 h-4" /> System Maintenance
                         </h3>
                         <div className="space-y-4">
-                            {/* Update Indices */}
-                            <div>
-                                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                                    <RefreshCw className="w-4 h-4" /> Update Index Stock Lists
-                                </h4>
-                                <div className="grid grid-cols-2 gap-2 mb-3">
-                                    {[
-                                        { key: 'sp500', label: 'S&P 500' },
-                                        { key: 'nasdaq100', label: 'Nasdaq 100' },
-                                        { key: 'dowjones', label: 'Dow Jones' },
-                                        { key: 'russell2000', label: 'Russell 2000' },
-                                        { key: 'soxx', label: 'SOXX' },
-                                        { key: 'xbi', label: 'XBI' },
-                                        { key: 'igv', label: 'IGV' },
-                                        { key: 'nasa', label: 'NASA' },
-                                        { key: 'lyte', label: 'LYTE' },
-                                        { key: 'dram', label: 'DRAM' },
-                                        { key: 'qtup', label: 'QTUP' },
-                                        { key: 'kweb', label: 'KWEB' },
-                                    ].map(idx => (
-                                        <label key={idx.key} className="flex items-center gap-2 cursor-pointer hover:bg-muted rounded px-2 py-1.5 text-sm">
-                                            <input
-                                                type="checkbox"
-                                                checked={updateIndicesSelection.includes(idx.key)}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) {
-                                                        setUpdateIndicesSelection([...updateIndicesSelection, idx.key]);
-                                                    } else {
-                                                        setUpdateIndicesSelection(updateIndicesSelection.filter((k: string) => k !== idx.key));
-                                                    }
-                                                }}
-                                                className="w-3.5 h-3.5 rounded border-input accent-primary"
-                                            />
-                                            <span>{idx.label}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                                <button
-                                    onClick={() => updateIndicesMutation.mutate(updateIndicesSelection)}
-                                    disabled={updateIndicesMutation.isPending || updateIndicesSelection.length === 0}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <RefreshCw className={cn("w-4 h-4", updateIndicesMutation.isPending ? "animate-spin" : "")} />
-                                    {updateIndicesMutation.isPending ? 'Updating...' : `Update Selected (${updateIndicesSelection.length}/12)`}
-                                </button>
-                            </div>
-
                             {/* Database Cleanup */}
-                            <div className="border-t border-border pt-4">
+                            <div>
                                 <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
                                     <Trash2 className="w-4 h-4 text-destructive" /> Database Cleanup
                                 </h4>

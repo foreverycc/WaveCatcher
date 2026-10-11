@@ -46,9 +46,38 @@ async def update_indices(body: Optional[Dict[str, Any]] = None):
             return {"status": "error", "message": f"Script not found at {script_path}"}
 
         cmd = [sys.executable, script_path]
-        # Pass selected indices as arguments if specified
+        # Pass selected indices as arguments if specified.
+        # Support mapping from index_config keys (SPX, QQQ, DJI, IWM, SPACE, LIGHT, SAAS, etc.)
+        INDEX_KEY_MAP = {
+            'spx': 'sp500',
+            'sp500': 'sp500',
+            'qqq': 'nasdaq100',
+            'nasdaq100': 'nasdaq100',
+            'dji': 'dowjones',
+            'dowjones': 'dowjones',
+            'iwm': 'russell2000',
+            'russell2000': 'russell2000',
+            'soxx': 'soxx',
+            'xbi': 'xbi',
+            'saas': 'igv',
+            'igv': 'igv',
+            'space': 'nasa',
+            'nasa': 'nasa',
+            'light': 'lyte',
+            'lyte': 'lyte',
+            'storage': 'dram',
+            'dram': 'dram',
+            'quantum': 'qtup',
+            'qtup': 'qtup',
+            'kweb': 'kweb',
+        }
         if body and 'indices' in body and body['indices']:
-            cmd.extend(body['indices'])
+            mapped_indices = []
+            for k in body['indices']:
+                clean_k = str(k).strip().lower()
+                fetch_key = INDEX_KEY_MAP.get(clean_k, clean_k)
+                mapped_indices.append(fetch_key)
+            cmd.extend(mapped_indices)
 
         result = subprocess.run(cmd, capture_output=True, text=True)
         

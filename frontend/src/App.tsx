@@ -117,22 +117,6 @@ function AppContent() {
     }
   }, [jobStatus, qc]);
 
-  // Run analysis mutation
-
-  // Run analysis mutation
-  const runAnalysisMutation = useMutation({
-    mutationFn: () => analysisApi.run(selectedStockList),
-    onSuccess: () => {
-      refetchStatus();
-    },
-    onError: (error) => alert(`Error starting analysis: ${error}`)
-  });
-
-  const handleRunAnalysis = () => {
-    if (selectedStockList) {
-      runAnalysisMutation.mutate();
-    }
-  };
 
   // Run multi-index analysis mutation
   const runMultiIndexMutation = useMutation({
@@ -146,6 +130,27 @@ function AppContent() {
   const handleRunMultiIndexAnalysis = () => {
     if (selectedIndices.length > 0) {
       runMultiIndexMutation.mutate();
+    }
+  };
+
+  // Update indices mutation
+  const updateIndicesMutation = useMutation({
+    mutationFn: (indices?: string[]) => analysisApi.updateIndices(indices),
+    onSuccess: (data) => {
+      if (data.status === 'success') {
+        alert('Indices updated successfully!\n' + (data.output || ''));
+        qc.invalidateQueries({ queryKey: ['stockFiles'] });
+        qc.invalidateQueries({ queryKey: ['availableIndices'] });
+      } else {
+        alert('Failed to update indices: ' + data.message);
+      }
+    },
+    onError: (error) => alert(`Error triggering update: ${error}`)
+  });
+
+  const handleUpdateIndices = () => {
+    if (selectedIndices.length > 0) {
+      updateIndicesMutation.mutate(selectedIndices);
     }
   };
 
@@ -185,6 +190,8 @@ function AppContent() {
         selectedIndices={selectedIndices}
         setSelectedIndices={setSelectedIndices}
         handleRunMultiIndexAnalysis={handleRunMultiIndexAnalysis}
+        handleUpdateIndices={handleUpdateIndices}
+        isUpdatingIndices={updateIndicesMutation.isPending}
       />
 
       <main className="flex-1 overflow-auto bg-secondary/30 flex flex-col">

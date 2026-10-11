@@ -8,8 +8,7 @@ import {
     CartesianGrid,
     Tooltip,
     Legend,
-    ResponsiveContainer,
-    ReferenceLine
+    ResponsiveContainer
 } from 'recharts';
 
 interface PriceVolumeChartProps {
@@ -25,7 +24,7 @@ interface PriceVolumeChartProps {
     signalDates?: string[];
 }
 
-export const PriceVolumeChart: React.FC<PriceVolumeChartProps> = ({ data, title, signalDates = [] }) => {
+export const PriceVolumeChart: React.FC<PriceVolumeChartProps> = ({ data, title }) => {
     if (!data || !Array.isArray(data) || data.length === 0) {
         return <div className="flex items-center justify-center h-full text-muted-foreground text-sm">No price data available</div>;
     }
