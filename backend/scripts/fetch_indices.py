@@ -57,6 +57,50 @@ def fetch_russell2000():
         return sorted(list(set(stocks)))
     return []
 
+def _clean_tickers(values):
+    stocks = [str(s).strip() for s in values if isinstance(s, str)]
+    stocks = [s for s in stocks if s and s != '-' and not s[0].isdigit()]
+    stocks = [s.replace('.', '-') for s in stocks]
+    return sorted(set(stocks))
+
+def fetch_ishares_holdings(url, min_weight=None):
+    """Fetch equity tickers from an iShares latest-holdings.csv URL.
+
+    If min_weight is given, only holdings with Weight (%) above it are kept.
+    """
+    content = get_html_content(url)
+    lines = content.decode("utf-8-sig", errors="replace").splitlines()
+    header_idx = next((i for i, l in enumerate(lines) if l.startswith('"Ticker"') or l.startswith('Ticker')), None)
+    if header_idx is None:
+        return []
+    df = pd.read_csv(io.StringIO("\n".join(lines[header_idx:])), on_bad_lines="skip")
+    if 'Ticker' not in df.columns:
+        return []
+    if 'Asset Class' in df.columns:
+        df = df[df['Asset Class'] == 'Equity']
+    if min_weight is not None and 'Weight (%)' in df.columns:
+        weights = pd.to_numeric(df['Weight (%)'].astype(str).str.replace(',', ''), errors='coerce')
+        df = df[weights > min_weight]
+    return _clean_tickers(df['Ticker'].dropna().tolist())
+
+def fetch_soxx():
+    return fetch_ishares_holdings("https://www.ishares.com/us/products/239705/ishares-phlx-semiconductor-etf/latest-holdings.csv")
+
+def fetch_igv():
+    # Only keep holdings with weight over 0.5%
+    return fetch_ishares_holdings("https://www.ishares.com/us/products/239771/ishares-expanded-tech-software-sector-etf/latest-holdings.csv", min_weight=0.5)
+
+def fetch_xbi():
+    url = "https://www.ssga.com/us/en/intermediary/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xbi.xlsx"
+    content = get_html_content(url)
+    raw = pd.read_excel(io.BytesIO(content), header=None)
+    header_rows = raw.index[raw[1] == 'Ticker'].tolist()
+    if not header_rows:
+        return []
+    h = header_rows[0]
+    tickers = raw.iloc[h + 1:, 1].dropna().tolist()
+    return _clean_tickers(tickers)
+
 def fetch_dowjones():
     url = "https://en.wikipedia.org/wiki/List_of_Dow_Jones_Industrial_Average_companies"
     content = get_html_content(url)
@@ -86,8 +130,8 @@ if __name__ == "__main__":
     import sys
     
     # If arguments are provided, only fetch those indices
-    # Valid keys: sp500, nasdaq100, dowjones, russell2000
-    selected = set(sys.argv[1:]) if len(sys.argv) > 1 else {'sp500', 'nasdaq100', 'dowjones', 'russell2000'}
+    # Valid keys: sp500, nasdaq100, dowjones, russell2000, soxx, xbi, igv
+    selected = set(sys.argv[1:]) if len(sys.argv) > 1 else {'sp500', 'nasdaq100', 'dowjones', 'russell2000', 'soxx', 'xbi', 'igv'}
     
     if 'sp500' in selected:
         print("Fetching S&P 500...")
@@ -120,4 +164,16 @@ if __name__ == "__main__":
             save_to_tab(dowjones, 'stocks_dowjones.tab')
         except Exception as e:
             print(f"Error fetching Dow Jones 30: {e}")
+
+    for key, fn, fname, label in [
+        ('soxx', fetch_soxx, 'stocks_soxx.tab', 'SOXX'),
+        ('xbi', fetch_xbi, 'stocks_xbi.tab', 'XBI'),
+        ('igv', fetch_igv, 'stocks_saas.tab', 'IGV'),
+    ]:
+        if key in selected:
+            print(f"Fetching {label}...")
+            try:
+                save_to_tab(fn(), fname)
+            except Exception as e:
+                print(f"Error fetching {label}: {e}")
 

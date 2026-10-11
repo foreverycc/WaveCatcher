@@ -33,7 +33,8 @@ async def update_indices(body: Optional[Dict[str, Any]] = None):
     
     Args:
         body: Optional JSON body with 'indices' key containing list of index keys
-              to update. Valid keys: sp500, nasdaq100, dowjones, russell2000.
+              to update. Valid keys: sp500, nasdaq100, dowjones, russell2000,
+              soxx, xbi, igv.
               If not specified, all indices are updated.
     """
     try:

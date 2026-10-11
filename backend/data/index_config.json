@@ -32,7 +32,7 @@
     "stock_list": "stocks_crypto.tab"
   },
   "QUANTUM": {
-    "symbol": "IONQ",
+    "symbol": "QTUP",
     "stock_list": "stocks_quantum.tab"
   },
   "KWEB": {
@@ -40,7 +40,7 @@
     "stock_list": "stocks_zhonggai.tab"
   },
   "STORAGE": {
-    "symbol": "MU",
+    "symbol": "DRAM",
     "stock_list": "stocks_storage.tab"
   },
   "LIGHT": {
