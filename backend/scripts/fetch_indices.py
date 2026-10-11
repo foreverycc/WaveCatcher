@@ -90,6 +90,27 @@ def fetch_igv():
     # Only keep holdings with weight over 0.5%
     return fetch_ishares_holdings("https://www.ishares.com/us/products/239771/ishares-expanded-tech-software-sector-etf/latest-holdings.csv", min_weight=0.5)
 
+
+def fetch_nasa():
+    """Tema Space Innovators ETF (NASA). The holdings CSV URL is date-stamped, so find it on the fund page."""
+    import re
+    import html
+    page = get_html_content("https://temaetfs.com/nasa").decode("utf-8", errors="replace")
+    links = re.findall(r'https://temaetfs\.com/hubfs/Website/Holdings/NASA-holdings-[^"\'\s<>]*\.csv[^"\'\s<>]*', page)
+    if not links:
+        return []
+    df = pd.read_csv(io.BytesIO(get_html_content(html.unescape(links[0]))), on_bad_lines="skip")
+    if 'ticker' not in df.columns:
+        return []
+    # Keep anything listed on a US exchange, regardless of country of domicile
+    # (e.g. MDA, STM). Names listed only abroad use Bloomberg-style tickers with an
+    # exchange code after a space ("FTC LN", "3491 TT"), as does the "SPACEX SPV" line.
+    if 'is_cash' in df.columns:
+        df = df[df['is_cash'].astype(str).isin(['0', 'False', 'false'])]
+    tickers = _clean_tickers(df['ticker'].dropna().tolist())
+    return sorted(t for t in tickers if ' ' not in t)
+
+
 def fetch_xbi():
     url = "https://www.ssga.com/us/en/intermediary/library-content/products/fund-data/etfs/us/holdings-daily-us-en-xbi.xlsx"
     content = get_html_content(url)
@@ -130,8 +151,8 @@ if __name__ == "__main__":
     import sys
     
     # If arguments are provided, only fetch those indices
-    # Valid keys: sp500, nasdaq100, dowjones, russell2000, soxx, xbi, igv
-    selected = set(sys.argv[1:]) if len(sys.argv) > 1 else {'sp500', 'nasdaq100', 'dowjones', 'russell2000', 'soxx', 'xbi', 'igv'}
+    # Valid keys: sp500, nasdaq100, dowjones, russell2000, soxx, xbi, igv, nasa
+    selected = set(sys.argv[1:]) if len(sys.argv) > 1 else {'sp500', 'nasdaq100', 'dowjones', 'russell2000', 'soxx', 'xbi', 'igv', 'nasa'}
     
     if 'sp500' in selected:
         print("Fetching S&P 500...")
@@ -169,6 +190,7 @@ if __name__ == "__main__":
         ('soxx', fetch_soxx, 'stocks_soxx.tab', 'SOXX'),
         ('xbi', fetch_xbi, 'stocks_xbi.tab', 'XBI'),
         ('igv', fetch_igv, 'stocks_saas.tab', 'IGV'),
+        ('nasa', fetch_nasa, 'stocks_space.tab', 'NASA'),
     ]:
         if key in selected:
             print(f"Fetching {label}...")
