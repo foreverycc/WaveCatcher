@@ -68,5 +68,10 @@
     "symbol": "IGV",
     "stock_list": "stocks_saas.tab",
     "whitelist": []
+  },
+  "AIELECTRICITY": {
+    "symbol": "VOLT",
+    "stock_list": "stocks_AI_electricity.tab",
+    "whitelist": []
   }
 }
