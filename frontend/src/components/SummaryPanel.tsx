@@ -98,6 +98,15 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
 
 // Helper to extract best metrics from detailed row (copied from Dashboard.tsx logic)
 const extractBestMetrics = (row: any) => {
+    // Prefer the backend's best period (fixed grid, minimum samples, excess over baseline)
+    if (row.best_period != null && row[`avg_return_${row.best_period}`] !== undefined) {
+        return {
+            success_rate: row[`success_rate_${row.best_period}`] ?? 0,
+            avg_return: row[`avg_return_${row.best_period}`] ?? 0,
+            test_count: row[`test_count_${row.best_period}`] ?? 0
+        };
+    }
+
     let maxSuccessRate = -1;
     let bestReturn = -1;
     let bestCount = 0;

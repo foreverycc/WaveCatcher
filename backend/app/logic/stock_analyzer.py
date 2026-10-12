@@ -21,6 +21,7 @@ from app.logic.utils import (
     calculate_current_nx_values,
 )
 from app.logic.scoring_config import get_interval_weights
+from app.logic.signal_stats import BEST_PERIOD_GRID, select_best_rows
 from app.logic.get_resonance_signal_CD import (
     process_ticker_1234, 
     identify_1234, 
@@ -42,6 +43,7 @@ best_intervals_columns = ['ticker', 'interval', 'hold_time',
                           'avg_return', 'latest_signal', 'latest_signal_price', 
                           'current_time', 'current_price', 'current_period',
                           'test_count', 'success_rate', 'best_period', 'signal_count',
+                          'excess_return', 'baseline_return', 'oos_avg_return', 'oos_success_rate', 'oos_count',
                           'nx_1d_signal', 'nx_1h_signal',
                           'nx_1d', 'nx_1h', 'nx_4h',
                           'mc_signals_before_cd', 'mc_at_top_price_count', 'mc_at_top_price_rate',
@@ -54,6 +56,7 @@ mc_best_intervals_columns = ['ticker', 'interval', 'hold_time',
                              'avg_return', 'latest_signal', 'latest_signal_price', 
                              'current_time', 'current_price', 'current_period',
                              'test_count', 'success_rate', 'best_period', 'signal_count',
+                             'excess_return', 'baseline_return', 'oos_avg_return', 'oos_success_rate', 'oos_count',
                              'nx_1d_signal', 'nx_1h_signal',
                              'nx_1d', 'nx_1h', 'nx_4h',
                              'cd_signals_before_mc', 'cd_at_bottom_price_count', 'cd_at_bottom_price_rate',
@@ -218,6 +221,81 @@ def process_ticker_all(ticker, end_date=None):
     except Exception as e:
         print(f"Error processing {ticker}: {e}")
         return ticker, None, None, [], [], None
+
+def save_eval_results(run_id, eval_results, side):
+    """
+    Save CD ('cd') or MC ('mc') evaluation tables: detailed rows, returns distribution,
+    best intervals for each period range, good signals and per-interval summary.
+
+    Best periods come from the fixed BEST_PERIOD_GRID, must have at least MIN_SAMPLES signals
+    and beat the no-signal baseline by MIN_EXCESS_RETURN (see signal_stats.py).
+    """
+    if not eval_results:
+        return
+    logger.info(f"Saving {side.upper()} evaluation results...")
+    bullish = side == 'cd'
+    columns = best_intervals_columns if bullish else mc_best_intervals_columns
+
+    def round_floats(frame):
+        for col in frame.columns:
+            if frame[col].dtype in ['float64', 'float32']:
+                frame[col] = frame[col].round(3)
+        return frame
+
+    df_eval = round_floats(pd.DataFrame(eval_results))
+    save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_custom_detailed', df_eval.to_dict(orient='records'))
+
+    # Returns distribution
+    returns_data = []
+    for result in eval_results:
+        for period in periods:
+            individual_returns = result.get(f'returns_{period}') or []
+            individual_volumes = result.get(f'volumes_{period}', [])
+            for i, return_value in enumerate(individual_returns):
+                returns_data.append({
+                    'ticker': result['ticker'],
+                    'interval': result['interval'],
+                    'period': period,
+                    'return': return_value,
+                    'volume': individual_volumes[i] if i < len(individual_volumes) else None
+                })
+    if returns_data:
+        df_returns = pd.DataFrame(returns_data)
+        df_returns['return'] = df_returns['return'].round(3)
+        df_returns['volume'] = df_returns['volume'].round(0)
+        save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_returns_distribution', df_returns.to_dict(orient='records'))
+    else:
+        save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_returns_distribution', [])
+
+    def finish(frame):
+        frame = frame.copy()
+        frame['hold_time'] = frame.apply(lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1)
+        frame = frame[[col for col in columns if col in frame.columns]]
+        return round_floats(frame.sort_values('latest_signal', ascending=False))
+
+    # Best intervals per period range (one row per ticker, signal still inside its best holding window)
+    for range_name, range_periods in period_ranges.items():
+        grid = [p for p in BEST_PERIOD_GRID if p in range_periods]
+        best_intervals = select_best_rows(df_eval, grid, bullish, one_per_ticker=True)
+        if not best_intervals.empty:
+            best_intervals = best_intervals[best_intervals['current_period'] <= best_intervals['best_period']]
+        records = finish(best_intervals).to_dict(orient='records') if not best_intervals.empty else []
+        save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_best_intervals_{range_name}', records)
+
+    # Good signals (every ticker/interval that passes, over the full grid)
+    good_signals = select_best_rows(df_eval, BEST_PERIOD_GRID, bullish, one_per_ticker=False)
+    records = finish(good_signals).to_dict(orient='records') if not good_signals.empty else []
+    save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_good_signals', records)
+
+    # Interval summary
+    agg_dict = {'signal_count': 'sum'}
+    for period in periods:
+        if f'test_count_{period}' in df_eval.columns: agg_dict[f'test_count_{period}'] = 'sum'
+        if f'success_rate_{period}' in df_eval.columns: agg_dict[f'success_rate_{period}'] = 'mean'
+        if f'avg_return_{period}' in df_eval.columns: agg_dict[f'avg_return_{period}'] = 'mean'
+    interval_summary = df_eval.groupby('interval').agg(agg_dict).reset_index()
+    save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_interval_summary', interval_summary.to_dict(orient='records'))
+
 
 def analyze_stocks(file_path, end_date=None, progress_callback=None):
     """
@@ -517,233 +595,9 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         if mc_hq_score:
             save_analysis_result(run_id, "ALL", "ALL", 'mc_breakthrough_score_by_interval', mc_hq_score)
 
-        # 5. Save CD evaluation results
-        logger.info("Saving CD evaluation results...")
-        if cd_eval_results:
-            df_cd_eval = pd.DataFrame(cd_eval_results)
-            
-            # Round numeric columns
-            for col in df_cd_eval.columns:
-                if df_cd_eval[col].dtype in ['float64', 'float32']:
-                    df_cd_eval[col] = df_cd_eval[col].round(3)
-            
-            save_analysis_result(run_id, "ALL", "ALL", 'cd_eval_custom_detailed', df_cd_eval.to_dict(orient='records'))
-            
-            # Returns distribution
-            returns_data = []
-            for result in cd_eval_results:
-                ticker = result['ticker']
-                interval = result['interval']
-                for period in periods:
-                    returns_key = f'returns_{period}'
-                    volumes_key = f'volumes_{period}'
-                    if returns_key in result and result[returns_key]:
-                        individual_returns = result[returns_key]
-                        individual_volumes = result.get(volumes_key, [])
-                        if len(individual_volumes) < len(individual_returns):
-                            individual_volumes.extend([None] * (len(individual_returns) - len(individual_volumes)))
-                        for i, return_value in enumerate(individual_returns):
-                            volume_value = individual_volumes[i] if i < len(individual_volumes) else None
-                            returns_data.append({
-                                'ticker': ticker,
-                                'interval': interval,
-                                'period': period,
-                                'return': return_value,
-                                'volume': volume_value
-                            })
-            
-            if returns_data:
-                df_returns = pd.DataFrame(returns_data)
-                if 'return' in df_returns.columns: df_returns['return'] = df_returns['return'].round(3)
-                if 'volume' in df_returns.columns: df_returns['volume'] = df_returns['volume'].round(0)
-                save_analysis_result(run_id, "ALL", "ALL", 'cd_eval_returns_distribution', df_returns.to_dict(orient='records'))
-            else:
-                save_analysis_result(run_id, "ALL", "ALL", 'cd_eval_returns_distribution', [])
-
-            # Best Intervals Logic
-            valid_df = df_cd_eval[df_cd_eval['test_count_10'] >= 2]
-            filter_conditions = []
-            for period in periods:
-                if f'avg_return_{period}' in df_cd_eval.columns:
-                    filter_conditions.append(valid_df[f'avg_return_{period}'] >= 5)
-            
-            if filter_conditions:
-                combined_filter = filter_conditions[0]
-                for condition in filter_conditions[1:]:
-                    combined_filter = combined_filter | condition
-                valid_df = valid_df[combined_filter]
-            
-            if not valid_df.empty:
-                for range_name, range_periods in period_ranges.items():
-                    avg_return_cols = [f'avg_return_{period}' for period in range_periods if f'avg_return_{period}' in valid_df.columns]
-                    range_df = valid_df.copy()
-                    range_df['max_return'] = range_df[avg_return_cols].max(axis=1)
-                    range_df['best_period'] = range_df[avg_return_cols].idxmax(axis=1).str.extract('(\d+)').astype(int)
-                    
-                    best_intervals = range_df.loc[range_df.groupby('ticker')['max_return'].idxmax()]
-                    best_intervals = best_intervals.assign(
-                        test_count=best_intervals.apply(lambda x: x[f'test_count_{int(x.best_period)}'], axis=1),
-                        success_rate=best_intervals.apply(lambda x: x[f'success_rate_{int(x.best_period)}'], axis=1),
-                        avg_return=best_intervals['max_return']
-                    )
-                    available_columns = [col for col in best_intervals_columns if col in best_intervals.columns]
-                    best_intervals = best_intervals[available_columns].sort_values('latest_signal', ascending=False)
-                    best_intervals['hold_time'] = best_intervals.apply(
-                        lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
-                    )
-                    final_columns = [col for col in best_intervals_columns if col in best_intervals.columns]
-                    best_intervals = best_intervals[final_columns]
-                    best_intervals = best_intervals[best_intervals['avg_return'] >= 5]
-                    best_intervals = best_intervals[best_intervals['success_rate'] >= 50]
-                    best_intervals = best_intervals[best_intervals['current_period'] <= best_intervals['best_period']]
-                    
-                    for col in best_intervals.columns:
-                        if best_intervals[col].dtype in ['float64', 'float32']:
-                            best_intervals[col] = best_intervals[col].round(3)
-                            
-                    save_analysis_result(run_id, "ALL", "ALL", f'cd_eval_best_intervals_{range_name}', best_intervals.to_dict(orient='records'))
-
-                # Good Signals
-                good_signals = valid_df.sort_values('latest_signal', ascending=False)
-                avg_return_cols = [f'avg_return_{period}' for period in periods if f'avg_return_{period}' in good_signals.columns]
-                good_signals['max_return'] = good_signals[avg_return_cols].max(axis=1)
-                good_signals['best_period'] = good_signals[avg_return_cols].idxmax(axis=1).str.extract('(\d+)').astype(int)
-                good_signals['hold_time'] = good_signals.apply(
-                    lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
-                )
-                good_signals['exp_return'] = good_signals.apply(lambda row: row[f'avg_return_{int(row.best_period)}'], axis=1)
-                good_signals['avg_return'] = good_signals['exp_return']
-                good_signals['test_count'] = good_signals.apply(lambda row: row[f'test_count_{int(row.best_period)}'], axis=1)
-                good_signals['success_rate'] = good_signals.apply(lambda row: row[f'success_rate_{int(row.best_period)}'], axis=1)
-                available_good_columns = [col for col in best_intervals_columns if col in good_signals.columns]
-                good_signals = good_signals[available_good_columns]
-                good_signals = good_signals[good_signals['success_rate'] >= 50]
-                
-                for col in good_signals.columns:
-                    if good_signals[col].dtype in ['float64', 'float32']:
-                        good_signals[col] = good_signals[col].round(3)
-                
-                save_analysis_result(run_id, "ALL", "ALL", 'cd_eval_good_signals', good_signals.to_dict(orient='records'))
-            else:
-                 # No best intervals
-                 pass
-
-            # Interval Summary
-            agg_dict = {'signal_count': 'sum'}
-            for period in periods:
-                if f'test_count_{period}' in df_cd_eval.columns: agg_dict[f'test_count_{period}'] = 'sum'
-                if f'success_rate_{period}' in df_cd_eval.columns: agg_dict[f'success_rate_{period}'] = 'mean'
-                if f'avg_return_{period}' in df_cd_eval.columns: agg_dict[f'avg_return_{period}'] = 'mean'
-            interval_summary = df_cd_eval.groupby('interval').agg(agg_dict).reset_index()
-            save_analysis_result(run_id, "ALL", "ALL", 'cd_eval_interval_summary', interval_summary.to_dict(orient='records'))
-
-        # 6. Save MC evaluation results
-        logger.info("Saving MC evaluation results...")
-        if mc_eval_results:
-            df_mc_eval = pd.DataFrame(mc_eval_results)
-            for col in df_mc_eval.columns:
-                if df_mc_eval[col].dtype in ['float64', 'float32']:
-                    df_mc_eval[col] = df_mc_eval[col].round(3)
-            save_analysis_result(run_id, "ALL", "ALL", 'mc_eval_custom_detailed', df_mc_eval.to_dict(orient='records'))
-            
-            # MC Returns distribution
-            returns_data = []
-            for result in mc_eval_results:
-                ticker = result['ticker']
-                interval = result['interval']
-                for period in periods:
-                    returns_key = f'returns_{period}'
-                    volumes_key = f'volumes_{period}'
-                    if returns_key in result and result[returns_key]:
-                        individual_returns = result[returns_key]
-                        individual_volumes = result.get(volumes_key, [])
-                        if len(individual_volumes) < len(individual_returns):
-                            individual_volumes.extend([None] * (len(individual_returns) - len(individual_volumes)))
-                        for i, return_value in enumerate(individual_returns):
-                            volume_value = individual_volumes[i] if i < len(individual_volumes) else None
-                            returns_data.append({
-                                'ticker': ticker,
-                                'interval': interval,
-                                'period': period,
-                                'return': return_value,
-                                'volume': volume_value
-                            })
-            if returns_data:
-                df_returns = pd.DataFrame(returns_data)
-                if 'return' in df_returns.columns: df_returns['return'] = df_returns['return'].round(3)
-                if 'volume' in df_returns.columns: df_returns['volume'] = df_returns['volume'].round(0)
-                save_analysis_result(run_id, "ALL", "ALL", 'mc_eval_returns_distribution', df_returns.to_dict(orient='records'))
-            else:
-                save_analysis_result(run_id, "ALL", "ALL", 'mc_eval_returns_distribution', [])
-
-            # MC Best Intervals logic
-            valid_df = df_mc_eval[df_mc_eval['test_count_10'] >= 2]
-            filter_conditions = []
-            for period in periods:
-                if f'avg_return_{period}' in df_mc_eval.columns:
-                    filter_conditions.append(valid_df[f'avg_return_{period}'] <= -5)
-            
-            if filter_conditions:
-                combined_filter = filter_conditions[0]
-                for condition in filter_conditions[1:]:
-                    combined_filter = combined_filter | condition
-                valid_df = valid_df[combined_filter]
-            
-            if not valid_df.empty:
-                for range_name, range_periods in period_ranges.items():
-                    avg_return_cols = [f'avg_return_{period}' for period in range_periods if f'avg_return_{period}' in valid_df.columns]
-                    range_df = valid_df.copy()
-                    range_df['min_return'] = range_df[avg_return_cols].min(axis=1)
-                    range_df['best_period'] = range_df[avg_return_cols].idxmin(axis=1).str.extract('(\d+)').astype(int)
-                    best_intervals = range_df.loc[range_df.groupby('ticker')['min_return'].idxmin()]
-                    best_intervals = best_intervals.assign(
-                        test_count=best_intervals.apply(lambda x: x[f'test_count_{int(x.best_period)}'], axis=1),
-                        success_rate=best_intervals.apply(lambda x: x[f'success_rate_{int(x.best_period)}'], axis=1),
-                        avg_return=best_intervals['min_return']
-                    )
-                    available_columns = [col for col in mc_best_intervals_columns if col in best_intervals.columns]
-                    best_intervals = best_intervals[available_columns].sort_values('latest_signal', ascending=False)
-                    best_intervals['hold_time'] = best_intervals.apply(
-                        lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
-                    )
-                    final_columns = [col for col in mc_best_intervals_columns if col in best_intervals.columns]
-                    best_intervals = best_intervals[final_columns]
-                    best_intervals = best_intervals[best_intervals['avg_return'] <= -5]
-                    best_intervals = best_intervals[best_intervals['success_rate'] >= 50]
-                    best_intervals = best_intervals[best_intervals['current_period'] <= best_intervals['best_period']]
-                    for col in best_intervals.columns:
-                        if best_intervals[col].dtype in ['float64', 'float32']:
-                            best_intervals[col] = best_intervals[col].round(3)
-                    save_analysis_result(run_id, "ALL", "ALL", f'mc_eval_best_intervals_{range_name}', best_intervals.to_dict(orient='records'))
-
-                # MC Good Signals
-                good_signals = valid_df.sort_values('latest_signal', ascending=False)
-                avg_return_cols = [f'avg_return_{period}' for period in periods if f'avg_return_{period}' in good_signals.columns]
-                good_signals['min_return'] = good_signals[avg_return_cols].min(axis=1)
-                good_signals['best_period'] = good_signals[avg_return_cols].idxmin(axis=1).str.extract('(\d+)').astype(int)
-                good_signals['hold_time'] = good_signals.apply(
-                    lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
-                )
-                good_signals['exp_return'] = good_signals.apply(lambda row: row[f'avg_return_{int(row.best_period)}'], axis=1)
-                good_signals['avg_return'] = good_signals['exp_return']
-                good_signals['test_count'] = good_signals.apply(lambda row: row[f'test_count_{int(row.best_period)}'], axis=1)
-                good_signals['success_rate'] = good_signals.apply(lambda row: row[f'success_rate_{int(row.best_period)}'], axis=1)
-                available_good_columns = [col for col in mc_best_intervals_columns if col in good_signals.columns]
-                good_signals = good_signals[available_good_columns]
-                good_signals = good_signals[good_signals['success_rate'] >= 50]
-                for col in good_signals.columns:
-                    if good_signals[col].dtype in ['float64', 'float32']:
-                        good_signals[col] = good_signals[col].round(3)
-                save_analysis_result(run_id, "ALL", "ALL", 'mc_eval_good_signals', good_signals.to_dict(orient='records'))
-            
-            # MC Interval Summary
-            agg_dict = {'signal_count': 'sum'}
-            for period in periods:
-                if f'test_count_{period}' in df_mc_eval.columns: agg_dict[f'test_count_{period}'] = 'sum'
-                if f'success_rate_{period}' in df_mc_eval.columns: agg_dict[f'success_rate_{period}'] = 'mean'
-                if f'avg_return_{period}' in df_mc_eval.columns: agg_dict[f'avg_return_{period}'] = 'mean'
-            interval_summary = df_mc_eval.groupby('interval').agg(agg_dict).reset_index()
-            save_analysis_result(run_id, "ALL", "ALL", 'mc_eval_interval_summary', interval_summary.to_dict(orient='records'))
+        # 5-6. Save CD / MC evaluation results
+        save_eval_results(run_id, cd_eval_results, 'cd')
+        save_eval_results(run_id, mc_eval_results, 'mc')
         
         from app.services.report_snapshot import save_report_snapshot
         from app.services.index_config import load_index_config
@@ -943,232 +797,9 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
         save_analysis_result(run_id, "ALL", "ALL", 'mc_breakout_candidates_summary_1234',
                            df_mc_breakout_1234.to_dict(orient='records') if not df_mc_breakout_1234.empty else [])
         
-        # 3b. Save CD evaluation results
-        logger.info("Saving CD evaluation results...")
-        if cd_eval_results:
-            df_cd_eval = pd.DataFrame(cd_eval_results)
-            
-            # Round numeric columns
-            for col in df_cd_eval.columns:
-                if df_cd_eval[col].dtype in ['float64', 'float32']:
-                    df_cd_eval[col] = df_cd_eval[col].round(3)
-            
-            save_analysis_result(run_id, "ALL", "ALL", 'cd_eval_custom_detailed', df_cd_eval.to_dict(orient='records'))
-            
-            # Returns distribution
-            returns_data = []
-            for result in cd_eval_results:
-                ticker = result['ticker']
-                interval = result['interval']
-                for period in periods:
-                    returns_key = f'returns_{period}'
-                    volumes_key = f'volumes_{period}'
-                    if returns_key in result and result[returns_key]:
-                        individual_returns = result[returns_key]
-                        individual_volumes = result.get(volumes_key, [])
-                        if len(individual_volumes) < len(individual_returns):
-                            individual_volumes.extend([None] * (len(individual_returns) - len(individual_volumes)))
-                        for i, return_value in enumerate(individual_returns):
-                            volume_value = individual_volumes[i] if i < len(individual_volumes) else None
-                            returns_data.append({
-                                'ticker': ticker,
-                                'interval': interval,
-                                'period': period,
-                                'return': return_value,
-                                'volume': volume_value
-                            })
-            
-            if returns_data:
-                df_returns = pd.DataFrame(returns_data)
-                if 'return' in df_returns.columns: df_returns['return'] = df_returns['return'].round(3)
-                if 'volume' in df_returns.columns: df_returns['volume'] = df_returns['volume'].round(0)
-                save_analysis_result(run_id, "ALL", "ALL", 'cd_eval_returns_distribution', df_returns.to_dict(orient='records'))
-            else:
-                save_analysis_result(run_id, "ALL", "ALL", 'cd_eval_returns_distribution', [])
-
-            # Best Intervals Logic
-            valid_df = df_cd_eval[df_cd_eval['test_count_10'] >= 2]
-            filter_conditions = []
-            for period in periods:
-                if f'avg_return_{period}' in df_cd_eval.columns:
-                    filter_conditions.append(valid_df[f'avg_return_{period}'] >= 5)
-            
-            if filter_conditions:
-                combined_filter = filter_conditions[0]
-                for condition in filter_conditions[1:]:
-                    combined_filter = combined_filter | condition
-                valid_df = valid_df[combined_filter]
-            
-            if not valid_df.empty:
-                for range_name, range_periods in period_ranges.items():
-                    avg_return_cols = [f'avg_return_{period}' for period in range_periods if f'avg_return_{period}' in valid_df.columns]
-                    range_df = valid_df.copy()
-                    range_df['max_return'] = range_df[avg_return_cols].max(axis=1)
-                    range_df['best_period'] = range_df[avg_return_cols].idxmax(axis=1).str.extract('(\d+)').astype(int)
-                    
-                    best_intervals = range_df.loc[range_df.groupby('ticker')['max_return'].idxmax()]
-                    best_intervals = best_intervals.assign(
-                        test_count=best_intervals.apply(lambda x: x[f'test_count_{int(x.best_period)}'], axis=1),
-                        success_rate=best_intervals.apply(lambda x: x[f'success_rate_{int(x.best_period)}'], axis=1),
-                        avg_return=best_intervals['max_return']
-                    )
-                    available_columns = [col for col in best_intervals_columns if col in best_intervals.columns]
-                    best_intervals = best_intervals[available_columns].sort_values('latest_signal', ascending=False)
-                    best_intervals['hold_time'] = best_intervals.apply(
-                        lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
-                    )
-                    final_columns = [col for col in best_intervals_columns if col in best_intervals.columns]
-                    best_intervals = best_intervals[final_columns]
-                    best_intervals = best_intervals[best_intervals['avg_return'] >= 5]
-                    best_intervals = best_intervals[best_intervals['success_rate'] >= 50]
-                    best_intervals = best_intervals[best_intervals['current_period'] <= best_intervals['best_period']]
-                    
-                    for col in best_intervals.columns:
-                        if best_intervals[col].dtype in ['float64', 'float32']:
-                            best_intervals[col] = best_intervals[col].round(3)
-                            
-                    save_analysis_result(run_id, "ALL", "ALL", f'cd_eval_best_intervals_{range_name}', best_intervals.to_dict(orient='records'))
-
-                # Good Signals
-                good_signals = valid_df.sort_values('latest_signal', ascending=False)
-                avg_return_cols = [f'avg_return_{period}' for period in periods if f'avg_return_{period}' in good_signals.columns]
-                good_signals['max_return'] = good_signals[avg_return_cols].max(axis=1)
-                good_signals['best_period'] = good_signals[avg_return_cols].idxmax(axis=1).str.extract('(\d+)').astype(int)
-                good_signals['hold_time'] = good_signals.apply(
-                    lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
-                )
-                good_signals['exp_return'] = good_signals.apply(lambda row: row[f'avg_return_{int(row.best_period)}'], axis=1)
-                good_signals['avg_return'] = good_signals['exp_return']
-                good_signals['test_count'] = good_signals.apply(lambda row: row[f'test_count_{int(row.best_period)}'], axis=1)
-                good_signals['success_rate'] = good_signals.apply(lambda row: row[f'success_rate_{int(row.best_period)}'], axis=1)
-                available_good_columns = [col for col in best_intervals_columns if col in good_signals.columns]
-                good_signals = good_signals[available_good_columns]
-                good_signals = good_signals[good_signals['success_rate'] >= 50]
-                
-                for col in good_signals.columns:
-                    if good_signals[col].dtype in ['float64', 'float32']:
-                        good_signals[col] = good_signals[col].round(3)
-                
-                save_analysis_result(run_id, "ALL", "ALL", 'cd_eval_good_signals', good_signals.to_dict(orient='records'))
-            else:
-                 pass
-
-            # Interval Summary
-            agg_dict = {'signal_count': 'sum'}
-            for period in periods:
-                if f'test_count_{period}' in df_cd_eval.columns: agg_dict[f'test_count_{period}'] = 'sum'
-                if f'success_rate_{period}' in df_cd_eval.columns: agg_dict[f'success_rate_{period}'] = 'mean'
-                if f'avg_return_{period}' in df_cd_eval.columns: agg_dict[f'avg_return_{period}'] = 'mean'
-            interval_summary = df_cd_eval.groupby('interval').agg(agg_dict).reset_index()
-            save_analysis_result(run_id, "ALL", "ALL", 'cd_eval_interval_summary', interval_summary.to_dict(orient='records'))
-
-        # 3d. Save MC evaluation results
-        logger.info("Saving MC evaluation results...")
-        if mc_eval_results:
-            df_mc_eval = pd.DataFrame(mc_eval_results)
-            for col in df_mc_eval.columns:
-                if df_mc_eval[col].dtype in ['float64', 'float32']:
-                    df_mc_eval[col] = df_mc_eval[col].round(3)
-            save_analysis_result(run_id, "ALL", "ALL", 'mc_eval_custom_detailed', df_mc_eval.to_dict(orient='records'))
-            
-            # MC Returns distribution
-            returns_data = []
-            for result in mc_eval_results:
-                ticker = result['ticker']
-                interval = result['interval']
-                for period in periods:
-                    returns_key = f'returns_{period}'
-                    volumes_key = f'volumes_{period}'
-                    if returns_key in result and result[returns_key]:
-                        individual_returns = result[returns_key]
-                        individual_volumes = result.get(volumes_key, [])
-                        if len(individual_volumes) < len(individual_returns):
-                            individual_volumes.extend([None] * (len(individual_returns) - len(individual_volumes)))
-                        for i, return_value in enumerate(individual_returns):
-                            volume_value = individual_volumes[i] if i < len(individual_volumes) else None
-                            returns_data.append({
-                                'ticker': ticker,
-                                'interval': interval,
-                                'period': period,
-                                'return': return_value,
-                                'volume': volume_value
-                            })
-            if returns_data:
-                df_returns = pd.DataFrame(returns_data)
-                if 'return' in df_returns.columns: df_returns['return'] = df_returns['return'].round(3)
-                if 'volume' in df_returns.columns: df_returns['volume'] = df_returns['volume'].round(0)
-                save_analysis_result(run_id, "ALL", "ALL", 'mc_eval_returns_distribution', df_returns.to_dict(orient='records'))
-            else:
-                save_analysis_result(run_id, "ALL", "ALL", 'mc_eval_returns_distribution', [])
-
-            # MC Best Intervals logic
-            valid_df = df_mc_eval[df_mc_eval['test_count_10'] >= 2]
-            filter_conditions = []
-            for period in periods:
-                if f'avg_return_{period}' in df_mc_eval.columns:
-                    filter_conditions.append(valid_df[f'avg_return_{period}'] <= -5)
-            
-            if filter_conditions:
-                combined_filter = filter_conditions[0]
-                for condition in filter_conditions[1:]:
-                    combined_filter = combined_filter | condition
-                valid_df = valid_df[combined_filter]
-            
-            if not valid_df.empty:
-                for range_name, range_periods in period_ranges.items():
-                    avg_return_cols = [f'avg_return_{period}' for period in range_periods if f'avg_return_{period}' in valid_df.columns]
-                    range_df = valid_df.copy()
-                    range_df['min_return'] = range_df[avg_return_cols].min(axis=1)
-                    range_df['best_period'] = range_df[avg_return_cols].idxmin(axis=1).str.extract('(\d+)').astype(int)
-                    best_intervals = range_df.loc[range_df.groupby('ticker')['min_return'].idxmin()]
-                    best_intervals = best_intervals.assign(
-                        test_count=best_intervals.apply(lambda x: x[f'test_count_{int(x.best_period)}'], axis=1),
-                        success_rate=best_intervals.apply(lambda x: x[f'success_rate_{int(x.best_period)}'], axis=1),
-                        avg_return=best_intervals['min_return']
-                    )
-                    available_columns = [col for col in mc_best_intervals_columns if col in best_intervals.columns]
-                    best_intervals = best_intervals[available_columns].sort_values('latest_signal', ascending=False)
-                    best_intervals['hold_time'] = best_intervals.apply(
-                        lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
-                    )
-                    final_columns = [col for col in mc_best_intervals_columns if col in best_intervals.columns]
-                    best_intervals = best_intervals[final_columns]
-                    best_intervals = best_intervals[best_intervals['avg_return'] <= -5]
-                    best_intervals = best_intervals[best_intervals['success_rate'] >= 50]
-                    best_intervals = best_intervals[best_intervals['current_period'] <= best_intervals['best_period']]
-                    for col in best_intervals.columns:
-                        if best_intervals[col].dtype in ['float64', 'float32']:
-                            best_intervals[col] = best_intervals[col].round(3)
-                    save_analysis_result(run_id, "ALL", "ALL", f'mc_eval_best_intervals_{range_name}', best_intervals.to_dict(orient='records'))
-
-                # MC Good Signals
-                good_signals = valid_df.sort_values('latest_signal', ascending=False)
-                avg_return_cols = [f'avg_return_{period}' for period in periods if f'avg_return_{period}' in good_signals.columns]
-                good_signals['min_return'] = good_signals[avg_return_cols].min(axis=1)
-                good_signals['best_period'] = good_signals[avg_return_cols].idxmin(axis=1).str.extract('(\d+)').astype(int)
-                good_signals['hold_time'] = good_signals.apply(
-                    lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
-                )
-                good_signals['exp_return'] = good_signals.apply(lambda row: row[f'avg_return_{int(row.best_period)}'], axis=1)
-                good_signals['avg_return'] = good_signals['exp_return']
-                good_signals['test_count'] = good_signals.apply(lambda row: row[f'test_count_{int(row.best_period)}'], axis=1)
-                good_signals['success_rate'] = good_signals.apply(lambda row: row[f'success_rate_{int(row.best_period)}'], axis=1)
-                available_good_columns = [col for col in mc_best_intervals_columns if col in good_signals.columns]
-                good_signals = good_signals[available_good_columns]
-                good_signals = good_signals[good_signals['success_rate'] >= 50]
-                for col in good_signals.columns:
-                    if good_signals[col].dtype in ['float64', 'float32']:
-                        good_signals[col] = good_signals[col].round(3)
-                save_analysis_result(run_id, "ALL", "ALL", 'mc_eval_good_signals', good_signals.to_dict(orient='records'))
-            
-            # MC Interval Summary
-            agg_dict = {'signal_count': 'sum'}
-            for period in periods:
-                if f'test_count_{period}' in df_mc_eval.columns: agg_dict[f'test_count_{period}'] = 'sum'
-                if f'success_rate_{period}' in df_mc_eval.columns: agg_dict[f'success_rate_{period}'] = 'mean'
-                if f'avg_return_{period}' in df_mc_eval.columns: agg_dict[f'avg_return_{period}'] = 'mean'
-            interval_summary = df_mc_eval.groupby('interval').agg(agg_dict).reset_index()
-            save_analysis_result(run_id, "ALL", "ALL", 'mc_eval_interval_summary', interval_summary.to_dict(orient='records'))
+        # 3b-3d. Save CD / MC evaluation results
+        save_eval_results(run_id, cd_eval_results, 'cd')
+        save_eval_results(run_id, mc_eval_results, 'mc')
         
         # 4. Compute per-index breadth (KEY CHANGE)
         def aggregate_signals_for_tickers(df, ticker_list, metric_name):

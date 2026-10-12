@@ -3,13 +3,14 @@ import numpy as np
 from data_loader import download_stock_data
 from indicators import compute_cd_indicator, compute_mc_indicator, compute_cd_score
 import yfinance as yf
+from app.logic.signal_stats import add_signal_stats
 from app.logic.scoring_config import get_cd_threshold
 
 # EMA warmup period - should match the value in indicators.py
 EMA_WARMUP_PERIOD = 0
 
 # Maximum number of latest signals to process (to reduce noise from older signals)
-MAX_SIGNALS_THRESHOLD = 7
+MAX_SIGNALS_THRESHOLD = 20
 
 def find_latest_mc_signal_before_cd(data, cd_date, mc_signals):
     """
@@ -168,9 +169,6 @@ def calculate_returns(data, cd_signals, periods=None, max_signals=MAX_SIGNALS_TH
                 cd_signals_bool[ts] = False
     
     signal_dates = data.index[cd_signals_bool]
-    
-    # Keep only signals with a full forward window, so every period is measured on the same sample
-    signal_dates = signal_dates[[data.index.get_loc(d) + max(periods) < len(data) for d in signal_dates]]
     
     # Limit to the latest N signals to reduce noise from older signals
     if len(signal_dates) > max_signals:
@@ -470,7 +468,7 @@ def evaluate_interval(ticker, interval, data=None):
                 individual_returns = [round(float(x), 2) for x in returns_df[return_col].dropna().tolist()]  # Convert to Python float
                 individual_volumes = [round(int(x), 0) for x in returns_df[volume_col].dropna().tolist()] if volume_col in returns_df else []  # Convert to Python int
                 test_count = len(individual_returns)
-                success_rate = round(float((pd.Series(returns_df[return_col].dropna()) > 0).mean() * 100), 2)  # Convert to Python float
+                success_rate = round(float((pd.Series(returns_df[return_col].dropna()) > 0).mean() * 100), 2) if test_count > 0 else 0  # Convert to Python float
                 avg_return = round(float(pd.Series(returns_df[return_col].dropna()).mean()), 2) if test_count > 0 else 0  # Convert to Python float
                 avg_volume = round(int(pd.Series(returns_df[volume_col].dropna()).mean()), 0) if volume_col in returns_df and len(returns_df[volume_col].dropna()) > 0 else 0  # Convert to Python int
             else:
@@ -557,6 +555,10 @@ def evaluate_interval(ticker, interval, data=None):
                 
         result['max_return'] = round(float(max(all_returns)), 2) if all_returns else 0  # Convert to Python float
         result['min_return'] = round(float(min(all_returns)), 2) if all_returns else 0  # Convert to Python float
+
+        # Each period is measured on the signals that have that many bars after them (returns are NaN otherwise);
+        # add baseline / excess return, best period from the fixed grid and walk-forward out-of-sample stats
+        add_signal_stats(result, returns_df, data_frame, bullish=True)
         
         # Add NX values (both signal and current values)
         # Signal NX values (at signal dates) - using the latest signal date if available

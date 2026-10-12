@@ -3,13 +3,14 @@ import numpy as np
 from data_loader import download_stock_data
 from indicators import compute_mc_indicator, compute_cd_indicator, compute_mc_score
 import yfinance as yf
+from app.logic.signal_stats import add_signal_stats
 from app.logic.scoring_config import get_mc_threshold
 
 # EMA warmup period - should match the value in indicators.py
 EMA_WARMUP_PERIOD = 0
 
 # Maximum number of latest signals to process (to reduce noise from older signals)
-MAX_SIGNALS_THRESHOLD = 7
+MAX_SIGNALS_THRESHOLD = 20
 
 def find_latest_cd_signal_before_mc(data, mc_date, cd_signals):
     """
@@ -167,9 +168,6 @@ def calculate_returns(data, mc_signals, periods=None, max_signals=MAX_SIGNALS_TH
                 mc_signals_bool[ts] = False
     
     signal_dates = data.index[mc_signals_bool]
-    
-    # Keep only signals with a full forward window, so every period is measured on the same sample
-    signal_dates = signal_dates[[data.index.get_loc(d) + max(periods) < len(data) for d in signal_dates]]
     
     # Limit to the latest N signals to reduce noise from older signals
     if len(signal_dates) > max_signals:
@@ -561,6 +559,10 @@ def evaluate_interval(ticker, interval, data=None):
         else:
             result['max_return'] = 0
             result['min_return'] = 0
+
+        # Each period is measured on the signals that have that many bars after them (returns are NaN otherwise);
+        # add baseline / excess return, best period from the fixed grid and walk-forward out-of-sample stats
+        add_signal_stats(result, returns_df, data_frame, bullish=False)
         
         # Add NX values (both signal and current values)
         # Signal NX values (at signal dates) - using the latest signal date if available
