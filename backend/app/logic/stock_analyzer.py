@@ -10,7 +10,7 @@ import logging
 # Setup logger
 logger = logging.getLogger(__name__)
 
-from data_loader import load_stock_list, download_stock_data
+from data_loader import load_stock_list, download_stock_data, drop_unfinished_bars
 from app.logic.db_utils import (
     save_price_history,
     create_analysis_run,
@@ -194,6 +194,10 @@ def process_ticker_all(ticker, end_date=None):
                 continue
             if not df.empty:
                 save_price_history(ticker, interval, df)
+        
+        # Charts keep the live bar, but signals only come from bars that have closed
+        # (a signal on a still-forming bar can disappear by the time the bar closes)
+        data = drop_unfinished_bars(data)
         
         # Process for 1234 breakout (CD signals)
         results_1234 = process_ticker_1234(ticker, data)

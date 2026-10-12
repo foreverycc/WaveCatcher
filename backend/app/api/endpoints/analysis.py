@@ -19,6 +19,7 @@ from app.logic.db_utils import save_price_history
 from app.logic.options import get_option_data
 from app.logic.scoring_config import get_config as get_scoring_config, save_config as save_scoring_config, DEFAULT_CONFIG as SCORING_DEFAULTS, get_cd_threshold, get_mc_threshold, get_hq_algorithm, get_hq_high_return_config
 from app.logic.hq_filters import compute_high_return_cd, compute_high_return_mc
+from app.logic.data_loader import unfinished_bars
 
 logger = logging.getLogger(__name__)
 
@@ -586,6 +587,11 @@ async def get_price_history(
         cd_breakthrough = cd_breakthrough.fillna(False).astype(bool)
         mc_breakthrough = mc_breakthrough.fillna(False).astype(bool)
 
+        # No signals on a bar that is still forming
+        forming = unfinished_bars(df.index, interval)
+        cd_signals[forming] = False
+        mc_signals[forming] = False
+
         # Apply score threshold filtering
         cd_thresh = get_cd_threshold()
         mc_thresh = get_mc_threshold()
@@ -730,6 +736,10 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
         try:
             cd_sig = compute_cd_indicator(df).fillna(False).astype(bool)
             mc_sig = compute_mc_indicator(df).fillna(False).astype(bool)
+            # No signals on a bar that is still forming
+            forming = unfinished_bars(df.index, interval)
+            cd_sig[forming] = False
+            mc_sig[forming] = False
             cd_sc = compute_cd_score(df)
             mc_sc = compute_mc_score(df)
 

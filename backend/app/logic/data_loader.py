@@ -1,9 +1,43 @@
+import numpy as np
 import pandas as pd
 import yfinance as yf
 import logging
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
+
+MARKET_TZ = 'America/New_York'
+MARKET_CLOSE = pd.Timedelta(hours=16)
+INTRADAY_BAR_LENGTH = {'1h': pd.Timedelta(hours=1), '2h': pd.Timedelta(hours=2),
+                       '3h': pd.Timedelta(hours=3), '4h': pd.Timedelta(hours=4)}
+
+def unfinished_bars(index, interval, now=None):
+    """
+    Boolean array: True for bars that have not closed yet at `now`.
+    Bars are labelled by their start time; an intraday bar ends after its length or at the 16:00 close,
+    a daily bar at the 16:00 close. Naive timestamps are taken as US/Eastern (how the database stores them).
+    """
+    idx = pd.DatetimeIndex(index)
+    if len(idx) == 0 or (interval != '1d' and interval not in INTRADAY_BAR_LENGTH):
+        return np.zeros(len(idx), dtype=bool)
+    local = idx.tz_convert(MARKET_TZ) if idx.tz is not None else idx.tz_localize(MARKET_TZ)
+    now = pd.Timestamp.now(tz=MARKET_TZ) if now is None else pd.Timestamp(now)
+    now = now.tz_convert(MARKET_TZ) if now.tzinfo is not None else now.tz_localize(MARKET_TZ)
+    session_close = local.normalize() + MARKET_CLOSE
+    if interval == '1d':
+        ends = session_close
+    else:
+        ends = local + INTRADAY_BAR_LENGTH[interval]
+        ends = ends.where(ends < session_close, session_close)
+    return np.asarray(ends > now)
+
+def drop_unfinished_bars(data_ticker, now=None):
+    """Copy of data_ticker without bars that are still forming, so signals only come from closed bars."""
+    result = dict(data_ticker)
+    for interval, df in data_ticker.items():
+        if isinstance(df, pd.DataFrame) and not df.empty:
+            result[interval] = df[~unfinished_bars(df.index, interval, now)]
+    return result
 
 def load_stock_list(file_path):
     return pd.read_csv(file_path, sep='\t', header=None, names=['ticker'])['ticker'].tolist()

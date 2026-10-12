@@ -1,16 +1,27 @@
 import pandas as pd
 import numpy as np
 
+# MACD needs this many bars before its EMAs have settled
+MACD_WARMUP_BARS = 60
+
+
+def _signal_ready(cross_up, cross_down):
+    """
+    Bars where a divergence signal can be trusted: MACD has warmed up and two MACD crosses each way
+    have happened, so the REF lookbacks (two segments back) land on real data instead of the
+    start of the history (like Futu, where BARSLAST/REF before the data start are invalid).
+    """
+    warmed_up = np.arange(len(cross_up)) >= MACD_WARMUP_BARS
+    ups = cross_up.fillna(False).astype(int).cumsum().values >= 2
+    downs = cross_down.fillna(False).astype(int).cumsum().values >= 2
+    return warmed_up & ups & downs
+
+
 def compute_cd_indicator(data):
     # Ensure we get a Series, not a DataFrame column
     close = data['Close']
     if isinstance(close, pd.DataFrame):
         close = close.iloc[:, 0]  # Extract first column as Series
-    
-    # Define EMA warmup period (conservative standard)
-    # Extended to 50 periods for additional safety margin in EMA convergence
-    # Ensures high-quality signals with sufficient historical context
-    ema_warmup_period = 0
     
     # 计算MACD
     fast_ema = close.ewm(span=12, adjust=False).mean()
@@ -51,7 +62,7 @@ def compute_cd_indicator(data):
     # Mark early periods as NA due to EMA approximation
     # Professional approach: Only show signals when we're confident they're accurate
     result = dxdx.copy().astype('object')  # Convert to object dtype to allow NaN
-    result.iloc[:ema_warmup_period] = np.nan
+    result[~_signal_ready(cross_up, cross_down)] = np.nan
     
     return result
 
@@ -64,11 +75,6 @@ def compute_mc_indicator(data):
     close = data['Close']
     if isinstance(close, pd.DataFrame):
         close = close.iloc[:, 0]  # Extract first column as Series
-    
-    # Define EMA warmup period (conservative standard)
-    # Extended to 50 periods for additional safety margin in EMA convergence
-    # Ensures high-quality signals with sufficient historical context
-    ema_warmup_period = 0
     
     # 计算MACD
     fast_ema = close.ewm(span=12, adjust=False).mean()
@@ -118,7 +124,7 @@ def compute_mc_indicator(data):
     # Mark early periods as NA due to EMA approximation
     # Professional approach: Only show signals when we're confident they're accurate
     result = dbjgxc.copy().astype('object')  # Convert to object dtype to allow NaN
-    result.iloc[:ema_warmup_period] = np.nan
+    result[~_signal_ready(cross_up, cross_down)] = np.nan
     
     return result
 
