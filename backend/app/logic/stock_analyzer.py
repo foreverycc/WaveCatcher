@@ -21,7 +21,7 @@ from app.logic.utils import (
     calculate_current_nx_values,
 )
 from app.logic.scoring_config import get_interval_weights
-from app.logic.signal_stats import BEST_PERIOD_GRID, select_best_rows
+from app.logic.signal_stats import BEST_PERIOD_GRID, select_best_rows, pooled_stats, pooled_edges, apply_universe_baseline
 from app.logic.get_resonance_signal_CD import (
     process_ticker_1234, 
     identify_1234, 
@@ -43,7 +43,7 @@ best_intervals_columns = ['ticker', 'interval', 'hold_time',
                           'avg_return', 'latest_signal', 'latest_signal_price', 
                           'current_time', 'current_price', 'current_period',
                           'test_count', 'success_rate', 'best_period', 'signal_count',
-                          'excess_return', 'baseline_return', 'oos_avg_return', 'oos_success_rate', 'oos_count',
+                          'excess_return', 'baseline_return', 'pooled_excess_return', 'oos_avg_return', 'oos_success_rate', 'oos_count',
                           'nx_1d_signal', 'nx_1h_signal',
                           'nx_1d', 'nx_1h', 'nx_4h',
                           'mc_signals_before_cd', 'mc_at_top_price_count', 'mc_at_top_price_rate',
@@ -56,7 +56,7 @@ mc_best_intervals_columns = ['ticker', 'interval', 'hold_time',
                              'avg_return', 'latest_signal', 'latest_signal_price', 
                              'current_time', 'current_price', 'current_period',
                              'test_count', 'success_rate', 'best_period', 'signal_count',
-                             'excess_return', 'baseline_return', 'oos_avg_return', 'oos_success_rate', 'oos_count',
+                             'excess_return', 'baseline_return', 'pooled_excess_return', 'oos_avg_return', 'oos_success_rate', 'oos_count',
                              'nx_1d_signal', 'nx_1h_signal',
                              'nx_1d', 'nx_1h', 'nx_4h',
                              'cd_signals_before_mc', 'cd_at_bottom_price_count', 'cd_at_bottom_price_rate',
@@ -222,13 +222,14 @@ def process_ticker_all(ticker, end_date=None):
         print(f"Error processing {ticker}: {e}")
         return ticker, None, None, [], [], None
 
-def save_eval_results(run_id, eval_results, side):
+def save_eval_results(run_id, eval_results, side, all_ticker_data):
     """
     Save CD ('cd') or MC ('mc') evaluation tables: detailed rows, returns distribution,
     best intervals for each period range, good signals and per-interval summary.
 
     Best periods come from the fixed BEST_PERIOD_GRID, must have at least MIN_SAMPLES signals
-    and beat the no-signal baseline by MIN_EXCESS_RETURN (see signal_stats.py).
+    and beat the rest of the stock list by MIN_EXCESS_RETURN; with REQUIRE_POOLED_EDGE the
+    interval/period must also show an edge pooled over all stocks (see signal_stats.py).
     """
     if not eval_results:
         return
@@ -242,6 +243,8 @@ def save_eval_results(run_id, eval_results, side):
                 frame[col] = frame[col].round(3)
         return frame
 
+    # Excess return of every signal over the other stocks in the list over the same bars
+    apply_universe_baseline(eval_results, all_ticker_data, bullish)
     df_eval = round_floats(pd.DataFrame(eval_results))
     save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_custom_detailed', df_eval.to_dict(orient='records'))
 
@@ -273,17 +276,24 @@ def save_eval_results(run_id, eval_results, side):
         frame = frame[[col for col in columns if col in frame.columns]]
         return round_floats(frame.sort_values('latest_signal', ascending=False))
 
+    # Pooled edge per interval x period over the whole stock list
+    pooled = pooled_stats(df_eval, BEST_PERIOD_GRID, bullish)
+    for row in pooled:
+        row['hold_time'] = format_hold_time_bars(row['interval'], row['period'])
+    save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_pooled_stats', pooled)
+    edges = pooled_edges(pooled)
+
     # Best intervals per period range (one row per ticker, signal still inside its best holding window)
     for range_name, range_periods in period_ranges.items():
         grid = [p for p in BEST_PERIOD_GRID if p in range_periods]
-        best_intervals = select_best_rows(df_eval, grid, bullish, one_per_ticker=True)
+        best_intervals = select_best_rows(df_eval, grid, bullish, one_per_ticker=True, edges=edges)
         if not best_intervals.empty:
             best_intervals = best_intervals[best_intervals['current_period'] <= best_intervals['best_period']]
         records = finish(best_intervals).to_dict(orient='records') if not best_intervals.empty else []
         save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_best_intervals_{range_name}', records)
 
     # Good signals (every ticker/interval that passes, over the full grid)
-    good_signals = select_best_rows(df_eval, BEST_PERIOD_GRID, bullish, one_per_ticker=False)
+    good_signals = select_best_rows(df_eval, BEST_PERIOD_GRID, bullish, one_per_ticker=False, edges=edges)
     records = finish(good_signals).to_dict(orient='records') if not good_signals.empty else []
     save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_good_signals', records)
 
@@ -596,8 +606,8 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
             save_analysis_result(run_id, "ALL", "ALL", 'mc_breakthrough_score_by_interval', mc_hq_score)
 
         # 5-6. Save CD / MC evaluation results
-        save_eval_results(run_id, cd_eval_results, 'cd')
-        save_eval_results(run_id, mc_eval_results, 'mc')
+        save_eval_results(run_id, cd_eval_results, 'cd', all_ticker_data)
+        save_eval_results(run_id, mc_eval_results, 'mc', all_ticker_data)
         
         from app.services.report_snapshot import save_report_snapshot
         from app.services.index_config import load_index_config
@@ -798,8 +808,8 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                            df_mc_breakout_1234.to_dict(orient='records') if not df_mc_breakout_1234.empty else [])
         
         # 3b-3d. Save CD / MC evaluation results
-        save_eval_results(run_id, cd_eval_results, 'cd')
-        save_eval_results(run_id, mc_eval_results, 'mc')
+        save_eval_results(run_id, cd_eval_results, 'cd', all_ticker_data)
+        save_eval_results(run_id, mc_eval_results, 'mc', all_ticker_data)
         
         # 4. Compute per-index breadth (KEY CHANGE)
         def aggregate_signals_for_tickers(df, ticker_list, metric_name):

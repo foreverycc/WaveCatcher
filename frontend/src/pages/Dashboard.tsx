@@ -420,6 +420,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 { value: 'best_intervals_20', label: 'Best Intervals (20)' },
                                 { value: 'best_intervals_100', label: 'Best Intervals (100)' },
                                 { value: 'good_signals', label: 'High Return Intervals' },
+                                { value: 'pooled_stats', label: 'Signal Edge (All Stocks)' },
                                 { value: 'custom_detailed', label: 'Detailed Results' },
                                 { value: '1234', label: '1234 Model' },
                             ].map((tab) => (
