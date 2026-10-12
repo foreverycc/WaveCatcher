@@ -25,7 +25,8 @@ interface SignalBreadthDataPoint {
     count_1d: number;
 }
 
-interface IndexSummaryCardProps {
+export interface IndexSummaryCardProps {
+    staticSummary?: boolean;
     title: string;
     spxData: any[];
     cdBreadth: BreadthDataPoint[];
@@ -97,7 +98,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     maxDate,
     signals1234,
     tickers = [],
-    indexTicker
+    indexTicker,
+    staticSummary = false
 }) => {
     const [cardView, setCardView] = useState<'summary' | 'histogram' | 'chart'>('summary');
     const [selectedTicker, setSelectedTicker] = useState<string>('');
@@ -112,7 +114,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         queryKey: ['stockPriceHistory', selectedTicker, '1d'],
         queryFn: () => analysisApi.getPriceHistory(selectedTicker, '1d'),
         staleTime: 1000 * 60 * 60, // 1 hour
-        enabled: !!selectedTicker && cardView === 'chart'
+        enabled: !staticSummary && !!selectedTicker && cardView === 'chart'
     });
 
     // Fetch per-ticker signal/score data across all intervals (for component OR index)
@@ -120,7 +122,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         queryKey: ['tickerSignals', effectiveTicker],
         queryFn: () => effectiveTicker ? analysisApi.getTickerSignals(effectiveTicker) : null,
         staleTime: 1000 * 60 * 60,
-        enabled: !!effectiveTicker && cardView === 'chart'
+        enabled: !staticSummary && !!effectiveTicker && cardView === 'chart'
     });
 
     // When a ticker is selected, swap index-level breadth with per-ticker data
@@ -521,7 +523,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         )}
                     </div>
                     {/* Navigation arrows */}
-                    <div className="flex items-center justify-between mt-1">
+                    <div className="flex items-center justify-between mt-1" hidden={staticSummary}>
                         <button
                             onClick={() => setCardView('histogram')}
                             className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"

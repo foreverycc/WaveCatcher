@@ -97,7 +97,7 @@ function AppContent() {
   const { data: jobStatus, refetch: refetchStatus } = useQuery({
     queryKey: ['jobStatus'],
     queryFn: analysisApi.getStatus,
-    refetchInterval: (query) => (query.state.data?.status === 'running' ? 1000 : false)
+    refetchInterval: (query) => (['running', 'pending'].includes(query.state.data?.status || '') ? 1000 : 10000)
   });
 
   // Auto-refresh data when job completes (without reloading the page)
@@ -194,7 +194,7 @@ function AppContent() {
         isUpdatingIndices={updateIndicesMutation.isPending}
       />
 
-      <main className="flex-1 overflow-auto bg-secondary/30 flex flex-col">
+      <main className="flex-1 min-w-0 overflow-auto bg-secondary/30 flex flex-col">
         {activePage === 'dashboard' ? (
           <Dashboard
             selectedStockList={selectedStockList}

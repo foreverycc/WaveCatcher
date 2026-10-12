@@ -1,0 +1,21 @@
+/* Layout only: colors, marks, scales and calculations come from Summary components. */
+html,body{height:auto!important}
+body{background:#f2f5fa}
+.report-shell{max-width:1200px;margin:0 auto;padding:32px 24px}
+.report-header{padding:28px;background:#12243e;color:white;border-radius:16px;margin-bottom:24px}
+.report-header h1{font-size:30px;font-weight:700;margin:8px 0}
+.report-header p{margin:8px 0}
+.report-header button{background:white;color:#17243a;border-radius:6px;padding:8px 16px;margin-top:12px}
+.report-sector{margin:32px 0 48px}
+.report-sector>h2,.report-tables h2{font-size:24px;font-weight:700;margin:24px 0 16px}
+.report-tables article{background:white;padding:18px;border:1px solid #dde4ed;border-radius:10px}
+.report-tables h3{font-weight:600;margin-bottom:12px}
+.report-table-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.report-tables table{width:100%;font-size:12px;border-collapse:collapse}
+.report-tables th,.report-tables td{padding:8px;text-align:left;border-bottom:1px solid #e2e8f0}
+.report-figures button{display:none}
+.report-distribution .overflow-y-auto{overflow:visible}
+.report-warning{background:#fff4d6;padding:16px;border-radius:8px;margin:16px 0}
+@media(max-width:760px){.report-shell{padding:16px}.report-table-grid{grid-template-columns:1fr}.report-breadth,.report-distribution{min-width:720px}.report-sector{overflow-x:auto}}
+@page{size:A4 landscape;margin:10mm}
+@media print{body{background:white}.report-shell{padding:0;max-width:none}.report-header{color:#17243a;background:white;border-bottom:2px solid #17243a}.report-header button{display:none}.report-summary,.report-breadth,.report-distribution{break-inside:avoid;break-before:page}.report-tables article{break-inside:avoid}.report-sector{overflow:visible}}

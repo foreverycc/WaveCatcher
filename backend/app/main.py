@@ -1,5 +1,6 @@
 import sys
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -11,7 +12,8 @@ sys.path.append(logic_path)
 # Add parent directory to sys.path to allow imports from app
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app.api.endpoints import analysis, stocks
+from app.api.endpoints import analysis, stocks, reports
+from app.services.scheduler import scheduler
 from app.db.database import engine, Base
 from app.db import models
 
@@ -35,7 +37,17 @@ logger = logging.getLogger(__name__)
 # Reduce yfinance logging verbosity
 logging.getLogger('yfinance').setLevel(logging.WARNING)
 
+@asynccontextmanager
+async def lifespan(app):
+    scheduler.start()
+    try:
+        yield
+    finally:
+        scheduler.stop()
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="Stock Signal Dashboard API",
     description="API for Stock Signal Analysis Dashboard",
     version="1.0.0"
@@ -53,6 +65,7 @@ app.add_middleware(
 # Include routers
 app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])
 app.include_router(stocks.router, prefix="/api/stocks", tags=["stocks"])
+app.include_router(reports.router, prefix="/api/reports", tags=["reports"])
 
 @app.get("/")
 async def root():

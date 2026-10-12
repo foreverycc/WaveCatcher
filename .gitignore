@@ -32,3 +32,9 @@ backend/backend_server.log
 .DS_Store
 .DS_Store
 .vscode/settings.json
+reports/
+backend/data/report_settings.json
+backend/data/schedule_state.json
+backend/data/scheduler.lock
+__pycache__/
+frontend/dist-report/

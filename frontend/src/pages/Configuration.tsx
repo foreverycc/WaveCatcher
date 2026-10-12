@@ -4,6 +4,7 @@ import { stocksApi, analysisApi } from '../services/api';
 import { Save, Trash2, Plus, RefreshCw, FileText, Settings, Edit2, Check, X, AlertTriangle, CheckCircle } from 'lucide-react';
 import { cn } from '../utils/cn';
 import ScoringConfigPanel from '../components/ScoringConfigPanel';
+import { ReportSettingsPanel } from '../components/ReportSettingsPanel';
 
 export const Configuration: React.FC = () => {
     const queryClient = useQueryClient();
@@ -168,12 +169,13 @@ export const Configuration: React.FC = () => {
     };
 
     return (
-        <div className="p-8 max-w-6xl mx-auto space-y-8">
+        <div className="w-full p-4 md:p-8 max-w-6xl mx-auto space-y-8">
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-bold text-foreground">Configuration</h2>
             </div>
 
             {/* === Scoring Weights Section === */}
+            <ReportSettingsPanel />
             <ScoringConfigPanel />
 
             {/* === Index Configuration Section === */}

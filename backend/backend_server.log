@@ -43191,3 +43191,313 @@ sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) attempt to write a r
 2026-10-11 17:03:08,894 - app.api.endpoints.analysis - INFO - [HQ] KWEB/3h: algo=breakthrough, cd_sig=10, cd_1234=1, mc_sig=2, mc_1234=1
 2026-10-11 17:03:09,112 - app.api.endpoints.analysis - INFO - [HQ] KWEB/4h: algo=breakthrough, cd_sig=13, cd_1234=1, mc_sig=1, mc_1234=1
 2026-10-11 17:03:09,347 - app.api.endpoints.analysis - INFO - [HQ] KWEB/1d: algo=breakthrough, cd_sig=7, cd_1234=0, mc_sig=2, mc_1234=0
+2026-10-11 21:33:57,874 - app.services.engine - INFO - Job de56fdf23005468fbc9e79dcd79663fa: Starting multi-index analysis for ['SPX', 'QQQ', 'DJI', 'IWM']
+2026-10-11 21:33:57,874 - app.services.engine - INFO - Started multi-index analysis job de56fdf23005468fbc9e79dcd79663fa for indices: ['SPX', 'QQQ', 'DJI', 'IWM']
+2026-10-11 21:33:57,882 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['SPX', 'QQQ', 'DJI', 'IWM']
+2026-10-11 21:33:57,883 - app.logic.stock_analyzer - INFO - Loaded 503 tickers for SPX
+2026-10-11 21:33:57,883 - app.logic.stock_analyzer - INFO - Loaded 101 tickers for QQQ
+2026-10-11 21:33:57,884 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-10-11 21:33:57,884 - app.logic.stock_analyzer - INFO - Loaded 1982 tickers for IWM
+2026-10-11 21:33:57,884 - app.logic.stock_analyzer - INFO - Combined unique tickers: 2504
+2026-10-11 21:33:57,884 - app.logic.stock_analyzer - INFO - Processing 2504 combined tickers...
+2026-10-11 21:33:57,884 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-10-11 21:33:59,726 - data_loader - WARNING - ⚠️ VC: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:33:59,743 - data_loader - WARNING - ⚠️ HYLN: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:33:59,764 - data_loader - WARNING - ⚠️ BELFA: Missing 1h data for 9 trading day(s): 2025-02-06, 2025-04-11, 2025-04-28, 2025-04-29, 2025-05-27, 2025-09-12, 2025-10-13, 2026-07-13, 2026-07-14
+2026-10-11 21:33:59,778 - data_loader - WARNING - ⚠️ HPQ: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:33:59,832 - data_loader - WARNING - ⚠️ MRVI: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:33:59,933 - data_loader - WARNING - ⚠️ NRIM: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:00,060 - data_loader - WARNING - ⚠️ STRO: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:01,453 - app.logic.stock_analyzer - WARNING - ⚠️ VC: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:01,476 - app.logic.stock_analyzer - WARNING - ⚠️ BELFA: Missing 1h data for 9 trading day(s): 2025-02-06, 2025-04-11, 2025-04-28, 2025-04-29, 2025-05-27, 2025-09-12, 2025-10-13, 2026-07-13, 2026-07-14
+2026-10-11 21:34:01,646 - app.logic.stock_analyzer - WARNING - ⚠️ HYLN: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:01,647 - app.logic.stock_analyzer - WARNING - ⚠️ MRVI: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:01,658 - app.logic.stock_analyzer - WARNING - ⚠️ HPQ: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:01,842 - app.logic.stock_analyzer - WARNING - ⚠️ NRIM: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:02,144 - app.logic.stock_analyzer - WARNING - ⚠️ STRO: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:23,196 - data_loader - WARNING - ⚠️ PKOH: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:23,298 - data_loader - WARNING - ⚠️ PAYS: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:23,642 - data_loader - WARNING - ⚠️ SNDK: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:24,590 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=2
+2026-10-11 21:34:24,593 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-10-11 21:34:24,594 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-10-11 21:34:24,594 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=2
+2026-10-11 21:34:24,594 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: []
+2026-10-11 21:34:24,594 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: []
+2026-10-11 21:34:24,595 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=2
+2026-10-11 21:34:24,595 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: []
+2026-10-11 21:34:24,595 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: []
+2026-10-11 21:34:24,618 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=2
+2026-10-11 21:34:24,618 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-10-11 21:34:24,619 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-10-11 21:34:25,113 - app.logic.stock_analyzer - WARNING - ⚠️ PKOH: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:25,181 - app.logic.stock_analyzer - WARNING - ⚠️ SNDK: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:25,237 - app.logic.stock_analyzer - WARNING - ⚠️ PAYS: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:42,595 - data_loader - WARNING - ⚠️ GPRO: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:42,785 - data_loader - WARNING - ⚠️ INSE: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:44,424 - app.logic.stock_analyzer - WARNING - ⚠️ GPRO: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:44,497 - app.logic.stock_analyzer - WARNING - ⚠️ INSE: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:46,709 - data_loader - WARNING - ⚠️ NGVC: Missing 1h data for 3 trading day(s): 2026-07-10, 2026-07-13, 2026-07-14
+2026-10-11 21:34:46,772 - data_loader - WARNING - ⚠️ EVGO: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:48,631 - app.logic.stock_analyzer - WARNING - ⚠️ NGVC: Missing 1h data for 3 trading day(s): 2026-07-10, 2026-07-13, 2026-07-14
+2026-10-11 21:34:48,745 - app.logic.stock_analyzer - WARNING - ⚠️ EVGO: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:34:52,001 - data_loader - WARNING - ⚠️ FCAP: Missing 1h data for 25 trading day(s): 2024-10-14, 2024-11-13, 2024-11-20, 2024-11-27, 2024-12-02, 2024-12-04, 2025-01-16, 2025-01-17, 2025-01-31, 2025-02-03, 2025-02-12, 2025-09-09, 2025-09-23, 2025-10-07, 2025-11-05, 2025-11-10, 2025-11-13, 2025-11-19, 2025-12-24, 2026-04-15, 2026-04-20, 2026-04-21, 2026-04-30, 2026-05-04, 2026-05-18
+2026-10-11 21:34:53,854 - app.logic.stock_analyzer - WARNING - ⚠️ FCAP: Missing 1h data for 25 trading day(s): 2024-10-14, 2024-11-13, 2024-11-20, 2024-11-27, 2024-12-02, 2024-12-04, 2025-01-16, 2025-01-17, 2025-01-31, 2025-02-03, 2025-02-12, 2025-09-09, 2025-09-23, 2025-10-07, 2025-11-05, 2025-11-10, 2025-11-13, 2025-11-19, 2025-12-24, 2026-04-15, 2026-04-20, 2026-04-21, 2026-04-30, 2026-05-04, 2026-05-18
+2026-10-11 21:35:07,354 - data_loader - WARNING - ⚠️ BATRK: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:09,127 - app.logic.stock_analyzer - WARNING - ⚠️ BATRK: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:10,204 - data_loader - WARNING - ⚠️ TARA: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:10,260 - data_loader - WARNING - ⚠️ FBYD: Missing 1h data for 3 trading day(s): 2025-05-22, 2026-07-13, 2026-07-14
+2026-10-11 21:35:11,255 - data_loader - WARNING - ⚠️ XPRO: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:12,078 - app.logic.stock_analyzer - WARNING - ⚠️ TARA: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:12,169 - app.logic.stock_analyzer - WARNING - ⚠️ FBYD: Missing 1h data for 3 trading day(s): 2025-05-22, 2026-07-13, 2026-07-14
+2026-10-11 21:35:13,277 - app.logic.stock_analyzer - WARNING - ⚠️ XPRO: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:29,230 - data_loader - WARNING - ⚠️ MCHB: Missing 1h data for 88 trading day(s): 2025-04-22, 2025-04-23, 2025-04-24, 2025-04-25, 2025-04-28, 2025-04-29, 2025-04-30, 2025-05-01, 2025-05-02, 2025-05-05, 2025-05-06, 2025-05-07, 2025-05-08, 2025-05-09, 2025-05-12, 2025-05-13, 2025-05-14, 2025-05-15, 2025-05-16, 2025-05-19, 2025-05-20, 2025-05-21, 2025-05-22, 2025-05-23, 2025-05-27, 2025-05-28, 2025-05-30, 2025-06-02, 2025-06-03, 2025-06-04, 2025-06-05, 2025-06-06, 2025-06-09, 2025-06-10, 2025-06-11, 2025-06-12, 2025-06-13, 2025-06-16, 2025-06-17, 2025-06-18, 2025-06-20, 2025-06-23, 2025-06-24, 2025-06-25, 2025-06-26, 2025-06-27, 2025-06-30, 2025-07-01, 2025-07-02, 2025-07-03, 2025-07-07, 2025-07-08, 2025-07-09, 2025-07-10, 2025-07-11, 2025-07-14, 2025-07-15, 2025-07-16, 2025-07-17, 2025-07-21, 2025-07-22, 2025-07-23, 2025-07-24, 2025-07-25, 2025-07-28, 2025-07-29, 2025-07-30, 2025-07-31, 2025-08-01, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07, 2025-08-08, 2025-08-11, 2025-08-12, 2025-08-13, 2025-08-15, 2025-08-18, 2025-08-19, 2025-08-20, 2025-08-21, 2025-08-22, 2025-08-25, 2025-08-26, 2025-08-27, 2025-08-28, 2025-08-29
+2026-10-11 21:35:30,201 - app.logic.stock_analyzer - WARNING - ⚠️ MCHB: Missing 1h data for 88 trading day(s): 2025-04-22, 2025-04-23, 2025-04-24, 2025-04-25, 2025-04-28, 2025-04-29, 2025-04-30, 2025-05-01, 2025-05-02, 2025-05-05, 2025-05-06, 2025-05-07, 2025-05-08, 2025-05-09, 2025-05-12, 2025-05-13, 2025-05-14, 2025-05-15, 2025-05-16, 2025-05-19, 2025-05-20, 2025-05-21, 2025-05-22, 2025-05-23, 2025-05-27, 2025-05-28, 2025-05-30, 2025-06-02, 2025-06-03, 2025-06-04, 2025-06-05, 2025-06-06, 2025-06-09, 2025-06-10, 2025-06-11, 2025-06-12, 2025-06-13, 2025-06-16, 2025-06-17, 2025-06-18, 2025-06-20, 2025-06-23, 2025-06-24, 2025-06-25, 2025-06-26, 2025-06-27, 2025-06-30, 2025-07-01, 2025-07-02, 2025-07-03, 2025-07-07, 2025-07-08, 2025-07-09, 2025-07-10, 2025-07-11, 2025-07-14, 2025-07-15, 2025-07-16, 2025-07-17, 2025-07-21, 2025-07-22, 2025-07-23, 2025-07-24, 2025-07-25, 2025-07-28, 2025-07-29, 2025-07-30, 2025-07-31, 2025-08-01, 2025-08-04, 2025-08-05, 2025-08-06, 2025-08-07, 2025-08-08, 2025-08-11, 2025-08-12, 2025-08-13, 2025-08-15, 2025-08-18, 2025-08-19, 2025-08-20, 2025-08-21, 2025-08-22, 2025-08-25, 2025-08-26, 2025-08-27, 2025-08-28, 2025-08-29
+2026-10-11 21:35:32,445 - data_loader - WARNING - ⚠️ AES: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:33,159 - data_loader - WARNING - ⚠️ DHT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:33,905 - data_loader - WARNING - ⚠️ WGS: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:34,332 - app.logic.stock_analyzer - WARNING - ⚠️ AES: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:34,971 - app.logic.stock_analyzer - WARNING - ⚠️ DHT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:35,767 - app.logic.stock_analyzer - WARNING - ⚠️ WGS: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:36,579 - data_loader - WARNING - ⚠️ ZGN: Missing 1h data for 1 trading day(s): 2026-07-14
+2026-10-11 21:35:38,291 - app.logic.stock_analyzer - WARNING - ⚠️ ZGN: Missing 1h data for 1 trading day(s): 2026-07-14
+2026-10-11 21:35:52,246 - data_loader - WARNING - ⚠️ PLBC: Missing 1h data for 4 trading day(s): 2024-12-06, 2025-03-31, 2025-05-19, 2026-01-15
+2026-10-11 21:35:53,736 - data_loader - WARNING - ⚠️ WEAV: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:53,836 - app.logic.stock_analyzer - WARNING - ⚠️ PLBC: Missing 1h data for 4 trading day(s): 2024-12-06, 2025-03-31, 2025-05-19, 2026-01-15
+2026-10-11 21:35:55,419 - app.logic.stock_analyzer - WARNING - ⚠️ WEAV: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:55,568 - data_loader - WARNING - ⚠️ ABX: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:56,225 - app.logic.stock_analyzer - WARNING - ⚠️ ABX: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:58,087 - data_loader - WARNING - ⚠️ NBR: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:35:59,888 - app.logic.stock_analyzer - WARNING - ⚠️ NBR: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:19,996 - data_loader - WARNING - ⚠️ LCTX: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:21,628 - app.logic.stock_analyzer - WARNING - ⚠️ LCTX: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:38,269 - data_loader - WARNING - ⚠️ MITT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:38,475 - data_loader - WARNING - ⚠️ ENS: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:38,684 - data_loader - WARNING - ⚠️ LEGH: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:39,984 - app.logic.stock_analyzer - WARNING - ⚠️ MITT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:40,174 - app.logic.stock_analyzer - WARNING - ⚠️ ENS: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:40,412 - app.logic.stock_analyzer - WARNING - ⚠️ LEGH: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:43,395 - data_loader - WARNING - ⚠️ FSBC: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:45,033 - app.logic.stock_analyzer - WARNING - ⚠️ FSBC: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:49,071 - data_loader - WARNING - ⚠️ STGW: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:50,757 - app.logic.stock_analyzer - WARNING - ⚠️ STGW: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:56,679 - data_loader - WARNING - ⚠️ ITW: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:36:58,315 - app.logic.stock_analyzer - WARNING - ⚠️ ITW: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:37:02,051 - data_loader - WARNING - ⚠️ XNCR: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:37:04,088 - app.logic.stock_analyzer - WARNING - ⚠️ XNCR: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:37:06,919 - data_loader - WARNING - ⚠️ YEXT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:37:08,756 - app.logic.stock_analyzer - WARNING - ⚠️ YEXT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:37:19,904 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=2
+2026-10-11 21:37:19,907 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-10-11 21:37:19,907 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-10-11 21:37:51,971 - app.services.engine - INFO - Job a76c2f5676cc49a1b7b57944e5e6d13f: Starting multi-index analysis for ['QUANTUM', 'SPACE', 'LIGHT', 'STORAGE', 'AIELECTRICITY']
+2026-10-11 21:37:51,971 - app.services.engine - INFO - Started multi-index analysis job a76c2f5676cc49a1b7b57944e5e6d13f for indices: ['QUANTUM', 'SPACE', 'LIGHT', 'STORAGE', 'AIELECTRICITY']
+2026-10-11 21:37:51,979 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['QUANTUM', 'SPACE', 'LIGHT', 'STORAGE', 'AIELECTRICITY']
+2026-10-11 21:37:51,980 - app.logic.stock_analyzer - INFO - Loaded 10 tickers for QUANTUM
+2026-10-11 21:37:51,980 - app.logic.stock_analyzer - INFO - Loaded 22 tickers for SPACE
+2026-10-11 21:37:51,980 - app.logic.stock_analyzer - INFO - Loaded 6 tickers for LIGHT
+2026-10-11 21:37:51,980 - app.logic.stock_analyzer - INFO - Loaded 5 tickers for STORAGE
+2026-10-11 21:37:51,980 - app.logic.stock_analyzer - INFO - Loaded 14 tickers for AIELECTRICITY
+2026-10-11 21:37:51,980 - app.logic.stock_analyzer - INFO - Combined unique tickers: 60
+2026-10-11 21:37:51,980 - app.logic.stock_analyzer - INFO - Processing 60 combined tickers...
+2026-10-11 21:37:51,980 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-10-11 21:37:53,967 - data_loader - WARNING - ⚠️ LITE: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:37:54,041 - data_loader - WARNING - ⚠️ STM: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:37:54,299 - data_loader - WARNING - ⚠️ PWR: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:37:55,787 - app.logic.stock_analyzer - WARNING - ⚠️ LITE: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:37:55,897 - app.logic.stock_analyzer - WARNING - ⚠️ STM: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:37:56,363 - app.logic.stock_analyzer - WARNING - ⚠️ PWR: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:37:58,365 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=NASA, run_id=3
+2026-10-11 21:37:58,371 - app.api.endpoints.analysis - INFO - ticker=NASA CD 1234 dates: []
+2026-10-11 21:37:58,371 - app.api.endpoints.analysis - INFO - ticker=NASA MC 1234 dates: []
+2026-10-11 21:37:58,382 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QTUP, run_id=3
+2026-10-11 21:37:58,383 - app.api.endpoints.analysis - INFO - ticker=QTUP CD 1234 dates: []
+2026-10-11 21:37:58,383 - app.api.endpoints.analysis - INFO - ticker=QTUP MC 1234 dates: []
+2026-10-11 21:37:58,384 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=DRAM, run_id=3
+2026-10-11 21:37:58,385 - app.api.endpoints.analysis - INFO - ticker=DRAM CD 1234 dates: []
+2026-10-11 21:37:58,385 - app.api.endpoints.analysis - INFO - ticker=DRAM MC 1234 dates: []
+2026-10-11 21:37:58,387 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=LITE, run_id=3
+2026-10-11 21:37:58,387 - app.api.endpoints.analysis - INFO - ticker=LITE CD 1234 dates: []
+2026-10-11 21:37:58,387 - app.api.endpoints.analysis - INFO - ticker=LITE MC 1234 dates: []
+2026-10-11 21:37:58,390 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=VOLT, run_id=3
+2026-10-11 21:37:58,390 - app.api.endpoints.analysis - INFO - ticker=VOLT CD 1234 dates: []
+2026-10-11 21:37:58,390 - app.api.endpoints.analysis - INFO - ticker=VOLT MC 1234 dates: []
+2026-10-11 21:38:03,735 - data_loader - WARNING - ⚠️ CAT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:05,348 - app.logic.stock_analyzer - WARNING - ⚠️ CAT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:16,701 - data_loader - WARNING - ⚠️ NRG: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:17,325 - data_loader - WARNING - ⚠️ HQ: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:17,873 - app.logic.stock_analyzer - WARNING - ⚠️ HQ: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:18,577 - app.logic.stock_analyzer - WARNING - ⚠️ NRG: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:19,868 - app.logic.stock_analyzer - INFO - Processed 10/60 tickers
+2026-10-11 21:38:24,992 - data_loader - WARNING - ⚠️ XNDU: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:25,488 - app.logic.stock_analyzer - WARNING - ⚠️ XNDU: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:25,711 - data_loader - WARNING - ⚠️ RDW: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:27,562 - app.logic.stock_analyzer - WARNING - ⚠️ RDW: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:39,741 - data_loader - WARNING - ⚠️ QNT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:40,036 - app.logic.stock_analyzer - WARNING - ⚠️ QNT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:41,250 - app.logic.stock_analyzer - INFO - Processed 20/60 tickers
+2026-10-11 21:38:41,588 - data_loader - WARNING - ⚠️ HUBB: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:42,892 - data_loader - WARNING - ⚠️ VOLT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:43,278 - app.logic.stock_analyzer - WARNING - ⚠️ HUBB: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:44,244 - data_loader - WARNING - ⚠️ VST: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:44,485 - app.logic.stock_analyzer - WARNING - ⚠️ VOLT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:45,996 - app.logic.stock_analyzer - WARNING - ⚠️ VST: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:49,239 - data_loader - WARNING - ⚠️ AXTI: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:38:51,137 - app.logic.stock_analyzer - WARNING - ⚠️ AXTI: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:39:01,295 - app.logic.stock_analyzer - INFO - Processed 30/60 tickers
+2026-10-11 21:39:01,745 - data_loader - WARNING - ⚠️ BKSY: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:39:03,450 - app.logic.stock_analyzer - WARNING - ⚠️ BKSY: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:39:06,683 - data_loader - WARNING - ⚠️ YSS: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:39:07,323 - app.logic.stock_analyzer - WARNING - ⚠️ YSS: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:39:26,100 - app.logic.stock_analyzer - INFO - Processed 40/60 tickers
+2026-10-11 21:39:29,243 - data_loader - WARNING - ⚠️ ETN: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:39:30,838 - data_loader - WARNING - ⚠️ NASA: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:39:31,038 - app.logic.stock_analyzer - WARNING - ⚠️ ETN: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:39:31,316 - app.logic.stock_analyzer - WARNING - ⚠️ NASA: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:39:32,428 - data_loader - WARNING - ⚠️ SNDK: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:39:33,881 - app.logic.stock_analyzer - WARNING - ⚠️ SNDK: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-11 21:39:38,706 - app.logic.stock_analyzer - INFO - Processed 50/60 tickers
+2026-10-11 21:39:56,587 - app.logic.stock_analyzer - INFO - Processed 60/60 tickers
+2026-10-11 21:39:56,601 - app.logic.stock_analyzer - INFO - Processed 60 tickers successfully
+2026-10-11 21:39:58,879 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-10-11 21:39:59,511 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-10-11 21:40:00,137 - app.logic.stock_analyzer - INFO - Computing breadth for QUANTUM with 10 tickers
+2026-10-11 21:40:00,145 - app.logic.stock_analyzer - INFO - Saved CD HQ breadth for QUANTUM: 18 days
+2026-10-11 21:40:00,148 - app.logic.stock_analyzer - INFO - Saved MC HQ breadth for QUANTUM: 15 days
+2026-10-11 21:40:00,155 - app.logic.stock_analyzer - INFO - Saved CD signal breadth by interval for QUANTUM: 141 days
+2026-10-11 21:40:00,161 - app.logic.stock_analyzer - INFO - Saved MC signal breadth by interval for QUANTUM: 119 days
+2026-10-11 21:40:00,168 - app.logic.stock_analyzer - INFO - Saved CD score breadth by interval for QUANTUM: 141 days
+2026-10-11 21:40:00,175 - app.logic.stock_analyzer - INFO - Saved MC score breadth by interval for QUANTUM: 119 days
+2026-10-11 21:40:00,178 - app.logic.stock_analyzer - INFO - Saved CD HQ score by interval for QUANTUM: 18 days
+2026-10-11 21:40:00,180 - app.logic.stock_analyzer - INFO - Saved MC HQ score by interval for QUANTUM: 15 days
+2026-10-11 21:40:00,180 - app.logic.stock_analyzer - INFO - Computing breadth for SPACE with 22 tickers
+2026-10-11 21:40:00,185 - app.logic.stock_analyzer - INFO - Saved CD HQ breadth for SPACE: 61 days
+2026-10-11 21:40:00,189 - app.logic.stock_analyzer - INFO - Saved MC HQ breadth for SPACE: 85 days
+2026-10-11 21:40:00,249 - app.logic.stock_analyzer - INFO - Saved CD signal breadth by interval for SPACE: 296 days
+2026-10-11 21:40:00,259 - app.logic.stock_analyzer - INFO - Saved MC signal breadth by interval for SPACE: 329 days
+2026-10-11 21:40:00,269 - app.logic.stock_analyzer - INFO - Saved CD score breadth by interval for SPACE: 296 days
+2026-10-11 21:40:00,280 - app.logic.stock_analyzer - INFO - Saved MC score breadth by interval for SPACE: 329 days
+2026-10-11 21:40:00,284 - app.logic.stock_analyzer - INFO - Saved CD HQ score by interval for SPACE: 61 days
+2026-10-11 21:40:00,289 - app.logic.stock_analyzer - INFO - Saved MC HQ score by interval for SPACE: 85 days
+2026-10-11 21:40:00,289 - app.logic.stock_analyzer - INFO - Computing breadth for LIGHT with 6 tickers
+2026-10-11 21:40:00,293 - app.logic.stock_analyzer - INFO - Saved CD HQ breadth for LIGHT: 22 days
+2026-10-11 21:40:00,297 - app.logic.stock_analyzer - INFO - Saved MC HQ breadth for LIGHT: 30 days
+2026-10-11 21:40:00,303 - app.logic.stock_analyzer - INFO - Saved CD signal breadth by interval for LIGHT: 121 days
+2026-10-11 21:40:00,311 - app.logic.stock_analyzer - INFO - Saved MC signal breadth by interval for LIGHT: 212 days
+2026-10-11 21:40:00,317 - app.logic.stock_analyzer - INFO - Saved CD score breadth by interval for LIGHT: 121 days
+2026-10-11 21:40:00,326 - app.logic.stock_analyzer - INFO - Saved MC score breadth by interval for LIGHT: 212 days
+2026-10-11 21:40:00,328 - app.logic.stock_analyzer - INFO - Saved CD HQ score by interval for LIGHT: 22 days
+2026-10-11 21:40:00,332 - app.logic.stock_analyzer - INFO - Saved MC HQ score by interval for LIGHT: 30 days
+2026-10-11 21:40:00,332 - app.logic.stock_analyzer - INFO - Computing breadth for STORAGE with 5 tickers
+2026-10-11 21:40:00,335 - app.logic.stock_analyzer - INFO - Saved CD HQ breadth for STORAGE: 9 days
+2026-10-11 21:40:00,338 - app.logic.stock_analyzer - INFO - Saved MC HQ breadth for STORAGE: 19 days
+2026-10-11 21:40:00,343 - app.logic.stock_analyzer - INFO - Saved CD signal breadth by interval for STORAGE: 61 days
+2026-10-11 21:40:00,351 - app.logic.stock_analyzer - INFO - Saved MC signal breadth by interval for STORAGE: 158 days
+2026-10-11 21:40:00,356 - app.logic.stock_analyzer - INFO - Saved CD score breadth by interval for STORAGE: 61 days
+2026-10-11 21:40:00,364 - app.logic.stock_analyzer - INFO - Saved MC score breadth by interval for STORAGE: 158 days
+2026-10-11 21:40:00,367 - app.logic.stock_analyzer - INFO - Saved CD HQ score by interval for STORAGE: 9 days
+2026-10-11 21:40:00,371 - app.logic.stock_analyzer - INFO - Saved MC HQ score by interval for STORAGE: 19 days
+2026-10-11 21:40:00,371 - app.logic.stock_analyzer - INFO - Computing breadth for AIELECTRICITY with 14 tickers
+2026-10-11 21:40:00,376 - app.logic.stock_analyzer - INFO - Saved CD HQ breadth for AIELECTRICITY: 47 days
+2026-10-11 21:40:00,379 - app.logic.stock_analyzer - INFO - Saved MC HQ breadth for AIELECTRICITY: 72 days
+2026-10-11 21:40:00,388 - app.logic.stock_analyzer - INFO - Saved CD signal breadth by interval for AIELECTRICITY: 259 days
+2026-10-11 21:40:00,398 - app.logic.stock_analyzer - INFO - Saved MC signal breadth by interval for AIELECTRICITY: 300 days
+2026-10-11 21:40:00,407 - app.logic.stock_analyzer - INFO - Saved CD score breadth by interval for AIELECTRICITY: 259 days
+2026-10-11 21:40:00,417 - app.logic.stock_analyzer - INFO - Saved MC score breadth by interval for AIELECTRICITY: 300 days
+2026-10-11 21:40:00,420 - app.logic.stock_analyzer - INFO - Saved CD HQ score by interval for AIELECTRICITY: 47 days
+2026-10-11 21:40:00,424 - app.logic.stock_analyzer - INFO - Saved MC HQ score by interval for AIELECTRICITY: 72 days
+2026-10-11 21:40:00,425 - app.logic.stock_analyzer - WARNING - Data quality: 18 warning(s) across tickers
+2026-10-11 21:40:00,449 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 3
+2026-10-11 21:40:00,574 - app.services.engine - INFO - Job a76c2f5676cc49a1b7b57944e5e6d13f: Multi-index analysis completed successfully
+2026-10-11 21:40:02,144 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=NASA, run_id=3
+2026-10-11 21:40:02,145 - app.api.endpoints.analysis - INFO - ticker=NASA CD 1234 dates: ['2026-09-16', '2026-07-30', '2026-07-23', '2026-06-26', '2026-06-18']
+2026-10-11 21:40:02,146 - app.api.endpoints.analysis - INFO - ticker=NASA MC 1234 dates: []
+2026-10-11 21:40:02,166 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QTUP, run_id=3
+2026-10-11 21:40:02,167 - app.api.endpoints.analysis - INFO - ticker=QTUP CD 1234 dates: ['2026-09-16']
+2026-10-11 21:40:02,168 - app.api.endpoints.analysis - INFO - ticker=QTUP MC 1234 dates: []
+2026-10-11 21:40:02,168 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=LITE, run_id=3
+2026-10-11 21:40:02,169 - app.api.endpoints.analysis - INFO - ticker=LITE CD 1234 dates: ['2026-06-01', '2025-02-20', '2025-01-14', '2024-11-01']
+2026-10-11 21:40:02,169 - app.api.endpoints.analysis - INFO - ticker=LITE MC 1234 dates: ['2026-09-10', '2026-08-13', '2026-05-14', '2026-05-06', '2026-03-03', '2026-02-26', '2026-01-08', '2025-12-29', '2025-11-20', '2025-10-03', '2025-07-31', '2025-06-16', '2025-06-13', '2025-06-10', '2025-06-06', '2024-12-06', '2024-12-05', '2024-11-25']
+2026-10-11 21:40:02,170 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=DRAM, run_id=3
+2026-10-11 21:40:02,170 - app.api.endpoints.analysis - INFO - ticker=DRAM CD 1234 dates: ['2026-07-17', '2026-07-15']
+2026-10-11 21:40:02,171 - app.api.endpoints.analysis - INFO - ticker=DRAM MC 1234 dates: ['2026-05-29', '2026-04-28', '2026-04-23']
+2026-10-11 21:40:02,173 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=VOLT, run_id=3
+2026-10-11 21:40:02,174 - app.api.endpoints.analysis - INFO - ticker=VOLT CD 1234 dates: ['2026-09-02', '2026-08-31', '2026-07-17', '2026-06-11', '2025-03-05', '2025-01-14', '2025-01-02']
+2026-10-11 21:40:02,175 - app.api.endpoints.analysis - INFO - ticker=VOLT MC 1234 dates: ['2026-08-18', '2026-08-13', '2026-04-27', '2026-04-24', '2026-04-21', '2026-02-26', '2026-02-04', '2026-02-02', '2026-01-30', '2025-12-12', '2025-10-30', '2025-10-16', '2025-09-19', '2025-07-08', '2025-06-26', '2025-06-11', '2025-06-09', '2025-05-20']
+2026-10-11 21:56:58,940 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=3
+2026-10-11 21:56:58,941 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: []
+2026-10-11 21:56:58,942 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: []
+2026-10-11 21:56:58,942 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=3
+2026-10-11 21:56:58,942 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-10-11 21:56:58,943 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-10-11 21:56:58,943 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=DRAM, run_id=3
+2026-10-11 21:56:58,944 - app.api.endpoints.analysis - INFO - ticker=DRAM CD 1234 dates: ['2026-07-17', '2026-07-15']
+2026-10-11 21:56:58,944 - app.api.endpoints.analysis - INFO - ticker=DRAM MC 1234 dates: ['2026-05-29', '2026-04-28', '2026-04-23']
+2026-10-11 21:56:58,944 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=NASA, run_id=3
+2026-10-11 21:56:58,945 - app.api.endpoints.analysis - INFO - ticker=NASA CD 1234 dates: ['2026-09-16', '2026-07-30', '2026-07-23', '2026-06-26', '2026-06-18']
+2026-10-11 21:56:58,945 - app.api.endpoints.analysis - INFO - ticker=NASA MC 1234 dates: []
+2026-10-11 21:56:58,946 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=3
+2026-10-11 21:56:58,946 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-10-11 21:56:58,947 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-10-11 21:56:58,947 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=3
+2026-10-11 21:56:58,947 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: []
+2026-10-11 21:56:58,948 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: []
+2026-10-11 21:56:58,948 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QTUP, run_id=3
+2026-10-11 21:56:58,949 - app.api.endpoints.analysis - INFO - ticker=QTUP CD 1234 dates: ['2026-09-16']
+2026-10-11 21:56:58,949 - app.api.endpoints.analysis - INFO - ticker=QTUP MC 1234 dates: []
+2026-10-11 21:56:58,953 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=VOLT, run_id=3
+2026-10-11 21:56:58,954 - app.api.endpoints.analysis - INFO - ticker=VOLT CD 1234 dates: ['2026-09-02', '2026-08-31', '2026-07-17', '2026-06-11', '2025-03-05', '2025-01-14', '2025-01-02']
+2026-10-11 21:56:58,954 - app.api.endpoints.analysis - INFO - ticker=VOLT MC 1234 dates: ['2026-08-18', '2026-08-13', '2026-04-27', '2026-04-24', '2026-04-21', '2026-02-26', '2026-02-04', '2026-02-02', '2026-01-30', '2025-12-12', '2025-10-30', '2025-10-16', '2025-09-19', '2025-07-08', '2025-06-26', '2025-06-11', '2025-06-09', '2025-05-20']
+2026-10-11 21:56:58,966 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=LITE, run_id=3
+2026-10-11 21:56:58,966 - app.api.endpoints.analysis - INFO - ticker=LITE CD 1234 dates: ['2026-06-01', '2025-02-20', '2025-01-14', '2024-11-01']
+2026-10-11 21:56:58,967 - app.api.endpoints.analysis - INFO - ticker=LITE MC 1234 dates: ['2026-09-10', '2026-08-13', '2026-05-14', '2026-05-06', '2026-03-03', '2026-02-26', '2026-01-08', '2025-12-29', '2025-11-20', '2025-10-03', '2025-07-31', '2025-06-16', '2025-06-13', '2025-06-10', '2025-06-06', '2024-12-06', '2024-12-05', '2024-11-25']
+2026-10-11 22:03:28,412 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=3
+2026-10-11 22:03:28,412 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: []
+2026-10-11 22:03:28,413 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: []
+2026-10-11 22:03:28,427 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=3
+2026-10-11 22:03:28,427 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: []
+2026-10-11 22:03:28,428 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: []
+2026-10-11 22:03:28,428 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=NASA, run_id=3
+2026-10-11 22:03:28,428 - app.api.endpoints.analysis - INFO - ticker=NASA CD 1234 dates: ['2026-09-16', '2026-07-30', '2026-07-23', '2026-06-26', '2026-06-18']
+2026-10-11 22:03:28,429 - app.api.endpoints.analysis - INFO - ticker=NASA MC 1234 dates: []
+2026-10-11 22:03:28,431 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QTUP, run_id=3
+2026-10-11 22:03:28,431 - app.api.endpoints.analysis - INFO - ticker=QTUP CD 1234 dates: ['2026-09-16']
+2026-10-11 22:03:28,432 - app.api.endpoints.analysis - INFO - ticker=QTUP MC 1234 dates: []
+2026-10-11 22:03:28,432 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=KWEB, run_id=3
+2026-10-11 22:03:28,432 - app.api.endpoints.analysis - INFO - ticker=KWEB CD 1234 dates: []
+2026-10-11 22:03:28,433 - app.api.endpoints.analysis - INFO - ticker=KWEB MC 1234 dates: []
+2026-10-11 22:03:28,433 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=DRAM, run_id=3
+2026-10-11 22:03:28,433 - app.api.endpoints.analysis - INFO - ticker=DRAM CD 1234 dates: ['2026-07-17', '2026-07-15']
+2026-10-11 22:03:28,434 - app.api.endpoints.analysis - INFO - ticker=DRAM MC 1234 dates: ['2026-05-29', '2026-04-28', '2026-04-23']
+2026-10-11 22:03:28,434 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=3
+2026-10-11 22:03:28,435 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: []
+2026-10-11 22:03:28,435 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: []
+2026-10-11 22:03:28,436 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=LITE, run_id=3
+2026-10-11 22:03:28,437 - app.api.endpoints.analysis - INFO - ticker=LITE CD 1234 dates: ['2026-06-01', '2025-02-20', '2025-01-14', '2024-11-01']
+2026-10-11 22:03:28,437 - app.api.endpoints.analysis - INFO - ticker=LITE MC 1234 dates: ['2026-09-10', '2026-08-13', '2026-05-14', '2026-05-06', '2026-03-03', '2026-02-26', '2026-01-08', '2025-12-29', '2025-11-20', '2025-10-03', '2025-07-31', '2025-06-16', '2025-06-13', '2025-06-10', '2025-06-06', '2024-12-06', '2024-12-05', '2024-11-25']
+2026-10-11 22:03:28,438 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IGV, run_id=3
+2026-10-11 22:03:28,438 - app.api.endpoints.analysis - INFO - ticker=IGV CD 1234 dates: []
+2026-10-11 22:03:28,439 - app.api.endpoints.analysis - INFO - ticker=IGV MC 1234 dates: []
+2026-10-11 22:03:28,441 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=VOLT, run_id=3
+2026-10-11 22:03:28,441 - app.api.endpoints.analysis - INFO - ticker=VOLT CD 1234 dates: ['2026-09-02', '2026-08-31', '2026-07-17', '2026-06-11', '2025-03-05', '2025-01-14', '2025-01-02']
+2026-10-11 22:03:28,442 - app.api.endpoints.analysis - INFO - ticker=VOLT MC 1234 dates: ['2026-08-18', '2026-08-13', '2026-04-27', '2026-04-24', '2026-04-21', '2026-02-26', '2026-02-04', '2026-02-02', '2026-01-30', '2025-12-12', '2025-10-30', '2025-10-16', '2025-09-19', '2025-07-08', '2025-06-26', '2025-06-11', '2025-06-09', '2025-05-20']
+2026-10-11 22:06:57,333 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=NASA, run_id=3
+2026-10-11 22:06:57,334 - app.api.endpoints.analysis - INFO - ticker=NASA CD 1234 dates: ['2026-09-16', '2026-07-30', '2026-07-23', '2026-06-26', '2026-06-18']
+2026-10-11 22:06:57,335 - app.api.endpoints.analysis - INFO - ticker=NASA MC 1234 dates: []
+2026-10-11 22:06:57,337 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=DRAM, run_id=3
+2026-10-11 22:06:57,337 - app.api.endpoints.analysis - INFO - ticker=DRAM CD 1234 dates: ['2026-07-17', '2026-07-15']
+2026-10-11 22:06:57,338 - app.api.endpoints.analysis - INFO - ticker=DRAM MC 1234 dates: ['2026-05-29', '2026-04-28', '2026-04-23']
+2026-10-11 22:06:57,338 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QTUP, run_id=3
+2026-10-11 22:06:57,339 - app.api.endpoints.analysis - INFO - ticker=QTUP CD 1234 dates: ['2026-09-16']
+2026-10-11 22:06:57,339 - app.api.endpoints.analysis - INFO - ticker=QTUP MC 1234 dates: []
+2026-10-11 22:06:57,340 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=VOLT, run_id=3
+2026-10-11 22:06:57,340 - app.api.endpoints.analysis - INFO - ticker=VOLT CD 1234 dates: ['2026-09-02', '2026-08-31', '2026-07-17', '2026-06-11', '2025-03-05', '2025-01-14', '2025-01-02']
+2026-10-11 22:06:57,341 - app.api.endpoints.analysis - INFO - ticker=VOLT MC 1234 dates: ['2026-08-18', '2026-08-13', '2026-04-27', '2026-04-24', '2026-04-21', '2026-02-26', '2026-02-04', '2026-02-02', '2026-01-30', '2025-12-12', '2025-10-30', '2025-10-16', '2025-09-19', '2025-07-08', '2025-06-26', '2025-06-11', '2025-06-09', '2025-05-20']
+2026-10-11 22:06:57,341 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=LITE, run_id=3
+2026-10-11 22:06:57,341 - app.api.endpoints.analysis - INFO - ticker=LITE CD 1234 dates: ['2026-06-01', '2025-02-20', '2025-01-14', '2024-11-01']
+2026-10-11 22:06:57,342 - app.api.endpoints.analysis - INFO - ticker=LITE MC 1234 dates: ['2026-09-10', '2026-08-13', '2026-05-14', '2026-05-06', '2026-03-03', '2026-02-26', '2026-01-08', '2025-12-29', '2025-11-20', '2025-10-03', '2025-07-31', '2025-06-16', '2025-06-13', '2025-06-10', '2025-06-06', '2024-12-06', '2024-12-05', '2024-11-25']
+2026-10-11 22:07:00,948 - app.api.endpoints.analysis - INFO - [HQ] NASA/1h: algo=breakthrough, cd_sig=18, cd_1234=1, mc_sig=10, mc_1234=0
+2026-10-11 22:07:01,213 - app.api.endpoints.analysis - INFO - [HQ] NASA/2h: algo=breakthrough, cd_sig=11, cd_1234=0, mc_sig=4, mc_1234=0
+2026-10-11 22:07:01,398 - app.api.endpoints.analysis - INFO - [HQ] NASA/3h: algo=breakthrough, cd_sig=7, cd_1234=0, mc_sig=0, mc_1234=0
+2026-10-11 22:07:01,524 - app.api.endpoints.analysis - INFO - [HQ] NASA/4h: algo=breakthrough, cd_sig=1, cd_1234=0, mc_sig=0, mc_1234=0
+2026-10-11 22:07:01,594 - app.api.endpoints.analysis - INFO - [HQ] NASA/1d: algo=breakthrough, cd_sig=1, cd_1234=0, mc_sig=0, mc_1234=0

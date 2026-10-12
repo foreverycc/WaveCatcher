@@ -117,6 +117,8 @@ class JobStatus(BaseModel):
     error: Optional[str] = None
     start_time: Optional[str] = None
     end_time: Optional[str] = None
+    run_id: Optional[int] = None
+    report: Optional[Dict[str, Any]] = None
 
 @router.get("/indices")
 async def get_available_indices():
@@ -267,6 +269,8 @@ async def get_current_status():
         "status": job.status,
         "progress": job.progress,
         "error": job.error,
+        "run_id": job.run_id,
+        "report": job.report,
         "start_time": job.start_time.isoformat() if job.start_time else None,
         "end_time": job.end_time.isoformat() if job.end_time else None
     }

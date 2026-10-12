@@ -210,7 +210,7 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         progress_callback: Optional callable that accepts integer progress (0-100)
     
     Returns:
-        None: Results are saved to database
+        int: ID of the completed database run
     """
     stock_list_name = os.path.basename(file_path)
     logger.info(f"Starting analysis for {stock_list_name}")
@@ -220,7 +220,7 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         run_id = create_analysis_run(stock_list_name)
     except Exception as e:
         logger.error(f"Failed to create analysis run: {e}")
-        return
+        raise
 
     # Load stock list
     try:
@@ -232,18 +232,23 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         
         # Prepend Index tickers so they are included in 1234 analysis
         index_tickers = ["^SPX", "^DJI", "QQQ", "IWM"]
+        from app.services.index_config import load_index_config
+        index_tickers = list(dict.fromkeys(index_tickers + [
+            config['symbol'] for config in load_index_config().values()
+            if config['stock_list'] == stock_list_name
+        ]))
         tickers = index_tickers + [t for t in tickers if t not in index_tickers]
         
         logger.info(f"Loaded {len(tickers)} tickers from {file_path} (including indices)")
     except Exception as e:
         logger.error(f"Failed to load stock list: {e}")
         update_analysis_run_status(run_id, "failed")
-        return
+        raise
 
     if not tickers:
         logger.warning("No tickers found in file")
         update_analysis_run_status(run_id, "failed")
-        return
+        raise ValueError("No tickers found")
 
     # Process tickers
     results = []
@@ -719,6 +724,15 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
             interval_summary = df_mc_eval.groupby('interval').agg(agg_dict).reset_index()
             save_analysis_result(run_id, "ALL", "ALL", 'mc_eval_interval_summary', interval_summary.to_dict(orient='records'))
         
+        from app.services.report_snapshot import save_report_snapshot
+        from app.services.index_config import load_index_config
+        matched = [(k, v) for k, v in load_index_config().items() if v['stock_list'] == stock_list_name]
+        report_indices = [{"key": k, "symbol": v["symbol"], "stock_list": stock_list_name,
+                           "tickers": raw_tickers, "breadth_key": "ALL"} for k, v in matched]
+        if not report_indices:
+            report_indices = [{"key": stock_list_name, "symbol": "", "stock_list": stock_list_name,
+                               "tickers": raw_tickers, "breadth_key": "ALL"}]
+        save_report_snapshot(run_id, report_indices, all_ticker_data, end_date, failed_tickers)
         print("All analyses completed successfully!")
         update_analysis_run_status(run_id, "completed")
 
@@ -727,6 +741,8 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
             print("Failed to process the following tickers:")
             print(", ".join(failed_tickers))
             print("----------------------\n")
+
+        return run_id
 
     except Exception as e:
         logger.error(f"Analysis failed: {e}")
@@ -773,7 +789,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
         if not tickers:
             logger.warning("No tickers found")
             update_analysis_run_status(run_id, "failed")
-            return
+            raise ValueError("No tickers found for selected indices")
         
         # 2. Run the analysis on combined set (same as analyze_stocks)
         total = len(tickers)
@@ -1269,8 +1285,14 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
         if failed_tickers:
             logger.warning(f"Failed tickers ({len(failed_tickers)}): {', '.join(failed_tickers)}")
         
+        from app.services.report_snapshot import save_report_snapshot
+        report_indices = [{"key": info["key"], "symbol": info["symbol"],
+                           "stock_list": info["stock_list_name"], "breadth_key": info["stock_list_name"],
+                           "tickers": index_ticker_map[info["key"]]} for info in index_info_list]
+        save_report_snapshot(run_id, report_indices, all_ticker_data, end_date, failed_tickers)
         update_analysis_run_status(run_id, "completed")
         logger.info(f"Multi-index analysis completed. Run ID: {run_id}")
+        return run_id
         
     except Exception as e:
         logger.error(f"Multi-index analysis failed: {e}")

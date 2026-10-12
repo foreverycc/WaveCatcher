@@ -76,19 +76,10 @@ def save_price_history(ticker: str, interval: str, df: pd.DataFrame):
 def create_analysis_run(stock_list_name: str) -> int:
     """
     Create a new analysis run record and return its ID.
-    Enforces 'Keep Latest' policy by deleting all previous runs for this stock list.
+    Retain previous runs so saved reports remain tied to their source results.
     """
     db = SessionLocal()
     try:
-        # Cleanup previous runs for this stock list
-        try:
-            db.query(AnalysisRun).filter(AnalysisRun.stock_list_name == stock_list_name).delete()
-            db.commit()
-            print(f"Cleaned up previous runs for {stock_list_name}")
-        except Exception as e:
-            db.rollback()
-            print(f"Error cleaning up previous runs: {e}")
-
         # Create new run
         run = AnalysisRun(stock_list_name=stock_list_name, status="running")
         db.add(run)

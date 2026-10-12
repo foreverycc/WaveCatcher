@@ -28,6 +28,17 @@ class AnalysisResult(Base):
     
     run = relationship("AnalysisRun", back_populates="results")
 
+class SavedReport(Base):
+    __tablename__ = "saved_reports"
+
+    id = Column(String, primary_key=True)
+    run_id = Column(Integer, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    status = Column(String, default="generating")
+    path = Column(Text, nullable=True)
+    error = Column(Text, nullable=True)
+
+
 class PriceBar(Base):
     __tablename__ = "price_history"
 
@@ -56,4 +67,3 @@ class OptionChain(Base):
     data = Column(JSON) # List of {strike, calls, puts}
     current_price = Column(Float)
     max_pain = Column(Float, nullable=True)
-

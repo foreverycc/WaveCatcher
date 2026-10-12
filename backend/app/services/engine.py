@@ -30,6 +30,10 @@ class AnalysisJob:
         self.end_time = None
         self.error = None
         self.progress = 0
+        self.run_id = None
+        self.report = None
+        from app.services.report_settings import load_settings
+        self.report_settings = load_settings()
 
 class JobManager:
     def __init__(self):
@@ -39,10 +43,10 @@ class JobManager:
 
     def start_analysis(self, stock_list_file: str, end_date: Optional[str] = None) -> str:
         with self.lock:
-            if self.current_job_id and self.jobs[self.current_job_id].status == "running":
+            if self.current_job_id and self.jobs[self.current_job_id].status in ("pending", "running"):
                 raise Exception("An analysis is already running")
             
-            job_id = datetime.now().strftime("%Y%m%d%H%M%S")
+            job_id = uuid.uuid4().hex
             job = AnalysisJob(job_id, stock_list_file, end_date)
             self.jobs[job_id] = job
             self.current_job_id = job_id
@@ -58,10 +62,10 @@ class JobManager:
     def start_multi_index_analysis(self, indices: List[str], end_date: Optional[str] = None) -> str:
         """Start analysis for multiple indices."""
         with self.lock:
-            if self.current_job_id and self.jobs[self.current_job_id].status == "running":
+            if self.current_job_id and self.jobs[self.current_job_id].status in ("pending", "running"):
                 raise Exception("An analysis is already running")
             
-            job_id = datetime.now().strftime("%Y%m%d%H%M%S")
+            job_id = uuid.uuid4().hex
             job = AnalysisJob(job_id, "multi_index", end_date, indices=indices)
             self.jobs[job_id] = job
             self.current_job_id = job_id
@@ -94,7 +98,8 @@ class JobManager:
 
             # Run analysis
             logger.info(f"Job {job_id}: Calling analyze_stocks with file: {file_path}")
-            analyze_stocks(file_path, end_date=job.end_date, progress_callback=update_progress)
+            job.run_id = analyze_stocks(file_path, end_date=job.end_date, progress_callback=update_progress)
+            self._generate_report(job)
             
             job.status = "completed"
             job.progress = 100
@@ -141,7 +146,10 @@ class JobManager:
                     })
             
             # Run multi-index analysis
-            analyze_multi_index(index_info, end_date=job.end_date, progress_callback=update_progress)
+            if len(index_info) != len(job.indices):
+                raise ValueError("An index selected for this run no longer exists")
+            job.run_id = analyze_multi_index(index_info, end_date=job.end_date, progress_callback=update_progress)
+            self._generate_report(job)
             
             job.status = "completed"
             job.progress = 100
@@ -153,6 +161,16 @@ class JobManager:
             job.error = str(e)
             job.end_time = datetime.now()
             logger.error(f"Job {job_id}: Multi-index analysis failed with error: {e}", exc_info=True)
+
+    def _generate_report(self, job):
+        if job.run_id is None:
+            raise RuntimeError("Analysis did not produce a completed run")
+        try:
+            from app.services.reports import generate_report
+            job.report = generate_report(job.run_id, job.report_settings)
+        except Exception as exc:
+            logger.exception("Report generation failed for run %s", job.run_id)
+            job.report = {"status": "failed", "error": str(exc)}
 
     def get_job(self, job_id: str) -> Optional[AnalysisJob]:
         return self.jobs.get(job_id)

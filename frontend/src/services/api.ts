@@ -1,4 +1,12 @@
 import axios from 'axios';
+import type { IndexSummaryCardProps } from '../components/IndexSummaryCard';
+
+export type ReportFigure = Omit<IndexSummaryCardProps, 'minDate' | 'maxDate' | 'staticSummary'>;
+export interface ReportView {
+    indices: string[];
+    date_range: { start: string; end: string };
+    breadth_date_range: { start: string; end: string };
+}
 
 // Use relative path to leverage Vite proxy (configured in vite.config.ts)
 // This ensures requests work correctly whether accessed via localhost or IP address
@@ -40,7 +48,45 @@ export interface JobStatus {
     error?: string;
     start_time?: string;
     end_time?: string;
+    run_id?: number;
+    report?: SavedReport;
 }
+
+export interface ReportSettings {
+    output_directory: string;
+    chart_days: number;
+    signal_days: number;
+    schedule_enabled: boolean;
+    schedule_time: string;
+    timezone: string;
+    indices: string[];
+}
+
+export interface SavedReport {
+    id: string;
+    run_id: number;
+    created_at: string;
+    status: string;
+    path?: string;
+    error?: string;
+}
+
+export const reportsApi = {
+    getSettings: async () => (await api.get<ReportSettings>('/reports/settings')).data,
+    saveSettings: async (settings: ReportSettings) => (await api.put<ReportSettings>('/reports/settings', settings)).data,
+    getSchedule: async () => (await api.get<{ running: boolean; next_run: string | null; error: string | null }>('/reports/schedule')).data,
+    list: async () => (await api.get<SavedReport[]>('/reports')).data,
+    generate: async (runId: number, view?: ReportView) => (await api.post<SavedReport>(`/reports/runs/${runId}`, view)).data,
+    figures: async (runId: number) => (await api.get<{ figures: ReportFigure[]; as_of: string }>(`/reports/runs/${runId}/figures`)).data,
+    fileUrl: (id: string, download = false) => `/api/reports/${encodeURIComponent(id)}/file?download=${download}`,
+    errorMessage: (error: unknown) => {
+        if (axios.isAxiosError(error)) {
+            const detail = error.response?.data?.detail;
+            return typeof detail === 'string' ? detail : error.message;
+        }
+        return error instanceof Error ? error.message : 'Request failed';
+    },
+};
 
 export interface AnalysisRun {
     id: number;

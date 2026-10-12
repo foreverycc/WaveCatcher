@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery, useQueries } from '@tanstack/react-query';
-import { analysisApi, type ScoringConfig } from '../services/api';
-import { IndexSummaryCard } from './IndexSummaryCard';
+import { analysisApi, reportsApi, type ScoringConfig } from '../services/api';
+import { IndexSummaryFigures } from './IndexSummaryFigures';
+import { RunReportButton } from './RunReportButton';
 import { cn } from '../utils/cn';
 import { parseISO, format } from 'date-fns';
 import { DetailedChartRow, InteractiveOptionChart } from '../pages/Dashboard';
@@ -230,6 +231,15 @@ interface SummaryPanelProps {
 
 export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [], availableIndices = [], dateRange, breadthDateRange }) => {
 
+    // Reports and Summary consume the same price indicators, breadth and weights.
+    const { data: savedFigures } = useQuery({
+        queryKey: ['summaryFigures', runId],
+        queryFn: () => reportsApi.figures(runId!),
+        enabled: !!runId,
+        retry: false,
+        staleTime: Infinity,
+    });
+
     // --- Data Fetching ---
 
     // Scoring config state (for live weight updates)
@@ -282,10 +292,11 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
     const allowedTickers = useMemo(() => {
         const tickers = new Set<string>();
         activeIndices.forEach(idx => {
-            idx.tickers?.forEach(t => tickers.add(t));
+            const figure = savedFigures?.figures.find(figure => figure.title === idx.key);
+            (figure?.tickers ?? idx.tickers)?.forEach(t => tickers.add(t));
         });
         return tickers;
-    }, [activeIndices]);
+    }, [activeIndices, savedFigures]);
 
     // 1. Price history for each index
     const historyQueries = useQueries({
@@ -566,6 +577,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
 
     return (
         <div className="p-4 md:p-6 h-full overflow-y-auto space-y-6 relative">
+            <RunReportButton runId={runId} indices={selectedIndices} view={{ indices: activeIndices.map(idx => idx.key), date_range: dateRange, breadth_date_range: breadthDateRange }} />
 
             {/* Data Quality Warning Banner */}
             {dataQuality && !warningsDismissed && (
@@ -627,7 +639,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                     const breadth = breadthQueries[i]?.data;
                     const signals = signalQueries[i]?.data;
                     return (
-                        <IndexSummaryCard
+                        <IndexSummaryFigures
                             key={idx.key}
                             title={idx.key}
                             spxData={history}
@@ -645,6 +657,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             signals1234={signals}
                             tickers={idx.tickers}
                             indexTicker={idx.symbol}
+                            {...savedFigures?.figures.find(figure => figure.title === idx.key)}
                         />
                     );
                 })}
