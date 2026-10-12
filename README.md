@@ -87,6 +87,8 @@ components and saved analysis data, including candlesticks, moving averages,
 volume, signals, interval weights, and constituent normalization. **Export saved
 results** uses the Summary's selected indices and date ranges. Automatic reports
 use the configured lookbacks: 365 days for charts and 7 days for signals by default.
+Market Breadth and Distribution start collapsed in the HTML report; click each
+heading to expand or collapse it. Expand the sections you want before printing.
 
 Open **Configuration → Reports & Schedule** to change the absolute output folder,
 lookbacks, scheduled indices, daily time, or timezone. The default schedule is

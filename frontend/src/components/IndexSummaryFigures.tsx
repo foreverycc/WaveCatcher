@@ -1,7 +1,16 @@
 import { format } from 'date-fns';
+import { useState, type ReactNode } from 'react';
 import { IndexSummaryCard, type IndexSummaryCardProps } from './IndexSummaryCard';
 import { MarketBreadthChart } from './MarketBreadthChart';
 import { BreadthHistogramPanel } from './BreadthHistogramPanel';
+
+function ReportFigure({ title, children }: { title: string; children: ReactNode }) {
+    const [open, setOpen] = useState(false);
+    return <details className="report-figure-toggle" onToggle={event => setOpen(event.currentTarget.open)}>
+        <summary>{title}</summary>
+        {open && <div className="report-figure-content">{children}</div>}
+    </details>;
+}
 
 /** One visual implementation for the dashboard and the offline report. */
 export function IndexSummaryFigures({ expanded = false, ...props }: IndexSummaryCardProps & { expanded?: boolean }) {
@@ -13,10 +22,12 @@ export function IndexSummaryFigures({ expanded = false, ...props }: IndexSummary
         <div className="report-summary mx-auto w-full max-w-xl" data-figure="summary">
             <IndexSummaryCard {...props} staticSummary />
         </div>
+        <ReportFigure title={`${props.title} — Market Breadth`}>
         <div data-figure="market-breadth" className="report-breadth">
-            <h3 className="text-lg font-semibold mb-2">{props.title} — Market Breadth</h3>
             <MarketBreadthChart {...props} indexTitle={props.title} />
         </div>
+        </ReportFigure>
+        <ReportFigure title={`${props.title} — Distribution`}>
         <div data-figure="distribution" className="report-distribution border rounded-lg bg-card" style={{ height: 850 }}>
             <BreadthHistogramPanel
                 title={props.title}
@@ -29,5 +40,6 @@ export function IndexSummaryFigures({ expanded = false, ...props }: IndexSummary
                 onNavigateRight={() => {}} isFullscreen
             />
         </div>
+        </ReportFigure>
     </div>;
 }

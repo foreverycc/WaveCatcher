@@ -14,6 +14,11 @@ body{background:#f2f5fa}
 .report-tables table{width:100%;font-size:12px;border-collapse:collapse}
 .report-tables th,.report-tables td{padding:8px;text-align:left;border-bottom:1px solid #e2e8f0}
 .report-figures button{display:none}
+.report-figure-toggle{border:1px solid #dde4ed;border-radius:10px;background:white}
+.report-figure-toggle>summary{cursor:pointer;padding:14px 18px;font-weight:600;border-radius:10px}
+.report-figure-toggle>summary:hover{background:#f8fafc}
+.report-figure-toggle>summary:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+.report-figure-content{padding:0 16px 16px}
 .report-distribution .overflow-y-auto{overflow:visible}
 .report-warning{background:#fff4d6;padding:16px;border-radius:8px;margin:16px 0}
 @media(max-width:760px){.report-shell{padding:16px}.report-table-grid{grid-template-columns:1fr}.report-breadth,.report-distribution{min-width:720px}.report-sector{overflow-x:auto}}
