@@ -169,6 +169,9 @@ def calculate_returns(data, cd_signals, periods=None, max_signals=MAX_SIGNALS_TH
     
     signal_dates = data.index[cd_signals_bool]
     
+    # Keep only signals with a full forward window, so every period is measured on the same sample
+    signal_dates = signal_dates[[data.index.get_loc(d) + max(periods) < len(data) for d in signal_dates]]
+    
     # Limit to the latest N signals to reduce noise from older signals
     if len(signal_dates) > max_signals:
         signal_dates = signal_dates[-max_signals:]
@@ -179,10 +182,6 @@ def calculate_returns(data, cd_signals, periods=None, max_signals=MAX_SIGNALS_TH
     for date in signal_dates:
         idx = data.index.get_loc(date)
         
-        # Skip signals that are too close to the end of the data
-        if idx + max(periods) >= len(data):
-            continue
-            
         entry_price = data.loc[date, 'Close']
         entry_volume = data.loc[date, 'Volume']
         returns = {}

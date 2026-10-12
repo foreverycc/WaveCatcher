@@ -49,7 +49,8 @@ def compute_high_return_cd(df, cd_signals, lookback_signals=3, lookback_bars=20,
         returns = []
         for prev_idx in prev_indices:
             future_idx = prev_idx + lookback_bars
-            if future_idx < len(close):
+            # Only use returns that were already realized at the current signal (no look-ahead)
+            if future_idx <= sig_idx:
                 entry_price = close.iloc[prev_idx]
                 exit_price = close.iloc[future_idx]
                 if entry_price > 0:
@@ -100,7 +101,8 @@ def compute_high_return_mc(df, mc_signals, lookback_signals=3, lookback_bars=20,
         returns = []
         for prev_idx in prev_indices:
             future_idx = prev_idx + lookback_bars
-            if future_idx < len(close):
+            # Only use returns that were already realized at the current signal (no look-ahead)
+            if future_idx <= sig_idx:
                 entry_price = close.iloc[prev_idx]
                 exit_price = close.iloc[future_idx]
                 if entry_price > 0:

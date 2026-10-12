@@ -43638,3 +43638,37 @@ sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) attempt to write a r
 2026-10-11 22:12:21,522 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IGV, run_id=4
 2026-10-11 22:12:21,616 - app.api.endpoints.analysis - INFO - ticker=IGV CD 1234 dates: ['2026-06-26', '2026-06-25', '2026-04-13', '2025-11-14', '2025-08-15', '2025-03-07', '2025-01-03']
 2026-10-11 22:12:21,704 - app.api.endpoints.analysis - INFO - ticker=IGV MC 1234 dates: ['2026-09-01', '2026-05-26', '2026-05-21', '2026-05-12', '2026-05-11', '2025-07-30', '2025-07-22', '2025-06-17', '2025-06-16', '2025-06-13', '2025-06-12', '2025-06-05', '2025-05-15', '2025-02-19', '2025-02-14', '2025-02-11', '2025-02-07', '2025-01-29', '2024-12-09', '2024-12-06', '2024-12-05', '2024-11-26', '2024-11-25']
+2026-10-11 22:53:36,411 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=4
+2026-10-11 22:53:36,412 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2026-10-02', '2026-09-25', '2026-03-31', '2025-01-13', '2025-01-03']
+2026-10-11 22:53:36,413 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-07-01', '2026-06-25', '2026-06-05', '2026-06-03', '2026-05-15', '2026-05-07', '2026-05-01', '2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27']
+2026-10-11 22:53:36,441 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IGV, run_id=4
+2026-10-11 22:53:36,442 - app.api.endpoints.analysis - INFO - ticker=IGV CD 1234 dates: ['2026-06-26', '2026-06-25', '2026-04-13', '2025-11-14', '2025-08-15', '2025-03-07', '2025-01-03']
+2026-10-11 22:53:36,443 - app.api.endpoints.analysis - INFO - ticker=IGV MC 1234 dates: ['2026-09-01', '2026-05-26', '2026-05-21', '2026-05-12', '2026-05-11', '2025-07-30', '2025-07-22', '2025-06-17', '2025-06-16', '2025-06-13', '2025-06-12', '2025-06-05', '2025-05-15', '2025-02-19', '2025-02-14', '2025-02-11', '2025-02-07', '2025-01-29', '2024-12-09', '2024-12-06', '2024-12-05', '2024-11-26', '2024-11-25']
+2026-10-12 09:18:29,780 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=4
+2026-10-12 09:18:29,781 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2026-10-02', '2026-09-25', '2026-03-31', '2025-01-13', '2025-01-03']
+2026-10-12 09:18:29,782 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-07-01', '2026-06-25', '2026-06-05', '2026-06-03', '2026-05-15', '2026-05-07', '2026-05-01', '2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27']
+2026-10-12 09:18:29,782 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IGV, run_id=4
+2026-10-12 09:18:29,783 - app.api.endpoints.analysis - INFO - ticker=IGV CD 1234 dates: ['2026-06-26', '2026-06-25', '2026-04-13', '2025-11-14', '2025-08-15', '2025-03-07', '2025-01-03']
+2026-10-12 09:18:29,783 - app.api.endpoints.analysis - INFO - ticker=IGV MC 1234 dates: ['2026-09-01', '2026-05-26', '2026-05-21', '2026-05-12', '2026-05-11', '2025-07-30', '2025-07-22', '2025-06-17', '2025-06-16', '2025-06-13', '2025-06-12', '2025-06-05', '2025-05-15', '2025-02-19', '2025-02-14', '2025-02-11', '2025-02-07', '2025-01-29', '2024-12-09', '2024-12-06', '2024-12-05', '2024-11-26', '2024-11-25']
+2026-10-12 09:19:59,785 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=4
+2026-10-12 09:19:59,786 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: []
+2026-10-12 09:19:59,787 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: []
+2026-10-12 09:19:59,787 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=4
+2026-10-12 09:19:59,788 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-10-12 09:19:59,789 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-10-12 09:19:59,790 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=4
+2026-10-12 09:19:59,790 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2026-10-02', '2026-09-25', '2026-03-31', '2025-01-13', '2025-01-03']
+2026-10-12 09:19:59,791 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-07-01', '2026-06-25', '2026-06-05', '2026-06-03', '2026-05-15', '2026-05-07', '2026-05-01', '2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27']
+2026-10-12 09:19:59,793 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=4
+2026-10-12 09:19:59,794 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-10-12 09:19:59,794 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-10-12 09:44:08,209 - app.api.endpoints.analysis - INFO - [HQ] ^DJI/1h: algo=breakthrough, cd_sig=21, cd_1234=4, mc_sig=20, mc_1234=4
+2026-10-12 09:44:08,652 - app.api.endpoints.analysis - INFO - [HQ] ^DJI/2h: algo=breakthrough, cd_sig=10, cd_1234=2, mc_sig=19, mc_1234=4
+2026-10-12 09:44:08,971 - app.api.endpoints.analysis - INFO - [HQ] ^DJI/3h: algo=breakthrough, cd_sig=4, cd_1234=2, mc_sig=13, mc_1234=3
+2026-10-12 09:44:09,191 - app.api.endpoints.analysis - INFO - [HQ] ^DJI/4h: algo=breakthrough, cd_sig=4, cd_1234=1, mc_sig=10, mc_1234=2
+2026-10-12 09:44:09,412 - app.api.endpoints.analysis - INFO - [HQ] ^DJI/1d: algo=breakthrough, cd_sig=0, cd_1234=0, mc_sig=15, mc_1234=2
+2026-10-12 09:44:41,221 - app.api.endpoints.analysis - INFO - [HQ] IGV/1h: algo=breakthrough, cd_sig=19, cd_1234=1, mc_sig=16, mc_1234=1
+2026-10-12 09:44:41,673 - app.api.endpoints.analysis - INFO - [HQ] IGV/2h: algo=breakthrough, cd_sig=7, cd_1234=0, mc_sig=6, mc_1234=1
+2026-10-12 09:44:42,059 - app.api.endpoints.analysis - INFO - [HQ] IGV/3h: algo=breakthrough, cd_sig=8, cd_1234=1, mc_sig=5, mc_1234=0
+2026-10-12 09:44:42,292 - app.api.endpoints.analysis - INFO - [HQ] IGV/4h: algo=breakthrough, cd_sig=3, cd_1234=0, mc_sig=9, mc_1234=1
+2026-10-12 09:44:42,518 - app.api.endpoints.analysis - INFO - [HQ] IGV/1d: algo=breakthrough, cd_sig=3, cd_1234=0, mc_sig=3, mc_1234=0

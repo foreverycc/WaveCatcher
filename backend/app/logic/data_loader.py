@@ -30,9 +30,8 @@ def truncate_data_to_date(data_frame, end_date):
     
     # Handle timezone-aware datetime indexes
     if data_frame.index.tz is not None:
-        # If data has timezone, convert end_date to the same timezone
-        # First convert to UTC, then to the data's timezone
-        end_date = end_date.tz_localize('UTC').tz_convert(data_frame.index.tz)
+        # end_date is a calendar date in the data's own timezone; converting from UTC would shift it back a day
+        end_date = end_date.tz_localize(data_frame.index.tz)
     
     return data_frame[data_frame.index.date <= end_date.date()]
 
