@@ -123,8 +123,12 @@ def render_report(run, results, settings, view=None):
     script, css = report_assets()
     parts = ['<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">',
              f'<title>WaveCatcher · {esc(end)} · Run {run.id}</title><style>{css}</style></head><body><main class="report-shell">',
-             f'<header class="report-header"><div>WAVECATCHER / SUMMARY REPORT</div><h1>Market signals · {esc(end)}</h1><p>Run #{run.id} · {esc(run.stock_list_name)}</p><p>Charts: {esc(chart_range["start"])} – {esc(chart_range["end"])} · Signals: {esc(signal_range["start"])} – {esc(signal_range["end"])}</p><button onclick="window.print()">Print / Save as PDF</button></header>',
+             f'<header id="report-top" class="report-header"><div>WAVECATCHER / SUMMARY REPORT</div><h1>Market signals · {esc(end)}</h1><p>Run #{run.id} · {esc(run.stock_list_name)}</p><p>Charts: {esc(chart_range["start"])} – {esc(chart_range["end"])} · Signals: {esc(signal_range["start"])} – {esc(signal_range["end"])}</p><button onclick="window.print()">Print / Save as PDF</button></header>',
              '<noscript>This report requires JavaScript to render the same interactive charts as Summary. Open it in your browser.</noscript>']
+    parts.append('<nav class="report-contents" aria-label="Report contents"><h2>Contents</h2><ul>')
+    for i, figure in enumerate(payload['figures']):
+        parts.append(f'<li><a href="#sector-{i}">{esc(figure["title"])}</a><span><a href="#sector-{i}-breadth">Market Breadth</a> · <a href="#sector-{i}-distribution">Distribution</a></span></li>')
+    parts.append('<li><a href="#signals-1234">1234 Signals</a></li><li><a href="#high-return">High Return Opportunities</a></li></ul></nav>')
     quality = results.get(('data_quality_warnings', 'ALL'), {})
     failed = snapshot.get('failed_tickers', [])
     warnings = quality.get('warnings', [])
@@ -133,12 +137,12 @@ def render_report(run, results, settings, view=None):
         if warnings:
             parts.append('<details><summary>Data quality details</summary><ul>' + ''.join(f'<li>{esc(w)}</li>' for w in warnings) + '</ul></details>')
     for i, figure in enumerate(payload['figures']):
-        parts.append(f'<section class="report-sector"><h2>{esc(figure["title"])}</h2><div id="figure-{i}"></div></section>')
+        parts.append(f'<section id="sector-{i}" class="report-sector"><a class="report-back" href="#report-top">↑ Back to contents</a><h2>{esc(figure["title"])}</h2><div id="figure-{i}"></div></section>')
     allowed = {ticker for figure in payload['figures'] for ticker in figure['tickers']}
-    parts.append('<section class="report-tables"><h2>1234 Signals · Top 10</h2><div class="report-table-grid">')
+    parts.append('<section class="report-tables"><a class="report-back" href="#report-top">↑ Back to contents</a><h2 id="signals-1234">1234 Signals · Top 10</h2><div class="report-table-grid">')
     for side in ['cd', 'mc']:
         parts.append(table(f'{side.upper()} 1234 Signals', top_rows(results, side, 'breakout_candidates_summary_1234', allowed, signal_range['start'], signal_range['end']), True))
-    parts.append('</div><h2>High Return Opportunities · Top 10</h2><div class="report-table-grid">')
+    parts.append('</div><a class="report-back" href="#report-top">↑ Back to contents</a><h2 id="high-return">High Return Opportunities · Top 10</h2><div class="report-table-grid">')
     for side in ['cd', 'mc']:
         parts.append(table(f'{side.upper()} High Return Opportunities', top_rows(results, side, 'eval_good_signals', allowed, signal_range['start'], signal_range['end'])))
     parts.append('</div></section><footer class="mt-8 text-sm text-muted-foreground">WaveCatcher · Saved run data, rendered by the Summary tab’s chart components.</footer></main>')

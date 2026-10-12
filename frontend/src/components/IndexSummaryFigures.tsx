@@ -4,16 +4,16 @@ import { IndexSummaryCard, type IndexSummaryCardProps } from './IndexSummaryCard
 import { MarketBreadthChart } from './MarketBreadthChart';
 import { BreadthHistogramPanel } from './BreadthHistogramPanel';
 
-function ReportFigure({ title, children }: { title: string; children: ReactNode }) {
+function ReportFigure({ id, title, children }: { id: string; title: string; children: ReactNode }) {
     const [open, setOpen] = useState(false);
-    return <details className="report-figure-toggle" onToggle={event => setOpen(event.currentTarget.open)}>
+    return <details id={id} className="report-figure-toggle" onToggle={event => setOpen(event.currentTarget.open)}>
         <summary>{title}</summary>
         {open && <div className="report-figure-content">{children}</div>}
     </details>;
 }
 
 /** One visual implementation for the dashboard and the offline report. */
-export function IndexSummaryFigures({ expanded = false, ...props }: IndexSummaryCardProps & { expanded?: boolean }) {
+export function IndexSummaryFigures({ expanded = false, anchorPrefix = "sector", ...props }: IndexSummaryCardProps & { expanded?: boolean; anchorPrefix?: string }) {
     if (!expanded) return <IndexSummaryCard {...props} />;
     const start = format(props.minDate, 'yyyy-MM-dd');
     const end = props.maxDate ? format(props.maxDate, 'yyyy-MM-dd') : '9999-12-31';
@@ -22,12 +22,12 @@ export function IndexSummaryFigures({ expanded = false, ...props }: IndexSummary
         <div className="report-summary mx-auto w-full max-w-xl" data-figure="summary">
             <IndexSummaryCard {...props} staticSummary />
         </div>
-        <ReportFigure title={`${props.title} — Market Breadth`}>
+        <ReportFigure id={`${anchorPrefix}-breadth`} title={`${props.title} — Market Breadth`}>
         <div data-figure="market-breadth" className="report-breadth">
             <MarketBreadthChart {...props} indexTitle={props.title} />
         </div>
         </ReportFigure>
-        <ReportFigure title={`${props.title} — Distribution`}>
+        <ReportFigure id={`${anchorPrefix}-distribution`} title={`${props.title} — Distribution`}>
         <div data-figure="distribution" className="report-distribution border rounded-lg bg-card" style={{ height: 850 }}>
             <BreadthHistogramPanel
                 title={props.title}

@@ -5,6 +5,14 @@ body{background:#f2f5fa}
 .report-header{padding:28px;background:#12243e;color:white;border-radius:16px;margin-bottom:24px}
 .report-header h1{font-size:30px;font-weight:700;margin:8px 0}
 .report-header p{margin:8px 0}
+.report-contents{background:white;border:1px solid #dde4ed;border-radius:12px;padding:20px;margin:24px 0}
+.report-contents h2{font-size:20px;font-weight:700;margin-bottom:12px}
+.report-contents li{display:flex;flex-wrap:wrap;gap:8px 24px;margin:10px 0}
+.report-contents li>a{min-width:180px;font-weight:600}
+.report-contents a,.report-back{color:#2563eb;text-decoration:underline;text-underline-offset:3px}
+.report-back{font-size:13px}
+[id]{scroll-margin-top:20px}
+@media print{.report-contents,.report-back{display:none}}
 .report-header button{background:white;color:#17243a;border-radius:6px;padding:8px 16px;margin-top:12px}
 .report-sector{margin:32px 0 48px}
 .report-sector>h2,.report-tables h2{font-size:24px;font-weight:700;margin:24px 0 16px}

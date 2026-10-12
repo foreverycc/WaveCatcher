@@ -1,3 +1,4 @@
+import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { parseISO } from 'date-fns';
@@ -13,7 +14,20 @@ const client = new QueryClient({ defaultOptions: { queries: { enabled: false, re
 payload.figures.forEach((figure, index) => {
     const element = document.getElementById(`figure-${index}`);
     if (!element) throw new Error(`Missing figure container ${index}`);
-    createRoot(element).render(<QueryClientProvider client={client}>
-        <IndexSummaryFigures {...figure} minDate={parseISO(payload.start)} maxDate={parseISO(payload.end)} expanded />
-    </QueryClientProvider>);
+    flushSync(() => createRoot(element).render(<QueryClientProvider client={client}>
+        <IndexSummaryFigures {...figure} minDate={parseISO(payload.start)} maxDate={parseISO(payload.end)} anchorPrefix={`sector-${index}`} expanded />
+    </QueryClientProvider>));
 });
+
+function followSectionLink() {
+    const target = document.getElementById(window.location.hash.slice(1));
+    if (!target) return;
+    if (target instanceof HTMLDetailsElement) target.open = true;
+    requestAnimationFrame(() => target.scrollIntoView({ block: 'start' }));
+}
+window.addEventListener('hashchange', followSectionLink);
+document.addEventListener('click', event => {
+    const link = (event.target as Element).closest('a[href^="#"]');
+    if (link && link.getAttribute('href') === window.location.hash) followSectionLink();
+});
+followSectionLink();
