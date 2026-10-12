@@ -180,17 +180,21 @@ def calculate_returns(data, cd_signals, periods=None, max_signals=MAX_SIGNALS_TH
     for date in signal_dates:
         idx = data.index.get_loc(date)
         
-        entry_price = data.loc[date, 'Close']
+        # The signal is only known once its bar has closed, so enter at the next bar's open
+        entry_price = data.iloc[idx + 1]['Open'] if idx + 1 < len(data) else np.nan
         entry_volume = data.loc[date, 'Volume']
         returns = {}
         volumes = {}
         
         for period in periods:
-            if idx + period < len(data):
-                exit_price = data.iloc[idx + period]['Close']
+            if idx + period < len(data) and pd.notna(entry_price) and entry_price > 0:
+                exit_price = entry_price if period == 0 else data.iloc[idx + period]['Close']
                 exit_volume = data.iloc[idx + period]['Volume']
                 returns[f'return_{period}'] = round(float((exit_price - entry_price) / entry_price * 100), 2)  # Convert to Python float
                 volumes[f'volume_{period}'] = round(int(exit_volume), 0)  # Convert to Python int
+            elif idx + period < len(data):
+                returns[f'return_{period}'] = np.nan
+                volumes[f'volume_{period}'] = round(int(data.iloc[idx + period]['Volume']), 0)
             else:
                 returns[f'return_{period}'] = np.nan
                 volumes[f'volume_{period}'] = np.nan
@@ -433,6 +437,9 @@ def evaluate_interval(ticker, interval, data=None):
             volume_history = {}
             entry_price = data_frame.loc[latest_signal_date, 'Close']
             entry_volume = data_frame.loc[latest_signal_date, 'Volume']
+            if signal_idx + 1 < len(data_frame):
+                # Returns are measured from the next bar's open (see calculate_returns)
+                result['entry_price'] = round(float(data_frame.iloc[signal_idx + 1]['Open']), 2)
             price_history[0] = round(float(entry_price), 2)  # Entry price at period 0, convert to Python float
             volume_history[0] = round(int(entry_volume), 0)  # Entry volume at period 0, convert to Python int
             

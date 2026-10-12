@@ -110,6 +110,15 @@ def add_signal_stats(result, returns_df, data_frame, bullish=True):
     return result
 
 
+def forward_returns(df, p):
+    """Return (%) per bar of entering at the next bar's open and exiting at the close p bars after the signal bar."""
+    frame = df[~df.index.duplicated()]
+    close = frame['Close'].astype(float)
+    entry = frame['Open'].astype(float).shift(-1) if 'Open' in frame else close
+    entry = entry.where(entry > 0)
+    return (close.shift(-p) / entry - 1) * 100
+
+
 def universe_forward_returns(all_ticker_data, interval, grid=BEST_PERIOD_GRID):
     """
     For one interval, per period p: (sum, count) of every stock's forward return (%) from each bar,
@@ -120,10 +129,8 @@ def universe_forward_returns(all_ticker_data, interval, grid=BEST_PERIOD_GRID):
         df = data.get(interval) if isinstance(data, dict) else None
         if df is None or df.empty or 'Close' not in df:
             continue
-        close = df['Close'].astype(float)
-        close = close[~close.index.duplicated()]
         for p in grid:
-            per_p[p].append(((close.shift(-p) / close - 1) * 100).rename(ticker))
+            per_p[p].append(forward_returns(df, p).rename(ticker))
     result = {}
     for p, series in per_p.items():
         if not series:
@@ -148,19 +155,18 @@ def apply_universe_baseline(eval_results, all_ticker_data, bullish=True):
         universe = cache[interval]
         ticker = row.get('ticker')
         dates = [pd.Timestamp(d) for d in row.get('signal_dates') or []]
-        own_close = None
+        own_df = None
         if ticker in all_ticker_data and isinstance(all_ticker_data[ticker], dict):
             own_df = all_ticker_data[ticker].get(interval)
-            if own_df is not None and not own_df.empty:
-                own_close = own_df['Close'].astype(float)
-                own_close = own_close[~own_close.index.duplicated()]
+            if own_df is not None and own_df.empty:
+                own_df = None
 
         for p in BEST_PERIOD_GRID:
             excess, base = [], []
             returns = row.get(f'grid_returns_{p}') or []
-            if p in universe and dates and own_close is not None:
+            if p in universe and dates and own_df is not None:
                 total, count = universe[p]
-                own_fwd = (own_close.shift(-p) / own_close - 1) * 100
+                own_fwd = forward_returns(own_df, p)
                 for d, r in zip(dates, returns):
                     if r is None or d not in total.index:
                         continue

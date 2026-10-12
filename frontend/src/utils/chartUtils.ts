@@ -168,7 +168,8 @@ export function extractCurrentTrajectory(rowData: any) {
     // Calculate returns from price history
     const returns = [];
     if (priceHistory.length > 0) {
-        const signalPrice = parseFloat(rowData.latest_signal_price) || priceHistory[0];
+        // Historical returns are measured from the open of the bar after the signal
+        const signalPrice = parseFloat(rowData.entry_price) || parseFloat(rowData.latest_signal_price) || priceHistory[0];
         returns.push(0); // Period 0 always returns 0
 
         for (let i = 1; i < priceHistory.length; i++) {

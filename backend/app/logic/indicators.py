@@ -345,46 +345,64 @@ def compute_mc_score(data, weights=None):
     return score
 
 def _compute_barslast(cross_events, length):
-    barslast = np.zeros(length, dtype=int)
-    last_event = -1
-    for i in range(length):
-        # Get scalar boolean value
-        if cross_events.iloc[i].item():
-            last_event = i
-        barslast[i] = i - last_event if last_event != -1 else 0
+    """BARSLAST: bars since the last True event (0 on the event bar, and 0 before the first event)."""
+    events = np.asarray(pd.Series(cross_events).fillna(False).astype(bool).values)[:length]
+    pos = np.arange(length)
+    last = np.maximum.accumulate(np.where(events, pos, -1))
+    barslast = np.where(last >= 0, pos - last, 0)
     return pd.Series(barslast, index=cross_events.index)
 
-def _compute_llv(series, periods):
-    llv = pd.Series(index=series.index, dtype=float)
+def _window_starts(periods):
+    """Start position of each variable-length window [i - period + 1, i], or None if any period <= 0."""
+    periods = np.asarray(periods, dtype=int)
+    if (periods <= 0).any():
+        return None
+    return np.maximum(0, np.arange(len(periods)) - periods + 1)
+
+def _compute_window_extreme(series, periods, how):
+    """LLV/HHV over variable windows. Windows from BARSLAST + 1 start at the last event and only move
+    forward, so each window is a running min/max within its segment; other inputs use the plain loop."""
+    values = series.astype(float)
+    starts = _window_starts(periods.values if hasattr(periods, 'values') else periods)
+    if starts is None or values.isna().any() or (np.diff(starts) < 0).any():
+        return _compute_window_extreme_loop(series, periods, how)
+    # starts are non-decreasing, so bars sharing a start form one contiguous segment beginning at that start
+    groups = pd.Series(starts, index=series.index)
+    grouped = values.groupby(groups.values)
+    out = grouped.cummin() if how == 'min' else grouped.cummax()
+    # a segment is only valid if its first bar is the window start itself
+    first_pos = pd.Series(np.arange(len(values)), index=series.index).groupby(groups.values).transform('min')
+    if (first_pos.values != starts).any():
+        return _compute_window_extreme_loop(series, periods, how)
+    return pd.Series(out.values, index=series.index, dtype=float)
+
+def _compute_window_extreme_loop(series, periods, how):
+    result = pd.Series(index=series.index, dtype=float)
     for i in range(len(series)):
         period = periods.iloc[i]
         if period > 0:
             start = max(0, i - period + 1)
-            llv.iloc[i] = series.iloc[start:i+1].min()
+            window = series.iloc[start:i+1]
+            result.iloc[i] = window.min() if how == 'min' else window.max()
         else:
-            llv.iloc[i] = np.nan
-    return llv
+            result.iloc[i] = np.nan
+    return result
+
+def _compute_llv(series, periods):
+    """LLV (Lowest Low Value) over a variable window length per bar."""
+    return _compute_window_extreme(series, periods, 'min')
 
 def _compute_hhv(series, periods):
     """
     计算HHV (Highest High Value) - 最高值
     """
-    hhv = pd.Series(index=series.index, dtype=float)
-    for i in range(len(series)):
-        period = periods.iloc[i]
-        if period > 0:
-            start = max(0, i - period + 1)
-            hhv.iloc[i] = series.iloc[start:i+1].max()
-        else:
-            hhv.iloc[i] = np.nan
-    return hhv
+    return _compute_window_extreme(series, periods, 'max')
 
 def _compute_ref(series, lags):
-    ref = pd.Series(index=series.index, dtype=float)
-    for i in range(len(series)):
-        lag = lags.iloc[i]
-        if lag <= i:
-            ref.iloc[i] = series.iloc[i - lag]
-        else:
-            ref.iloc[i] = np.nan
-    return ref
+    """REF: value `lag` bars ago per bar (NaN when there is not enough history)."""
+    lags = np.asarray(lags.values if hasattr(lags, 'values') else lags, dtype=int)
+    src = np.arange(len(series)) - lags
+    valid = src >= 0
+    out = np.full(len(series), np.nan)
+    out[valid] = series.astype(float).values[src[valid]]
+    return pd.Series(out, index=series.index)

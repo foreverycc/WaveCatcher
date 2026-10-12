@@ -30,6 +30,9 @@ def compute_high_return_cd(df, cd_signals, lookback_signals=3, lookback_bars=20,
     close = df['Close']
     if isinstance(close, pd.DataFrame):
         close = close.iloc[:, 0]
+    open_ = df['Open'] if 'Open' in df else close
+    if isinstance(open_, pd.DataFrame):
+        open_ = open_.iloc[:, 0]
     
     result = pd.Series(False, index=df.index)
     signal_indices = np.where(cd_signals)[0]
@@ -51,7 +54,8 @@ def compute_high_return_cd(df, cd_signals, lookback_signals=3, lookback_bars=20,
             future_idx = prev_idx + lookback_bars
             # Only use returns that were already realized at the current signal (no look-ahead)
             if future_idx <= sig_idx:
-                entry_price = close.iloc[prev_idx]
+                # Enter at the open of the bar after the signal, like the evaluation returns
+                entry_price = open_.iloc[prev_idx + 1] if prev_idx + 1 < len(open_) else np.nan
                 exit_price = close.iloc[future_idx]
                 if entry_price > 0:
                     ret = (exit_price - entry_price) / entry_price * 100
@@ -82,6 +86,9 @@ def compute_high_return_mc(df, mc_signals, lookback_signals=3, lookback_bars=20,
     close = df['Close']
     if isinstance(close, pd.DataFrame):
         close = close.iloc[:, 0]
+    open_ = df['Open'] if 'Open' in df else close
+    if isinstance(open_, pd.DataFrame):
+        open_ = open_.iloc[:, 0]
     
     result = pd.Series(False, index=df.index)
     signal_indices = np.where(mc_signals)[0]
@@ -103,7 +110,8 @@ def compute_high_return_mc(df, mc_signals, lookback_signals=3, lookback_bars=20,
             future_idx = prev_idx + lookback_bars
             # Only use returns that were already realized at the current signal (no look-ahead)
             if future_idx <= sig_idx:
-                entry_price = close.iloc[prev_idx]
+                # Enter at the open of the bar after the signal, like the evaluation returns
+                entry_price = open_.iloc[prev_idx + 1] if prev_idx + 1 < len(open_) else np.nan
                 exit_price = close.iloc[future_idx]
                 if entry_price > 0:
                     ret = (exit_price - entry_price) / entry_price * 100
