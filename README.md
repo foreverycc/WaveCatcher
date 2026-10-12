@@ -115,9 +115,9 @@ and installed frontend dependencies are required for rebuilding).
 Unique filenames prevent overwrites. Export failures
 are shown independently and can be retried without rerunning market analysis.
 
-To create a report immediately, click **Run now & generate report** in Summary
-or **Configuration → Reports & Schedule**. Summary uses the indices selected in
-the sidebar; Configuration uses the saved scheduled indices and report settings.
+To create a report immediately, click **Run Analysis** in the sidebar, or
+**Run now & generate report** in **Configuration → Reports & Schedule**. The sidebar
+uses the selected indices; Configuration uses the saved scheduled indices and report settings.
 The button shows progress, prevents overlapping jobs, and links to the saved
 report when complete. **Export saved results** exports an already completed run
 without downloading fresh market data. Manual runs do not change the daily schedule.

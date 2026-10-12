@@ -577,7 +577,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
 
     return (
         <div className="p-4 md:p-6 h-full overflow-y-auto space-y-6 relative">
-            <RunReportButton runId={runId} indices={selectedIndices} view={{ indices: activeIndices.map(idx => idx.key), date_range: dateRange, breadth_date_range: breadthDateRange }} />
+            <RunReportButton runId={runId} view={{ indices: activeIndices.map(idx => idx.key), date_range: dateRange, breadth_date_range: breadthDateRange }} />
 
             {/* Data Quality Warning Banner */}
             {dataQuality && !warningsDismissed && (

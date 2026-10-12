@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { reportsApi, type ReportView } from '../services/api';
-import { RunNowReportButton } from './RunNowReportButton';
 import { Download, ExternalLink, FileOutput, Loader2 } from 'lucide-react';
 
 const reportActionClass = 'inline-flex h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground no-underline transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50';
 
-export function RunReportButton({ runId, indices, view }: { runId?: number; indices: string[]; view: ReportView }) {
+export function RunReportButton({ runId, view }: { runId?: number; view: ReportView }) {
     const qc = useQueryClient();
     const reports = useQuery({ queryKey: ['reports'], queryFn: reportsApi.list, refetchInterval: 10000 });
     const report = reports.data?.find(item => item.run_id === runId);
@@ -14,7 +13,6 @@ export function RunReportButton({ runId, indices, view }: { runId?: number; indi
     const [error, setError] = useState('');
     return <div className="rounded-lg border bg-card p-3 text-sm flex flex-wrap items-center gap-3">
         <strong>Analysis report</strong>
-        <div className="w-full"><RunNowReportButton indices={indices} /></div>
         <div className="flex flex-wrap items-center gap-2">
         {report?.status === 'completed' && <><a href={reportsApi.fileUrl(report.id)} target="_blank" rel="noreferrer" className={reportActionClass}><ExternalLink aria-hidden="true" className="h-4 w-4" />Open HTML / Save as PDF</a><a href={reportsApi.fileUrl(report.id, true)} className={reportActionClass}><Download aria-hidden="true" className="h-4 w-4" />Download</a></>}
         <button type="button" disabled={!runId || busy} className={reportActionClass} onClick={async () => {
