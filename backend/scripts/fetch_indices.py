@@ -3,6 +3,10 @@ import os
 import requests
 import io
 import re
+import json
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, '..', 'data'))
 
 def get_html_content(url):
     headers = {
@@ -206,10 +210,6 @@ def fetch_kweb():
         elif re.fullmatch(r'[A-Z]{1,5}(-[A-Z])?', raw_tk):
             result.append(raw_tk)
 
-    # Supplementary US-listed Chinese tech stocks (fintech/EV not in pure internet index)
-    extra_adr = ['FUTU', 'LI', 'NIO', 'XPEV']
-    result.extend(extra_adr)
-
     return _clean_tickers(result)
 
 def fetch_xbi():
@@ -239,14 +239,43 @@ def fetch_dowjones():
             return sorted(stocks)
     return []
 
+def load_index_whitelist(filename):
+    """Load whitelist tickers for any index mapped to this stock list filename."""
+    config_path = os.path.join(DATA_DIR, 'index_config.json')
+    if not os.path.exists(config_path):
+        return []
+    try:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        whitelists = []
+        for entry in config.values():
+            if entry.get('stock_list') == filename:
+                for t in entry.get('whitelist', []):
+                    if t and str(t).strip():
+                        whitelists.append(str(t).strip().upper().replace('.', '-'))
+        return whitelists
+    except Exception as e:
+        print(f"Warning: could not load index whitelist from {config_path}: {e}")
+        return []
+
 def save_to_tab(stocks, filename):
-    # Ensure data directory exists
-    os.makedirs('data', exist_ok=True)
-    filepath = os.path.join('data', filename)
+    whitelist = load_index_whitelist(filename)
+    combined = list(stocks)
+    if whitelist:
+        combined.extend(whitelist)
+        print(f"Merged whitelist ({len(whitelist)} tickers: {', '.join(whitelist)}) into {filename}")
+
+    # Deduplicate and sort
+    final_stocks = sorted(list(dict.fromkeys(
+        str(s).strip().upper().replace('.', '-') for s in combined if s and str(s).strip()
+    )))
+
+    os.makedirs(DATA_DIR, exist_ok=True)
+    filepath = os.path.join(DATA_DIR, filename)
     with open(filepath, 'w') as f:
-        for stock in stocks:
+        for stock in final_stocks:
             f.write(f"{stock}\n")
-    print(f"Saved {len(stocks)} tickers to ./backend/{filepath}")
+    print(f"Saved {len(final_stocks)} tickers to {filepath}")
 
 if __name__ == "__main__":
     import sys

@@ -1,54 +1,72 @@
 {
   "SPX": {
     "symbol": "^SPX",
-    "stock_list": "stocks_sp500.tab"
+    "stock_list": "stocks_sp500.tab",
+    "whitelist": []
   },
   "QQQ": {
     "symbol": "QQQ",
-    "stock_list": "stocks_nasdaq100.tab"
+    "stock_list": "stocks_nasdaq100.tab",
+    "whitelist": []
   },
   "DJI": {
     "symbol": "^DJI",
-    "stock_list": "stocks_dowjones.tab"
+    "stock_list": "stocks_dowjones.tab",
+    "whitelist": []
   },
   "IWM": {
     "symbol": "IWM",
-    "stock_list": "stocks_russell2000.tab"
+    "stock_list": "stocks_russell2000.tab",
+    "whitelist": []
   },
   "SOXX": {
     "symbol": "SOXX",
-    "stock_list": "stocks_soxx.tab"
+    "stock_list": "stocks_soxx.tab",
+    "whitelist": []
   },
   "XBI": {
     "symbol": "XBI",
-    "stock_list": "stocks_xbi.tab"
+    "stock_list": "stocks_xbi.tab",
+    "whitelist": []
   },
   "SPACE": {
     "symbol": "NASA",
-    "stock_list": "stocks_space.tab"
+    "stock_list": "stocks_space.tab",
+    "whitelist": []
   },
   "CRYPTO": {
     "symbol": "BTC-USD",
-    "stock_list": "stocks_crypto.tab"
+    "stock_list": "stocks_crypto.tab",
+    "whitelist": []
   },
   "QUANTUM": {
     "symbol": "QTUP",
-    "stock_list": "stocks_quantum.tab"
+    "stock_list": "stocks_quantum.tab",
+    "whitelist": []
   },
   "KWEB": {
     "symbol": "KWEB",
-    "stock_list": "stocks_zhonggai.tab"
+    "stock_list": "stocks_zhonggai.tab",
+    "whitelist": [
+      "FUTU",
+      "LI",
+      "NIO",
+      "XPEV"
+    ]
   },
   "STORAGE": {
     "symbol": "DRAM",
-    "stock_list": "stocks_storage.tab"
+    "stock_list": "stocks_storage.tab",
+    "whitelist": []
   },
   "LIGHT": {
     "symbol": "LITE",
-    "stock_list": "stocks_light.tab"
+    "stock_list": "stocks_light.tab",
+    "whitelist": []
   },
   "SAAS": {
     "symbol": "IGV",
-    "stock_list": "stocks_saas.tab"
+    "stock_list": "stocks_saas.tab",
+    "whitelist": []
   }
 }

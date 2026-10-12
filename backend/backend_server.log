@@ -43138,3 +43138,56 @@ sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) attempt to write a r
 2026-10-11 13:20:30,909 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=LITE, run_id=1
 2026-10-11 13:20:30,909 - app.api.endpoints.analysis - INFO - ticker=LITE CD 1234 dates: ['2026-06-01', '2025-02-20', '2025-01-14', '2024-11-01']
 2026-10-11 13:20:30,909 - app.api.endpoints.analysis - INFO - ticker=LITE MC 1234 dates: ['2026-09-10', '2026-08-13', '2026-05-14', '2026-05-06', '2026-03-03', '2026-02-26', '2026-01-08', '2025-12-29', '2025-11-20', '2025-10-03', '2025-07-31', '2025-06-16', '2025-06-13', '2025-06-10', '2025-06-06', '2024-12-06', '2024-12-05', '2024-11-25']
+2026-10-11 13:46:12,124 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=1
+2026-10-11 13:46:12,125 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: []
+2026-10-11 13:46:12,126 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: []
+2026-10-11 13:46:12,143 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=1
+2026-10-11 13:46:12,143 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: []
+2026-10-11 13:46:12,144 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: []
+2026-10-11 13:46:12,144 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=1
+2026-10-11 13:46:12,145 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: []
+2026-10-11 13:46:12,145 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: []
+2026-10-11 13:46:12,145 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=NASA, run_id=1
+2026-10-11 13:46:12,145 - app.api.endpoints.analysis - INFO - ticker=NASA CD 1234 dates: []
+2026-10-11 13:46:12,145 - app.api.endpoints.analysis - INFO - ticker=NASA MC 1234 dates: []
+2026-10-11 13:46:12,146 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=1
+2026-10-11 13:46:12,146 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: []
+2026-10-11 13:46:12,146 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: []
+2026-10-11 13:46:12,149 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QTUP, run_id=1
+2026-10-11 13:46:12,150 - app.api.endpoints.analysis - INFO - ticker=QTUP CD 1234 dates: []
+2026-10-11 13:46:12,150 - app.api.endpoints.analysis - INFO - ticker=QTUP MC 1234 dates: []
+2026-10-11 13:46:12,150 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=1
+2026-10-11 13:46:12,150 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: []
+2026-10-11 13:46:12,151 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: []
+2026-10-11 13:46:12,154 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=KWEB, run_id=1
+2026-10-11 13:46:12,155 - app.api.endpoints.analysis - INFO - ticker=KWEB CD 1234 dates: []
+2026-10-11 13:46:12,155 - app.api.endpoints.analysis - INFO - ticker=KWEB MC 1234 dates: []
+2026-10-11 13:46:12,156 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=DRAM, run_id=1
+2026-10-11 13:46:12,156 - app.api.endpoints.analysis - INFO - ticker=DRAM CD 1234 dates: ['2026-07-30']
+2026-10-11 13:46:12,157 - app.api.endpoints.analysis - INFO - ticker=DRAM MC 1234 dates: ['2026-05-29', '2026-04-28', '2026-04-23']
+2026-10-11 13:46:12,157 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=LITE, run_id=1
+2026-10-11 13:46:12,157 - app.api.endpoints.analysis - INFO - ticker=LITE CD 1234 dates: ['2026-06-01', '2025-02-20', '2025-01-14', '2024-11-01']
+2026-10-11 13:46:12,158 - app.api.endpoints.analysis - INFO - ticker=LITE MC 1234 dates: ['2026-09-10', '2026-08-13', '2026-05-14', '2026-05-06', '2026-03-03', '2026-02-26', '2026-01-08', '2025-12-29', '2025-11-20', '2025-10-03', '2025-07-31', '2025-06-16', '2025-06-13', '2025-06-10', '2025-06-06', '2024-12-06', '2024-12-05', '2024-11-25']
+2026-10-11 13:46:12,158 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IGV, run_id=1
+2026-10-11 13:46:12,158 - app.api.endpoints.analysis - INFO - ticker=IGV CD 1234 dates: []
+2026-10-11 13:46:12,159 - app.api.endpoints.analysis - INFO - ticker=IGV MC 1234 dates: []
+2026-10-11 13:46:12,314 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=1
+2026-10-11 13:46:12,314 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-10-11 13:46:12,315 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-10-11 13:46:12,315 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=1
+2026-10-11 13:46:12,315 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-10-11 13:46:12,315 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-10-11 16:40:19,323 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=1
+2026-10-11 16:40:19,324 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: []
+2026-10-11 16:40:19,324 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: []
+2026-10-11 16:58:54,357 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=1
+2026-10-11 16:58:54,358 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: []
+2026-10-11 16:58:54,359 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: []
+2026-10-11 17:02:59,497 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=KWEB, run_id=1
+2026-10-11 17:02:59,498 - app.api.endpoints.analysis - INFO - ticker=KWEB CD 1234 dates: []
+2026-10-11 17:02:59,498 - app.api.endpoints.analysis - INFO - ticker=KWEB MC 1234 dates: []
+2026-10-11 17:03:08,051 - app.api.endpoints.analysis - INFO - [HQ] KWEB/1h: algo=breakthrough, cd_sig=26, cd_1234=3, mc_sig=6, mc_1234=1
+2026-10-11 17:03:08,549 - app.api.endpoints.analysis - INFO - [HQ] KWEB/2h: algo=breakthrough, cd_sig=18, cd_1234=1, mc_sig=3, mc_1234=2
+2026-10-11 17:03:08,894 - app.api.endpoints.analysis - INFO - [HQ] KWEB/3h: algo=breakthrough, cd_sig=10, cd_1234=1, mc_sig=2, mc_1234=1
+2026-10-11 17:03:09,112 - app.api.endpoints.analysis - INFO - [HQ] KWEB/4h: algo=breakthrough, cd_sig=13, cd_1234=1, mc_sig=1, mc_1234=1
+2026-10-11 17:03:09,347 - app.api.endpoints.analysis - INFO - [HQ] KWEB/1d: algo=breakthrough, cd_sig=7, cd_1234=0, mc_sig=2, mc_1234=0

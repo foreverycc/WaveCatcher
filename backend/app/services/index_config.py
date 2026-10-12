@@ -9,10 +9,10 @@ CONFIG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../dat
 
 # Fallback if file doesn't exist yet
 _FALLBACK = {
-    "SPX": {"symbol": "^SPX", "stock_list": "stocks_sp500.tab"},
-    "QQQ": {"symbol": "QQQ", "stock_list": "stocks_nasdaq100.tab"},
-    "DJI": {"symbol": "^DJI", "stock_list": "stocks_dowjones.tab"},
-    "IWM": {"symbol": "IWM", "stock_list": "stocks_russell2000.tab"},
+    "SPX": {"symbol": "^SPX", "stock_list": "stocks_sp500.tab", "whitelist": []},
+    "QQQ": {"symbol": "QQQ", "stock_list": "stocks_nasdaq100.tab", "whitelist": []},
+    "DJI": {"symbol": "^DJI", "stock_list": "stocks_dowjones.tab", "whitelist": []},
+    "IWM": {"symbol": "IWM", "stock_list": "stocks_russell2000.tab", "whitelist": []},
 }
 
 

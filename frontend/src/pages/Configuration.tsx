@@ -23,9 +23,11 @@ export const Configuration: React.FC = () => {
     const [newIdxKey, setNewIdxKey] = useState('');
     const [newIdxSymbol, setNewIdxSymbol] = useState('');
     const [newIdxStockList, setNewIdxStockList] = useState('');
+    const [newIdxWhitelist, setNewIdxWhitelist] = useState('');
     const [editingIdx, setEditingIdx] = useState<string | null>(null);
     const [editSymbol, setEditSymbol] = useState('');
     const [editStockList, setEditStockList] = useState('');
+    const [editWhitelist, setEditWhitelist] = useState('');
 
     const { data: files, isLoading: isLoadingFiles } = useQuery({
         queryKey: ['stockFiles'],
@@ -97,9 +99,18 @@ export const Configuration: React.FC = () => {
     });
 
     // --- Index CRUD mutations ---
+    const parseWhitelist = (input: string): string[] => {
+        return Array.from(new Set(
+            input
+                .split(/[\s,]+/)
+                .map(s => s.trim().toUpperCase().replace('.', '-'))
+                .filter(s => s.length > 0)
+        ));
+    };
+
     const upsertIndexMutation = useMutation({
-        mutationFn: ({ key, symbol, stock_list }: { key: string, symbol: string, stock_list: string }) =>
-            analysisApi.upsertIndex(key, symbol, stock_list),
+        mutationFn: ({ key, symbol, stock_list, whitelist }: { key: string, symbol: string, stock_list: string, whitelist?: string[] }) =>
+            analysisApi.upsertIndex(key, symbol, stock_list, whitelist),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['availableIndices'] });
             setAddingIndex(false);
@@ -107,6 +118,7 @@ export const Configuration: React.FC = () => {
             setNewIdxKey('');
             setNewIdxSymbol('');
             setNewIdxStockList('');
+            setNewIdxWhitelist('');
         },
         onError: (error) => alert(`Error saving index: ${error}`)
     });
@@ -137,15 +149,21 @@ export const Configuration: React.FC = () => {
         }
     };
 
-    const startEdit = (idx: { key: string, symbol: string, stock_list: string }) => {
+    const startEdit = (idx: { key: string, symbol: string, stock_list: string, whitelist?: string[] }) => {
         setEditingIdx(idx.key);
         setEditSymbol(idx.symbol);
         setEditStockList(idx.stock_list);
+        setEditWhitelist((idx.whitelist || []).join(', '));
     };
 
     const saveEdit = () => {
         if (editingIdx && editSymbol && editStockList) {
-            upsertIndexMutation.mutate({ key: editingIdx, symbol: editSymbol, stock_list: editStockList });
+            upsertIndexMutation.mutate({
+                key: editingIdx,
+                symbol: editSymbol,
+                stock_list: editStockList,
+                whitelist: parseWhitelist(editWhitelist)
+            });
         }
     };
 
@@ -161,9 +179,14 @@ export const Configuration: React.FC = () => {
             {/* === Index Configuration Section === */}
             <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
                 <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
-                    <h3 className="font-semibold flex items-center gap-2">
-                        <Settings className="w-4 h-4" /> Market Indices
-                    </h3>
+                    <div>
+                        <h3 className="font-semibold flex items-center gap-2">
+                            <Settings className="w-4 h-4" /> Market Indices
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                            Manage index definitions and their whitelists. Whitelisted tickers are forcefully merged and preserved when fetching or updating stock lists.
+                        </p>
+                    </div>
                     <button
                         onClick={() => { setAddingIndex(!addingIndex); }}
                         className="p-1 hover:bg-muted rounded-md transition-colors"
@@ -180,6 +203,7 @@ export const Configuration: React.FC = () => {
                                 <th className="p-3 text-left font-medium">Key</th>
                                 <th className="p-3 text-left font-medium">Symbol</th>
                                 <th className="p-3 text-left font-medium">Stock List</th>
+                                <th className="p-3 text-left font-medium">Whitelist (Always Retained)</th>
                                 <th className="p-3 text-right font-medium w-24">Actions</th>
                             </tr>
                         </thead>
@@ -208,6 +232,15 @@ export const Configuration: React.FC = () => {
                                                     ))}
                                                 </select>
                                             </td>
+                                            <td className="p-3">
+                                                <input
+                                                    type="text"
+                                                    value={editWhitelist}
+                                                    onChange={e => setEditWhitelist(e.target.value)}
+                                                    placeholder="e.g. FUTU, LI, NIO, XPEV"
+                                                    className="w-full px-2 py-1 rounded border border-input bg-background text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                                                />
+                                            </td>
                                             <td className="p-3 text-right">
                                                 <div className="flex justify-end gap-1">
                                                     <button onClick={saveEdit} className="p-1 text-green-600 hover:bg-green-500/10 rounded" title="Save">
@@ -224,6 +257,22 @@ export const Configuration: React.FC = () => {
                                             <td className="p-3 font-medium">{idx.key}</td>
                                             <td className="p-3 text-muted-foreground">{idx.symbol}</td>
                                             <td className="p-3 text-muted-foreground">{idx.stock_list}</td>
+                                            <td className="p-3">
+                                                {idx.whitelist && idx.whitelist.length > 0 ? (
+                                                    <div className="flex flex-wrap gap-1 max-w-sm">
+                                                        {idx.whitelist.map(ticker => (
+                                                            <span
+                                                                key={ticker}
+                                                                className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono font-medium bg-primary/10 text-primary border border-primary/20"
+                                                            >
+                                                                {ticker}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-muted-foreground text-xs italic">None</span>
+                                                )}
+                                            </td>
                                             <td className="p-3 text-right">
                                                 <div className="flex justify-end gap-1">
                                                     <button onClick={() => startEdit(idx)} className="p-1 text-muted-foreground hover:bg-muted hover:text-foreground rounded" title="Edit">
@@ -276,12 +325,26 @@ export const Configuration: React.FC = () => {
                                             ))}
                                         </select>
                                     </td>
+                                    <td className="p-3">
+                                        <input
+                                            type="text"
+                                            value={newIdxWhitelist}
+                                            onChange={e => setNewIdxWhitelist(e.target.value)}
+                                            placeholder="e.g. FUTU, LI, NIO"
+                                            className="w-full px-2 py-1 rounded border border-input bg-background text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </td>
                                     <td className="p-3 text-right">
                                         <div className="flex justify-end gap-1">
                                             <button
                                                 onClick={() => {
                                                     if (newIdxKey && newIdxSymbol && newIdxStockList) {
-                                                        upsertIndexMutation.mutate({ key: newIdxKey, symbol: newIdxSymbol, stock_list: newIdxStockList });
+                                                        upsertIndexMutation.mutate({
+                                                            key: newIdxKey,
+                                                            symbol: newIdxSymbol,
+                                                            stock_list: newIdxStockList,
+                                                            whitelist: parseWhitelist(newIdxWhitelist)
+                                                        });
                                                     }
                                                 }}
                                                 disabled={!newIdxKey || !newIdxSymbol || !newIdxStockList}
