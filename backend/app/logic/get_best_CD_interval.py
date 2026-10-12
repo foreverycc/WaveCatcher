@@ -584,7 +584,12 @@ def evaluate_interval(ticker, interval, data=None):
                             # But often for 1d trend we check "Yesterday's Close" or "Current Live".
                             # Here we use simplest approach: lookup nearest past/present timestamp.
                             
-                            idx_loc = df_nx.index.get_indexer([latest_signal_date], method='pad')[0]
+                            if timeframe == '1d' and interval != '1d':
+                                # The daily bar for the signal's own day is not complete yet; use the previous day
+                                prior = df_nx.index[df_nx.index.date < latest_signal_date.date()]
+                                idx_loc = df_nx.index.get_loc(prior[-1]) if len(prior) else -1
+                            else:
+                                idx_loc = df_nx.index.get_indexer([latest_signal_date], method='pad')[0]
                             if idx_loc != -1:
                                 val = bool(nx_series.iloc[idx_loc])
                                 result[f'nx_{timeframe}_signal'] = val

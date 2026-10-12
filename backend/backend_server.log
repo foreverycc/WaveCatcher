@@ -43672,3 +43672,142 @@ sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) attempt to write a r
 2026-10-12 09:44:42,059 - app.api.endpoints.analysis - INFO - [HQ] IGV/3h: algo=breakthrough, cd_sig=8, cd_1234=1, mc_sig=5, mc_1234=0
 2026-10-12 09:44:42,292 - app.api.endpoints.analysis - INFO - [HQ] IGV/4h: algo=breakthrough, cd_sig=3, cd_1234=0, mc_sig=9, mc_1234=1
 2026-10-12 09:44:42,518 - app.api.endpoints.analysis - INFO - [HQ] IGV/1d: algo=breakthrough, cd_sig=3, cd_1234=0, mc_sig=3, mc_1234=0
+2026-10-12 10:27:14,225 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IGV, run_id=4
+2026-10-12 10:27:14,227 - app.api.endpoints.analysis - INFO - ticker=IGV CD 1234 dates: ['2026-06-26', '2026-06-25', '2026-04-13', '2025-11-14', '2025-08-15', '2025-03-07', '2025-01-03']
+2026-10-12 10:27:14,228 - app.api.endpoints.analysis - INFO - ticker=IGV MC 1234 dates: ['2026-09-01', '2026-05-26', '2026-05-21', '2026-05-12', '2026-05-11', '2025-07-30', '2025-07-22', '2025-06-17', '2025-06-16', '2025-06-13', '2025-06-12', '2025-06-05', '2025-05-15', '2025-02-19', '2025-02-14', '2025-02-11', '2025-02-07', '2025-01-29', '2024-12-09', '2024-12-06', '2024-12-05', '2024-11-26', '2024-11-25']
+2026-10-12 10:27:14,238 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=4
+2026-10-12 10:27:14,238 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2026-10-02', '2026-09-25', '2026-03-31', '2025-01-13', '2025-01-03']
+2026-10-12 10:27:14,239 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-07-01', '2026-06-25', '2026-06-05', '2026-06-03', '2026-05-15', '2026-05-07', '2026-05-01', '2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27']
+2026-10-12 10:27:15,114 - app.services.engine - INFO - Job 2298b46bc2b341c0bc612c9653a30962: Starting multi-index analysis for ['SAAS', 'DJI']
+2026-10-12 10:27:15,114 - app.services.engine - INFO - Started multi-index analysis job 2298b46bc2b341c0bc612c9653a30962 for indices: ['SAAS', 'DJI']
+2026-10-12 10:27:15,118 - app.logic.stock_analyzer - INFO - Starting multi-index analysis for ['SAAS', 'DJI']
+2026-10-12 10:27:15,118 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for SAAS
+2026-10-12 10:27:15,118 - app.logic.stock_analyzer - INFO - Loaded 30 tickers for DJI
+2026-10-12 10:27:15,118 - app.logic.stock_analyzer - INFO - Combined unique tickers: 60
+2026-10-12 10:27:15,118 - app.logic.stock_analyzer - INFO - Processing 60 combined tickers...
+2026-10-12 10:27:15,118 - app.logic.stock_analyzer - INFO - Using 9 processes for analysis
+2026-10-12 10:27:17,725 - data_loader - WARNING - ⚠️ GOOGL: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:17,738 - data_loader - WARNING - ⚠️ CRCL: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:17,748 - data_loader - WARNING - ⚠️ ADSK: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:17,757 - data_loader - WARNING - ⚠️ MCD: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:18,046 - data_loader - WARNING - ⚠️ NOW: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:19,460 - app.logic.stock_analyzer - WARNING - ⚠️ CRCL: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:20,243 - app.logic.stock_analyzer - WARNING - ⚠️ MCD: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:20,400 - app.logic.stock_analyzer - WARNING - ⚠️ GOOGL: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:20,556 - app.logic.stock_analyzer - WARNING - ⚠️ ADSK: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:20,763 - app.logic.stock_analyzer - WARNING - ⚠️ NOW: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:23,986 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=5
+2026-10-12 10:27:23,987 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: []
+2026-10-12 10:27:23,988 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: []
+2026-10-12 10:27:24,074 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IGV, run_id=5
+2026-10-12 10:27:24,075 - app.api.endpoints.analysis - INFO - ticker=IGV CD 1234 dates: []
+2026-10-12 10:27:24,076 - app.api.endpoints.analysis - INFO - ticker=IGV MC 1234 dates: []
+2026-10-12 10:27:35,968 - data_loader - WARNING - ⚠️ HD: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:37,846 - app.logic.stock_analyzer - WARNING - ⚠️ HD: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:44,699 - data_loader - WARNING - ⚠️ TRV: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:44,706 - data_loader - WARNING - ⚠️ AXP: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:44,926 - data_loader - WARNING - ⚠️ AAPL: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:44,977 - data_loader - WARNING - ⚠️ UNH: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:45,068 - data_loader - WARNING - ⚠️ IBM: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:45,153 - data_loader - WARNING - ⚠️ APP: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:46,545 - app.logic.stock_analyzer - WARNING - ⚠️ AXP: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:46,678 - app.logic.stock_analyzer - WARNING - ⚠️ TRV: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:46,772 - app.logic.stock_analyzer - WARNING - ⚠️ AAPL: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:46,916 - app.logic.stock_analyzer - WARNING - ⚠️ UNH: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:47,123 - app.logic.stock_analyzer - WARNING - ⚠️ IBM: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:47,192 - app.logic.stock_analyzer - WARNING - ⚠️ APP: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:27:59,342 - app.logic.stock_analyzer - INFO - Processed 10/60 tickers
+2026-10-12 10:28:08,508 - data_loader - WARNING - ⚠️ ^DJI: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:08,725 - data_loader - WARNING - ⚠️ TTWO: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:08,783 - data_loader - WARNING - ⚠️ CRWD: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:08,920 - data_loader - WARNING - ⚠️ AMZN: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:08,958 - data_loader - WARNING - ⚠️ DT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:10,348 - app.logic.stock_analyzer - WARNING - ⚠️ ^DJI: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:10,729 - app.logic.stock_analyzer - WARNING - ⚠️ TTWO: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:10,787 - app.logic.stock_analyzer - WARNING - ⚠️ CRWD: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:10,892 - app.logic.stock_analyzer - WARNING - ⚠️ AMZN: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:11,023 - app.logic.stock_analyzer - WARNING - ⚠️ DT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:31,482 - app.logic.stock_analyzer - INFO - Processed 20/60 tickers
+2026-10-12 10:28:31,740 - data_loader - WARNING - ⚠️ IGV: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:32,654 - data_loader - WARNING - ⚠️ ZM: Missing 1h data for 1 trading day(s): 2026-07-14
+2026-10-12 10:28:32,798 - data_loader - WARNING - ⚠️ SHW: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:33,582 - app.logic.stock_analyzer - WARNING - ⚠️ IGV: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:34,764 - app.logic.stock_analyzer - WARNING - ⚠️ ZM: Missing 1h data for 1 trading day(s): 2026-07-14
+2026-10-12 10:28:34,970 - app.logic.stock_analyzer - WARNING - ⚠️ SHW: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:46,953 - data_loader - WARNING - ⚠️ JNJ: Missing 1h data for 1 trading day(s): 2026-07-14
+2026-10-12 10:28:48,902 - app.logic.stock_analyzer - WARNING - ⚠️ JNJ: Missing 1h data for 1 trading day(s): 2026-07-14
+2026-10-12 10:28:55,463 - app.logic.stock_analyzer - INFO - Processed 30/60 tickers
+2026-10-12 10:28:55,472 - data_loader - WARNING - ⚠️ CDNS: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:56,310 - data_loader - WARNING - ⚠️ NTNX: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:56,475 - data_loader - WARNING - ⚠️ TEAM: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:57,175 - app.logic.stock_analyzer - WARNING - ⚠️ CDNS: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:58,148 - app.logic.stock_analyzer - WARNING - ⚠️ NTNX: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:28:58,420 - app.logic.stock_analyzer - WARNING - ⚠️ TEAM: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:19,265 - data_loader - WARNING - ⚠️ PTC: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:19,317 - app.logic.stock_analyzer - INFO - Processed 40/60 tickers
+2026-10-12 10:29:19,881 - data_loader - WARNING - ⚠️ INTU: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:19,999 - data_loader - WARNING - ⚠️ CVX: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:20,210 - data_loader - WARNING - ⚠️ MSFT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:21,076 - data_loader - WARNING - ⚠️ V: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:21,185 - app.logic.stock_analyzer - WARNING - ⚠️ PTC: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:21,655 - app.logic.stock_analyzer - WARNING - ⚠️ INTU: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:21,916 - app.logic.stock_analyzer - WARNING - ⚠️ CVX: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:22,182 - app.logic.stock_analyzer - WARNING - ⚠️ MSFT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:23,076 - app.logic.stock_analyzer - WARNING - ⚠️ V: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:34,340 - data_loader - WARNING - ⚠️ WMT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:36,366 - app.logic.stock_analyzer - WARNING - ⚠️ WMT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:42,909 - data_loader - WARNING - ⚠️ CAT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:43,085 - data_loader - WARNING - ⚠️ MRK: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:43,231 - app.logic.stock_analyzer - INFO - Processed 50/60 tickers
+2026-10-12 10:29:43,524 - data_loader - WARNING - ⚠️ CSCO: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:44,457 - app.logic.stock_analyzer - WARNING - ⚠️ CAT: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:44,550 - app.logic.stock_analyzer - WARNING - ⚠️ MRK: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:29:45,024 - app.logic.stock_analyzer - WARNING - ⚠️ CSCO: Missing 1h data for 2 trading day(s): 2026-07-13, 2026-07-14
+2026-10-12 10:30:00,725 - app.logic.stock_analyzer - INFO - Processed 60/60 tickers
+2026-10-12 10:30:00,742 - app.logic.stock_analyzer - INFO - Processed 60 tickers successfully
+2026-10-12 10:30:03,769 - app.logic.stock_analyzer - INFO - Saving CD evaluation results...
+2026-10-12 10:30:04,587 - app.logic.stock_analyzer - INFO - Saving MC evaluation results...
+2026-10-12 10:30:05,342 - app.logic.stock_analyzer - INFO - Computing breadth for SAAS with 30 tickers
+2026-10-12 10:30:05,352 - app.logic.stock_analyzer - INFO - Saved CD HQ breadth for SAAS: 154 days
+2026-10-12 10:30:05,358 - app.logic.stock_analyzer - INFO - Saved MC HQ breadth for SAAS: 145 days
+2026-10-12 10:30:05,368 - app.logic.stock_analyzer - INFO - Saved CD signal breadth by interval for SAAS: 370 days
+2026-10-12 10:30:05,380 - app.logic.stock_analyzer - INFO - Saved MC signal breadth by interval for SAAS: 364 days
+2026-10-12 10:30:05,393 - app.logic.stock_analyzer - INFO - Saved CD score breadth by interval for SAAS: 370 days
+2026-10-12 10:30:05,406 - app.logic.stock_analyzer - INFO - Saved MC score breadth by interval for SAAS: 364 days
+2026-10-12 10:30:05,412 - app.logic.stock_analyzer - INFO - Saved CD HQ score by interval for SAAS: 154 days
+2026-10-12 10:30:05,417 - app.logic.stock_analyzer - INFO - Saved MC HQ score by interval for SAAS: 145 days
+2026-10-12 10:30:05,417 - app.logic.stock_analyzer - INFO - Computing breadth for DJI with 30 tickers
+2026-10-12 10:30:05,423 - app.logic.stock_analyzer - INFO - Saved CD HQ breadth for DJI: 157 days
+2026-10-12 10:30:05,429 - app.logic.stock_analyzer - INFO - Saved MC HQ breadth for DJI: 217 days
+2026-10-12 10:30:05,440 - app.logic.stock_analyzer - INFO - Saved CD signal breadth by interval for DJI: 390 days
+2026-10-12 10:30:05,453 - app.logic.stock_analyzer - INFO - Saved MC signal breadth by interval for DJI: 449 days
+2026-10-12 10:30:05,466 - app.logic.stock_analyzer - INFO - Saved CD score breadth by interval for DJI: 390 days
+2026-10-12 10:30:05,480 - app.logic.stock_analyzer - INFO - Saved MC score breadth by interval for DJI: 449 days
+2026-10-12 10:30:05,486 - app.logic.stock_analyzer - INFO - Saved CD HQ score by interval for DJI: 157 days
+2026-10-12 10:30:05,493 - app.logic.stock_analyzer - INFO - Saved MC HQ score by interval for DJI: 217 days
+2026-10-12 10:30:05,494 - app.logic.stock_analyzer - WARNING - Data quality: 33 warning(s) across tickers
+2026-10-12 10:30:05,512 - app.logic.stock_analyzer - INFO - Multi-index analysis completed. Run ID: 5
+2026-10-12 10:30:08,534 - app.services.engine - INFO - Job 2298b46bc2b341c0bc612c9653a30962: Multi-index analysis completed successfully
+2026-10-12 10:30:10,055 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=5
+2026-10-12 10:30:10,055 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: []
+2026-10-12 10:30:10,058 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: []
+2026-10-12 10:30:10,060 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=5
+2026-10-12 10:30:10,062 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2026-10-02', '2026-09-25', '2026-03-31', '2025-01-13', '2025-01-03', '2024-11-01']
+2026-10-12 10:30:10,063 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-07-01', '2026-06-25', '2026-06-05', '2026-06-03', '2026-05-15', '2026-05-07', '2026-05-01', '2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27']
+2026-10-12 10:30:11,207 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=5
+2026-10-12 10:30:11,208 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: []
+2026-10-12 10:30:11,209 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: []
+2026-10-12 10:30:11,250 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=5
+2026-10-12 10:30:11,252 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: []
+2026-10-12 10:30:11,253 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: []
+2026-10-12 10:30:11,941 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=5
+2026-10-12 10:30:11,941 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2026-10-02', '2026-09-25', '2026-03-31', '2025-01-13', '2025-01-03', '2024-11-01']
+2026-10-12 10:30:11,942 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-07-01', '2026-06-25', '2026-06-05', '2026-06-03', '2026-05-15', '2026-05-07', '2026-05-01', '2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-12-02', '2024-11-27']
+2026-10-12 10:30:11,950 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IGV, run_id=5
+2026-10-12 10:30:11,950 - app.api.endpoints.analysis - INFO - ticker=IGV CD 1234 dates: ['2026-06-26', '2026-06-25', '2026-04-13', '2025-11-14', '2025-08-15', '2025-03-07', '2025-01-03']
+2026-10-12 10:30:11,951 - app.api.endpoints.analysis - INFO - ticker=IGV MC 1234 dates: ['2026-10-12', '2026-09-01', '2026-05-26', '2026-05-21', '2026-05-12', '2026-05-11', '2025-07-30', '2025-07-22', '2025-06-17', '2025-06-16', '2025-06-13', '2025-06-12', '2025-06-05', '2025-05-15', '2025-02-19', '2025-02-14', '2025-02-11', '2025-02-07', '2025-01-29', '2024-12-09', '2024-12-06', '2024-12-05', '2024-11-26', '2024-11-25']
+2026-10-12 10:30:41,270 - app.api.endpoints.analysis - INFO - [HQ] IGV/1h: algo=breakthrough, cd_sig=19, cd_1234=1, mc_sig=17, mc_1234=1
+2026-10-12 10:30:41,758 - app.api.endpoints.analysis - INFO - [HQ] IGV/2h: algo=breakthrough, cd_sig=7, cd_1234=0, mc_sig=7, mc_1234=1
+2026-10-12 10:30:42,101 - app.api.endpoints.analysis - INFO - [HQ] IGV/3h: algo=breakthrough, cd_sig=8, cd_1234=1, mc_sig=6, mc_1234=0
+2026-10-12 10:30:42,323 - app.api.endpoints.analysis - INFO - [HQ] IGV/4h: algo=breakthrough, cd_sig=3, cd_1234=0, mc_sig=9, mc_1234=1
+2026-10-12 10:30:42,555 - app.api.endpoints.analysis - INFO - [HQ] IGV/1d: algo=breakthrough, cd_sig=3, cd_1234=0, mc_sig=3, mc_1234=0

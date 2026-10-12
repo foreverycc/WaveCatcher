@@ -5,6 +5,7 @@ Manages scoring weights for CD/MC signals. Stored as JSON in the data directory.
 Allows adjusting weights without re-running analysis.
 """
 
+import copy
 import json
 import os
 from pathlib import Path
@@ -51,7 +52,7 @@ def get_config() -> dict:
             with open(_CONFIG_FILE, 'r') as f:
                 config = json.load(f)
             # Merge with defaults to handle missing keys
-            merged = DEFAULT_CONFIG.copy()
+            merged = copy.deepcopy(DEFAULT_CONFIG)
             for key in DEFAULT_CONFIG:
                 if key in config:
                     if isinstance(DEFAULT_CONFIG[key], dict):
@@ -60,8 +61,8 @@ def get_config() -> dict:
                         merged[key] = config[key]
             return merged
         except (json.JSONDecodeError, IOError):
-            return DEFAULT_CONFIG.copy()
-    return DEFAULT_CONFIG.copy()
+            return copy.deepcopy(DEFAULT_CONFIG)
+    return copy.deepcopy(DEFAULT_CONFIG)
 
 
 def save_config(config: dict) -> dict:
@@ -69,7 +70,7 @@ def save_config(config: dict) -> dict:
     _CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     
     # Validate structure
-    validated = DEFAULT_CONFIG.copy()
+    validated = copy.deepcopy(DEFAULT_CONFIG)
     
     for key in ['cd_component_weights', 'mc_component_weights']:
         if key in config and isinstance(config[key], dict):

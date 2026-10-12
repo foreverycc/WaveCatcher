@@ -20,6 +20,7 @@ from app.logic.db_utils import (
 from app.logic.utils import (
     calculate_current_nx_values,
 )
+from app.logic.scoring_config import get_interval_weights
 from app.logic.get_resonance_signal_CD import (
     process_ticker_1234, 
     identify_1234, 
@@ -144,6 +145,26 @@ def format_hold_time(total_minutes):
     
     result = "".join(result) if result else "0min"
     return result
+
+# Bars per US regular session for each interval (1h data has 7 bars: 9:30 ... 15:30)
+BARS_PER_DAY = {'1h': 7, '2h': 4, '3h': 3, '4h': 2, '1d': 1}
+
+def format_hold_time_bars(interval, bars):
+    """
+    Format a holding period given in bars of `interval` as trading days plus remaining hours.
+    Examples: ('1h', 14) -> '2days', ('3h', 4) -> '1day3hr', ('1d', 5) -> '5days'
+    """
+    bars = int(bars)
+    bars_per_day = BARS_PER_DAY.get(interval)
+    if not bars_per_day:
+        return format_hold_time(parse_interval_to_minutes(interval) * bars)
+    days, rem_bars = divmod(bars, bars_per_day)
+    result = []
+    if days > 0:
+        result.append(f"{days}day{'s' if days > 1 else ''}")
+    if rem_bars > 0:
+        result.append(f"{rem_bars * parse_interval_to_minutes(interval) // 60}hr")
+    return "".join(result) if result else "0min"
 
 # Move this function outside the analyze_stocks function so it can be pickled
 def process_ticker_all(ticker, end_date=None):
@@ -399,7 +420,7 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                 return []
 
         # Helper: aggregate indicator scores by date and interval
-        SCORE_INTERVAL_WEIGHTS = {'1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32}
+        SCORE_INTERVAL_WEIGHTS = get_interval_weights()
 
         def aggregate_scores_by_interval(raw_details, metric_name, ticker_list=None):
             """Aggregate indicator_score * interval_weight by date.
@@ -568,7 +589,7 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                     available_columns = [col for col in best_intervals_columns if col in best_intervals.columns]
                     best_intervals = best_intervals[available_columns].sort_values('latest_signal', ascending=False)
                     best_intervals['hold_time'] = best_intervals.apply(
-                        lambda row: format_hold_time(parse_interval_to_minutes(row['interval']) * row['best_period']), axis=1
+                        lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
                     )
                     final_columns = [col for col in best_intervals_columns if col in best_intervals.columns]
                     best_intervals = best_intervals[final_columns]
@@ -588,7 +609,7 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                 good_signals['max_return'] = good_signals[avg_return_cols].max(axis=1)
                 good_signals['best_period'] = good_signals[avg_return_cols].idxmax(axis=1).str.extract('(\d+)').astype(int)
                 good_signals['hold_time'] = good_signals.apply(
-                    lambda row: format_hold_time(parse_interval_to_minutes(row['interval']) * row['best_period']), axis=1
+                    lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
                 )
                 good_signals['exp_return'] = good_signals.apply(lambda row: row[f'avg_return_{int(row.best_period)}'], axis=1)
                 good_signals['avg_return'] = good_signals['exp_return']
@@ -683,7 +704,7 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                     available_columns = [col for col in mc_best_intervals_columns if col in best_intervals.columns]
                     best_intervals = best_intervals[available_columns].sort_values('latest_signal', ascending=False)
                     best_intervals['hold_time'] = best_intervals.apply(
-                        lambda row: format_hold_time(parse_interval_to_minutes(row['interval']) * row['best_period']), axis=1
+                        lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
                     )
                     final_columns = [col for col in mc_best_intervals_columns if col in best_intervals.columns]
                     best_intervals = best_intervals[final_columns]
@@ -701,7 +722,7 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
                 good_signals['min_return'] = good_signals[avg_return_cols].min(axis=1)
                 good_signals['best_period'] = good_signals[avg_return_cols].idxmin(axis=1).str.extract('(\d+)').astype(int)
                 good_signals['hold_time'] = good_signals.apply(
-                    lambda row: format_hold_time(parse_interval_to_minutes(row['interval']) * row['best_period']), axis=1
+                    lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
                 )
                 good_signals['exp_return'] = good_signals.apply(lambda row: row[f'avg_return_{int(row.best_period)}'], axis=1)
                 good_signals['avg_return'] = good_signals['exp_return']
@@ -873,7 +894,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                 return []
 
         # Helper: aggregate indicator scores by date and interval
-        SCORE_INTERVAL_WEIGHTS = {'1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 16}
+        SCORE_INTERVAL_WEIGHTS = get_interval_weights()
 
         def aggregate_scores_by_interval(raw_details, metric_name, ticker_list=None):
             """Aggregate indicator_score * interval_weight by date.
@@ -994,7 +1015,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                     available_columns = [col for col in best_intervals_columns if col in best_intervals.columns]
                     best_intervals = best_intervals[available_columns].sort_values('latest_signal', ascending=False)
                     best_intervals['hold_time'] = best_intervals.apply(
-                        lambda row: format_hold_time(parse_interval_to_minutes(row['interval']) * row['best_period']), axis=1
+                        lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
                     )
                     final_columns = [col for col in best_intervals_columns if col in best_intervals.columns]
                     best_intervals = best_intervals[final_columns]
@@ -1014,7 +1035,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                 good_signals['max_return'] = good_signals[avg_return_cols].max(axis=1)
                 good_signals['best_period'] = good_signals[avg_return_cols].idxmax(axis=1).str.extract('(\d+)').astype(int)
                 good_signals['hold_time'] = good_signals.apply(
-                    lambda row: format_hold_time(parse_interval_to_minutes(row['interval']) * row['best_period']), axis=1
+                    lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
                 )
                 good_signals['exp_return'] = good_signals.apply(lambda row: row[f'avg_return_{int(row.best_period)}'], axis=1)
                 good_signals['avg_return'] = good_signals['exp_return']
@@ -1108,7 +1129,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                     available_columns = [col for col in mc_best_intervals_columns if col in best_intervals.columns]
                     best_intervals = best_intervals[available_columns].sort_values('latest_signal', ascending=False)
                     best_intervals['hold_time'] = best_intervals.apply(
-                        lambda row: format_hold_time(parse_interval_to_minutes(row['interval']) * row['best_period']), axis=1
+                        lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
                     )
                     final_columns = [col for col in mc_best_intervals_columns if col in best_intervals.columns]
                     best_intervals = best_intervals[final_columns]
@@ -1126,7 +1147,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                 good_signals['min_return'] = good_signals[avg_return_cols].min(axis=1)
                 good_signals['best_period'] = good_signals[avg_return_cols].idxmin(axis=1).str.extract('(\d+)').astype(int)
                 good_signals['hold_time'] = good_signals.apply(
-                    lambda row: format_hold_time(parse_interval_to_minutes(row['interval']) * row['best_period']), axis=1
+                    lambda row: format_hold_time_bars(row['interval'], row['best_period']), axis=1
                 )
                 good_signals['exp_return'] = good_signals.apply(lambda row: row[f'avg_return_{int(row.best_period)}'], axis=1)
                 good_signals['avg_return'] = good_signals['exp_return']

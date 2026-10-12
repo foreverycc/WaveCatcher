@@ -65,7 +65,9 @@ def process_ticker_1234(ticker, data_ticker=None):
                 buy_signals = cd_bool & cd_hq
             else:
                 breakthrough = compute_cd_break_through(data)
-                buy_signals = breakthrough | breakthrough.rolling(10).apply(lambda x: x.iloc[0] if x.any() else False).fillna(False).astype(bool)
+                # Breakthrough on this bar or on any of the previous 10 bars (same rule as the chart and summary endpoints)
+                recent = breakthrough.astype(int).rolling(10, min_periods=1).max().shift(1).fillna(0).astype(bool)
+                buy_signals = breakthrough | recent
             
             signal_dates = data.index[buy_signals]
             # For breakthrough_dates, always compute breakthrough for backward compat
@@ -189,6 +191,9 @@ def identify_1234(data, all_ticker_data):
         columns.append('signal_price')
         
     df_breakout_candidates = pd.DataFrame(breakout_candidates, columns=columns).sort_values(by=['date', 'ticker'], ascending=[False, True])
+    if df_breakout_candidates.empty:
+        # No resonance found; assigning the price columns below would fail on an empty frame
+        return df_breakout_candidates
 
     current_data = df_breakout_candidates['ticker'].apply(lambda ticker: 
         (
@@ -211,7 +216,7 @@ def identify_1234(data, all_ticker_data):
         close = df_stock['Close']
         short_close = close.ewm(span = 24, adjust=False).mean()
         long_close = close.ewm(span = 89, adjust=False).mean()
-        nx_1d = (short_close > long_close) 
+        nx_1d = (short_close > long_close).shift(1).dropna().astype(bool)  # previous day's trend; the signal day's close is not known yet at an intraday signal
 
         nx_1d.index = nx_1d.index.date
         dict_nx_1d[ticker] = nx_1d.to_dict()

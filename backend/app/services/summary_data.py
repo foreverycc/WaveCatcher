@@ -22,7 +22,8 @@ def price_history(rows, scoring):
     config = {**DEFAULT_CONFIG, **scoring}
     df = pd.DataFrame([{
         'timestamp': row.get('time', row.get('date')),
-        **{key: row.get(key.lower(), row.get('close', 0)) for key in ['Open', 'High', 'Low', 'Close', 'Volume']},
+        **{key: row.get(key.lower(), row.get('close', 0)) for key in ['Open', 'High', 'Low', 'Close']},
+        'Volume': row.get('volume', 0),
     } for row in rows])
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df = df.set_index('timestamp').sort_index()
