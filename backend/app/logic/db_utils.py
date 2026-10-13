@@ -73,6 +73,26 @@ def save_price_history(ticker: str, interval: str, df: pd.DataFrame):
     finally:
         db.close()
 
+def load_price_history(ticker: str, interval: str, start=None, end=None) -> pd.DataFrame:
+    """Stored OHLCV bars for a ticker/interval (naive market-time index), optionally within [start, end]."""
+    db = SessionLocal()
+    try:
+        query = db.query(PriceBar).filter(PriceBar.ticker == ticker, PriceBar.interval == interval)
+        if start is not None:
+            query = query.filter(PriceBar.timestamp >= start)
+        if end is not None:
+            query = query.filter(PriceBar.timestamp <= end)
+        rows = query.order_by(PriceBar.timestamp).all()
+    finally:
+        db.close()
+    if not rows:
+        return pd.DataFrame()
+    df = pd.DataFrame([{
+        'timestamp': r.timestamp, 'Open': r.open, 'High': r.high,
+        'Low': r.low, 'Close': r.close, 'Volume': r.volume,
+    } for r in rows])
+    return df.set_index('timestamp')
+
 def create_analysis_run(stock_list_name: str) -> int:
     """
     Create a new analysis run record and return its ID.

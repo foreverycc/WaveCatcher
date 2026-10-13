@@ -212,3 +212,19 @@ export function formatNumberShort(value: number, decimals: number = 1): string {
     // Default
     return value.toLocaleString(undefined, { maximumFractionDigits: decimals });
 }
+
+/**
+ * Success rate, average return and sample count at the backend's best holding period
+ * (fixed grid, minimum samples, excess over the stock list). Null when no period qualified.
+ */
+export function extractBestMetrics(row: any): { success_rate: number | null, avg_return: number | null, test_count: number | null, best_period: number | null } {
+    if (row && row.best_period != null && row[`avg_return_${row.best_period}`] !== undefined) {
+        return {
+            success_rate: row[`success_rate_${row.best_period}`] ?? null,
+            avg_return: row[`avg_return_${row.best_period}`] ?? null,
+            test_count: row[`test_count_${row.best_period}`] ?? null,
+            best_period: row.best_period,
+        };
+    }
+    return { success_rate: null, avg_return: null, test_count: null, best_period: null };
+}

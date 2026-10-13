@@ -264,6 +264,54 @@ const ScoringConfigPanel: React.FC<ScoringConfigPanelProps> = ({ onConfigChange 
                     )}
                 </div>
 
+                {/* Return Evaluation */}
+                <div className="mt-2 mb-4">
+                    <div className="text-sm font-medium mb-2">Return Evaluation
+                        <span className="text-xs font-normal text-muted-foreground ml-2">
+                            (applies on the next Run Analysis; lookback also sets how far back the price charts show signals)
+                        </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mb-1.5">Signal lookback (calendar days)</div>
+                    <div className="flex gap-4 flex-wrap mb-3">
+                        {INTERVALS.map(intv => (
+                            <div key={intv} className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground w-6">{intv}</span>
+                                <input
+                                    type="number"
+                                    min={30} max={3650} step={30}
+                                    value={config.evaluation.lookback_days[intv]}
+                                    onChange={e => updateField('evaluation', {
+                                        ...config.evaluation,
+                                        lookback_days: { ...config.evaluation.lookback_days, [intv]: Number(e.target.value) }
+                                    })}
+                                    className="w-16 text-center text-xs bg-background border border-input rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {([
+                            ['max_signals', 'Max Signals (latest N)', 1, 200, 1],
+                            ['min_samples', 'Min Signals per Period', 1, 50, 1],
+                            ['min_excess_return', 'Min Excess Return (%)', 0, 100, 0.5],
+                            ['min_success_rate', 'Min Success Rate (%)', 0, 100, 5],
+                            ['min_oos_count', 'Min Out-of-Sample Trades', 0, 50, 1],
+                            ['min_prior_signals', 'Min Prior Signals (walk-forward)', 1, 20, 1],
+                        ] as const).map(([key, label, min, max, step]) => (
+                            <div key={key}>
+                                <label className="text-xs text-muted-foreground block mb-1">{label}</label>
+                                <input
+                                    type="number"
+                                    min={min} max={max} step={step}
+                                    value={config.evaluation[key]}
+                                    onChange={e => updateField('evaluation', { ...config.evaluation, [key]: Number(e.target.value) })}
+                                    className="w-full text-sm text-center bg-background border border-input rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleSave}

@@ -142,6 +142,29 @@ def download_stock_data(ticker, end_date=None):
     return data_ticker
 
 
+def fill_missing_bars(df, stored):
+    """
+    Add stored bars the download lacks.
+    Yahoo's intraday history has gaps (whole days, or the later hours of a day, missing from a 2-year 1h
+    download) that earlier downloads still had; without them the indicators and bar counts differ from the
+    stored history the charts show. Downloaded bars win wherever both exist; only bars inside the
+    download's range are added.
+    """
+    if df is None or df.empty or stored is None or stored.empty:
+        return df
+    stored = stored.copy()
+    stored.index = pd.DatetimeIndex(stored.index)
+    if df.index.tz is not None and stored.index.tz is None:
+        stored.index = stored.index.tz_localize(df.index.tz, ambiguous='NaT', nonexistent='NaT')
+        stored = stored[stored.index.notna()]
+    in_range = (stored.index >= df.index[0]) & (stored.index <= df.index[-1])
+    extra = stored[in_range & ~stored.index.isin(df.index)]
+    if extra.empty:
+        return df
+    extra = extra.reindex(columns=df.columns, fill_value=0)
+    return pd.concat([df, extra]).sort_index()
+
+
 def validate_intraday_coverage(ticker, data_ticker):
     """Check that 1h data covers all trading days present in 1d data.
     Returns a list of warning strings for any missing dates."""

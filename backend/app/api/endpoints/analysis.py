@@ -12,14 +12,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, text
 
 from app.services.engine import job_manager
-from app.logic.indicators import compute_cd_indicator, compute_mc_indicator, compute_cd_break_through, compute_mc_break_through, compute_cd_score, compute_mc_score
 from app.db.database import SessionLocal
 from app.db.models import AnalysisRun, AnalysisResult, PriceBar, OptionChain
 from app.logic.db_utils import save_price_history
 from app.logic.options import get_option_data
-from app.logic.scoring_config import get_config as get_scoring_config, save_config as save_scoring_config, DEFAULT_CONFIG as SCORING_DEFAULTS, get_cd_threshold, get_mc_threshold, get_hq_algorithm, get_hq_high_return_config
-from app.logic.hq_filters import compute_high_return_cd, compute_high_return_mc
-from app.logic.data_loader import unfinished_bars
+from app.logic.scoring_config import get_config as get_scoring_config, save_config as save_scoring_config, DEFAULT_CONFIG as SCORING_DEFAULTS
+from app.logic.signals import compute_signals, signal_lookback_days
 
 logger = logging.getLogger(__name__)
 
@@ -526,12 +524,11 @@ async def get_price_history(
     now = datetime.utcnow()
     cutoff_date = None
 
-    if interval in ['1d', '1w', '1wk']:
+    if interval in ['1w', '1wk']:
         cutoff_date = now - timedelta(days=730) # 2 years
-    elif interval in ['3h', '4h']:
-        cutoff_date = now - timedelta(days=365) # 1 year
-    elif interval in ['1h', '60m', '2h']:
-        cutoff_date = now - timedelta(days=180) # 6 months
+    elif interval in ['1h', '60m', '2h', '3h', '4h', '1d']:
+        # Same range as the result tables, so the signals they count are the ones shown here
+        cutoff_date = now - timedelta(days=signal_lookback_days('1h' if interval == '60m' else interval))
     elif interval in ['15m', '30m']:
         cutoff_date = now - timedelta(days=60)
     elif interval in ['5m', '10m']:
@@ -543,11 +540,10 @@ async def get_price_history(
         PriceBar.interval == interval
     )
 
-    # Apply date filter if cutoff is determined
-    if cutoff_date:
-        query = query.filter(PriceBar.timestamp >= cutoff_date)
-
-    prices = query.order_by(PriceBar.timestamp).all()
+    # Signals are computed on all stored bars (like the analysis), the response only covers the cutoff window.
+    # Computing on the window alone would hide signals near its start (MACD warm-up) and could shift others.
+    all_prices = query.order_by(PriceBar.timestamp).all()
+    prices = [p for p in all_prices if cutoff_date is None or p.timestamp >= cutoff_date]
     
     if not prices:
         return []
@@ -564,7 +560,7 @@ async def get_price_history(
         "Low": p.low,
         "Close": p.close,
         "Volume": p.volume
-    } for p in prices]
+    } for p in all_prices]
     
     df = pd.DataFrame(data)
     if df.empty:
@@ -574,52 +570,11 @@ async def get_price_history(
     
     # Compute Indicators
     try:
-        cd_signals = compute_cd_indicator(df)
-        mc_signals = compute_mc_indicator(df)
-        cd_breakthrough = compute_cd_break_through(df)
-        mc_breakthrough = compute_mc_break_through(df)
-        cd_scores = compute_cd_score(df)
-        mc_scores = compute_mc_score(df)
-        
-        # Fill NaNs with False
-        cd_signals = cd_signals.fillna(False).astype(bool)
-        mc_signals = mc_signals.fillna(False).astype(bool)
-        cd_breakthrough = cd_breakthrough.fillna(False).astype(bool)
-        mc_breakthrough = mc_breakthrough.fillna(False).astype(bool)
-
-        # No signals on a bar that is still forming
-        forming = unfinished_bars(df.index, interval)
-        cd_signals[forming] = False
-        mc_signals[forming] = False
-
-        # Apply score threshold filtering
-        cd_thresh = get_cd_threshold()
-        mc_thresh = get_mc_threshold()
-        for ts in cd_signals.index:
-            if cd_signals[ts]:
-                sc = cd_scores.get(ts, np.nan)
-                if pd.isna(sc) or sc < cd_thresh:
-                    cd_signals[ts] = False
-        for ts in mc_signals.index:
-            if mc_signals[ts]:
-                sc = mc_scores.get(ts, np.nan)
-                if pd.isna(sc) or sc < mc_thresh:
-                    mc_signals[ts] = False
-
-        # HQ signal selection (configurable algorithm)
-        hq_algo = get_hq_algorithm()
-        if hq_algo == "high_return":
-            hr_cfg = get_hq_high_return_config()
-            cd_hq = compute_high_return_cd(df, cd_signals, **hr_cfg)
-            mc_hq = compute_high_return_mc(df, mc_signals, **hr_cfg)
-            cd_1234 = cd_signals & cd_hq
-            mc_1234 = mc_signals & mc_hq
-        else:
-            # Default: breakthrough algorithm
-            cd_recent_bt = cd_breakthrough.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
-            mc_recent_bt = mc_breakthrough.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
-            cd_1234 = (cd_signals & cd_breakthrough) | (cd_signals & cd_recent_bt)
-            mc_1234 = (mc_signals & mc_breakthrough) | (mc_signals & mc_recent_bt)
+        # Same signal definition as the analysis (score threshold, HQ algorithm, no signal on a forming bar)
+        cd = compute_signals(df, 'cd', interval=interval)
+        mc = compute_signals(df, 'mc', interval=interval)
+        cd_signals, cd_1234, cd_scores = cd['signal'], cd['hq'], cd['score']
+        mc_signals, mc_1234, mc_scores = mc['signal'], mc['hq'], mc['score']
 
         # Vegas Channel EMAs
         df['ema_13'] = df['Close'].ewm(span=13, adjust=False).mean()
@@ -636,8 +591,8 @@ async def get_price_history(
     except Exception as e:
         logger.error(f"Error computing indicators for {ticker}: {e}")
         # Fallback to no signals if error
-        cd_signals = pd.Series(False, index=df.index)
-        mc_signals = pd.Series(False, index=df.index)
+        cd_signals = cd_1234 = mc_signals = mc_1234 = pd.Series(False, index=df.index)
+        cd_scores = mc_scores = pd.Series(np.nan, index=df.index)
 
     # Construct response
     response = []
@@ -717,13 +672,13 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
 
     for interval, lookback in INTERVALS.items():
         cutoff = now - lookback
+        # Signals use all stored bars (like the analysis); only dates within the lookback are reported
         prices = db.query(PriceBar).filter(
             PriceBar.ticker == ticker,
-            PriceBar.interval == interval,
-            PriceBar.timestamp >= cutoff
+            PriceBar.interval == interval
         ).order_by(PriceBar.timestamp).all()
 
-        if not prices or len(prices) < 50:
+        if not prices or sum(p.timestamp >= cutoff for p in prices) < 50:
             continue
 
         df = pd.DataFrame([{
@@ -734,53 +689,17 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
         df.set_index("timestamp", inplace=True)
 
         try:
-            cd_sig = compute_cd_indicator(df).fillna(False).astype(bool)
-            mc_sig = compute_mc_indicator(df).fillna(False).astype(bool)
-            # No signals on a bar that is still forming
-            forming = unfinished_bars(df.index, interval)
-            cd_sig[forming] = False
-            mc_sig[forming] = False
-            cd_sc = compute_cd_score(df)
-            mc_sc = compute_mc_score(df)
-
-            # Apply score threshold filtering
-            cd_thresh = get_cd_threshold()
-            mc_thresh = get_mc_threshold()
-            for ts in cd_sig.index:
-                if cd_sig[ts]:
-                    sc = cd_sc.get(ts, np.nan)
-                    if pd.isna(sc) or sc < cd_thresh:
-                        cd_sig[ts] = False
-            for ts in mc_sig.index:
-                if mc_sig[ts]:
-                    sc = mc_sc.get(ts, np.nan)
-                    if pd.isna(sc) or sc < mc_thresh:
-                        mc_sig[ts] = False
-
-            # HQ signal selection (configurable algorithm)
-            hq_algo = get_hq_algorithm()
-            if hq_algo == "high_return":
-                hr_cfg = get_hq_high_return_config()
-                cd_hq = compute_high_return_cd(df, cd_sig, **hr_cfg)
-                mc_hq = compute_high_return_mc(df, mc_sig, **hr_cfg)
-                cd_1234 = cd_sig & cd_hq
-                mc_1234 = mc_sig & mc_hq
-                logger.info(f"[HQ] {ticker}/{interval}: algo=high_return, cd_sig={cd_sig.sum()}, cd_hq={cd_hq.sum()}, cd_1234={cd_1234.sum()}, mc_sig={mc_sig.sum()}, mc_hq={mc_hq.sum()}, mc_1234={mc_1234.sum()}")
-            else:
-                # Default: breakthrough algorithm
-                cd_bt = compute_cd_break_through(df).fillna(False).astype(bool)
-                mc_bt = compute_mc_break_through(df).fillna(False).astype(bool)
-                cd_recent_bt = cd_bt.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
-                mc_recent_bt = mc_bt.rolling(window=10, min_periods=1).max().shift(1).fillna(False).astype(bool)
-                cd_1234 = (cd_sig & cd_bt) | (cd_sig & cd_recent_bt)
-                mc_1234 = (mc_sig & mc_bt) | (mc_sig & mc_recent_bt)
-                logger.info(f"[HQ] {ticker}/{interval}: algo=breakthrough, cd_sig={cd_sig.sum()}, cd_1234={cd_1234.sum()}, mc_sig={mc_sig.sum()}, mc_1234={mc_1234.sum()}")
+            cd = compute_signals(df, 'cd', interval=interval)
+            mc = compute_signals(df, 'mc', interval=interval)
+            cd_sig, cd_1234, cd_sc = cd['signal'], cd['hq'], cd['score']
+            mc_sig, mc_1234, mc_sc = mc['signal'], mc['hq'], mc['score']
+            logger.info(f"[HQ] {ticker}/{interval}: cd_sig={cd_sig.sum()}, cd_1234={cd_1234.sum()}, mc_sig={mc_sig.sum()}, mc_1234={mc_1234.sum()}")
         except Exception as e:
             logger.warning(f"Error computing signals for {ticker}/{interval}: {e}")
             continue
 
         # Aggregate into per-date buckets
-        for ts in df.index:
+        for ts in df.index[df.index >= cutoff]:
             date_str = ts.strftime('%Y-%m-%d')
 
             # CD signal count (0 or 1 per interval per date — take max if multiple bars same date)

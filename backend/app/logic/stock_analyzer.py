@@ -10,9 +10,11 @@ import logging
 # Setup logger
 logger = logging.getLogger(__name__)
 
-from data_loader import load_stock_list, download_stock_data, drop_unfinished_bars
+from data_loader import (load_stock_list, download_stock_data, drop_unfinished_bars,
+                         fill_missing_bars, validate_intraday_coverage, transform_1h_data)
 from app.logic.db_utils import (
     save_price_history,
+    load_price_history,
     create_analysis_run,
     update_analysis_run_status,
     save_analysis_result
@@ -20,7 +22,7 @@ from app.logic.db_utils import (
 from app.logic.utils import (
     calculate_current_nx_values,
 )
-from app.logic.scoring_config import get_interval_weights
+from app.logic.scoring_config import get_interval_weights, get_evaluation_config
 from app.logic.signal_stats import BEST_PERIOD_GRID, select_best_rows, pooled_stats, pooled_edges, apply_universe_baseline
 from app.logic.get_resonance_signal_CD import (
     process_ticker_1234, 
@@ -170,12 +172,31 @@ def format_hold_time_bars(interval, bars):
     return "".join(result) if result else "0min"
 
 # Move this function outside the analyze_stocks function so it can be pickled
+def fill_gaps_from_history(ticker, data):
+    """Fill bars missing from the 1h / 1d download with stored bars and rebuild 2h-4h from the filled 1h."""
+    for interval in ['1h', '1d']:
+        df = data.get(interval)
+        if df is None or df.empty:
+            continue
+        filled = fill_missing_bars(df, load_price_history(ticker, interval))
+        if len(filled) == len(df):
+            continue
+        logger.info(f"{ticker}: filled {len(filled) - len(df)} missing {interval} bars from stored history")
+        data[interval] = filled
+        if interval == '1h':
+            for derived in ['2h', '3h', '4h']:
+                data[derived] = transform_1h_data(filled, derived)
+    data['_warnings'] = validate_intraday_coverage(ticker, data)
+    return data
+
+
 def process_ticker_all(ticker, end_date=None):
     """Process a single ticker for all analysis types"""
     try:
         print(f"Processing {ticker}")
         # Download data once for all analyses
         data = download_stock_data(ticker, end_date=end_date)
+        data = fill_gaps_from_history(ticker, data)
         
         # Skip if no data available
         if all(df.empty for key, df in data.items() if isinstance(df, pd.DataFrame)):
@@ -231,8 +252,8 @@ def save_eval_results(run_id, eval_results, side, all_ticker_data):
     Save CD ('cd') or MC ('mc') evaluation tables: detailed rows, returns distribution,
     best intervals for each period range, good signals and per-interval summary.
 
-    Best periods come from the fixed BEST_PERIOD_GRID, must have at least MIN_SAMPLES signals
-    and beat the rest of the stock list by MIN_EXCESS_RETURN; with REQUIRE_POOLED_EDGE the
+    Best periods come from the fixed BEST_PERIOD_GRID, must have at least min_samples signals
+    and beat the rest of the stock list by min_excess_return (configuration evaluation.*); with REQUIRE_POOLED_EDGE the
     interval/period must also show an edge pooled over all stocks (see signal_stats.py).
     """
     if not eval_results:
@@ -248,7 +269,8 @@ def save_eval_results(run_id, eval_results, side, all_ticker_data):
         return frame
 
     # Excess return of every signal over the other stocks in the list over the same bars
-    apply_universe_baseline(eval_results, all_ticker_data, bullish)
+    settings = get_evaluation_config()
+    apply_universe_baseline(eval_results, all_ticker_data, bullish, settings['min_samples'])
     df_eval = round_floats(pd.DataFrame(eval_results))
     save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_custom_detailed', df_eval.to_dict(orient='records'))
 
@@ -290,14 +312,14 @@ def save_eval_results(run_id, eval_results, side, all_ticker_data):
     # Best intervals per period range (one row per ticker, signal still inside its best holding window)
     for range_name, range_periods in period_ranges.items():
         grid = [p for p in BEST_PERIOD_GRID if p in range_periods]
-        best_intervals = select_best_rows(df_eval, grid, bullish, one_per_ticker=True, edges=edges)
+        best_intervals = select_best_rows(df_eval, grid, bullish, one_per_ticker=True, edges=edges, settings=settings)
         if not best_intervals.empty:
             best_intervals = best_intervals[best_intervals['current_period'] <= best_intervals['best_period']]
         records = finish(best_intervals).to_dict(orient='records') if not best_intervals.empty else []
         save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_best_intervals_{range_name}', records)
 
     # Good signals (every ticker/interval that passes, over the full grid)
-    good_signals = select_best_rows(df_eval, BEST_PERIOD_GRID, bullish, one_per_ticker=False, edges=edges)
+    good_signals = select_best_rows(df_eval, BEST_PERIOD_GRID, bullish, one_per_ticker=False, edges=edges, settings=settings)
     records = finish(good_signals).to_dict(orient='records') if not good_signals.empty else []
     save_analysis_result(run_id, "ALL", "ALL", f'{side}_eval_good_signals', records)
 

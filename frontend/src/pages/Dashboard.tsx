@@ -10,6 +10,7 @@ import { OptionAnalysisPanel } from '../components/OptionAnalysisPanel';
 import { LogViewer } from '../components/LogViewer';
 import { SummaryPanel } from '../components/SummaryPanel';
 import { cn } from '../utils/cn';
+import { extractBestMetrics } from '../utils/chartUtils';
 
 interface DashboardProps {
     selectedStockList: string;
@@ -37,13 +38,20 @@ export const DetailedChartRow = ({ row, activeSubTab: _activeSubTab }: { row: an
         enabled: !!row.ticker && !!selectedInterval
     });
 
+    // Same numbers everywhere: the metrics at the backend's best holding period
+    const best = extractBestMetrics(row);
+    const fmt = (v: any, digits = 2) => v != null && !isNaN(Number(v)) ? Number(v).toFixed(digits) : 'N/A';
+    const subtitle = best.best_period != null
+        ? `Best Period: ${best.best_period} bars | Success Rate: ${fmt(best.success_rate)}% | Avg Return: ${fmt(best.avg_return)}% | Signal Count: ${best.test_count}${row.signal_count != null && row.signal_count > (best.test_count ?? 0) ? ` of ${row.signal_count} (rest < ${best.best_period} bars old)` : ''}`
+        : `No holding period with enough signals | Signals: ${row.signal_count ?? 'N/A'}`;
+
     return (
         <div className="flex flex-col space-y-4 p-4 border rounded-lg bg-card/50">
             <div style={{ height: '350px' }}>
                 <BoxplotChart
                     selectedRow={row}
                     title={`Returns Distribution - ${row.ticker} (${row.interval})`}
-                    subtitle={`Success Rate: ${row.success_rate}% | Avg Return: ${row.avg_return != null ? Number(row.avg_return).toFixed(2) : 'N/A'}% | Signal Count: ${row.test_count || row.test_count_0 || 'N/A'}`}
+                    subtitle={subtitle}
                 />
             </div>
             <div style={{ height: '350px' }} className="mt-4 border-t pt-4 border-border/50">
@@ -209,42 +217,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const detailedRows = React.useMemo(() => {
         if (!selectedRow || !detailedRowData || detailedRowData.length === 0) return [];
 
-        // Helper to extract best metrics from detailed row
-        const extractBestMetrics = (row: any) => {
-            // Prefer the backend's best period (fixed grid, minimum samples, excess over baseline)
-            if (row.best_period != null && row[`avg_return_${row.best_period}`] !== undefined) {
-                return {
-                    success_rate: row[`success_rate_${row.best_period}`] ?? 0,
-                    avg_return: row[`avg_return_${row.best_period}`] ?? 0,
-                    test_count: row[`test_count_${row.best_period}`] ?? 0
-                };
-            }
-
-            let maxSuccessRate = -1;
-            let bestReturn = -1;
-            let bestCount = 0;
-
-            for (let i = 0; i <= 100; i++) {
-                const rate = row[`success_rate_${i}`];
-                const ret = row[`avg_return_${i}`];
-                const count = row[`test_count_${i}`];
-
-                if (rate !== undefined && ret !== undefined) {
-                    if (rate > maxSuccessRate || (rate === maxSuccessRate && ret > bestReturn)) {
-                        maxSuccessRate = rate;
-                        bestReturn = ret;
-                        bestCount = count;
-                    }
-                }
-            }
-
-            return {
-                success_rate: maxSuccessRate !== -1 ? maxSuccessRate : 0,
-                avg_return: bestReturn !== -1 ? bestReturn : 0,
-                test_count: bestCount
-            };
-        };
-
         if (activeSubTab === '1234') {
             const intervalsStr = selectedRow.intervals;
             if (!intervalsStr) return [];
@@ -265,7 +237,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 if (match) {
                     const metrics = extractBestMetrics(match);
                     // For MC (bearish) signals, negate the return (custom_detailed stores positive magnitudes)
-                    if (activeTab === 'mc') metrics.avg_return = -Math.abs(metrics.avg_return);
+                    if (activeTab === 'mc' && metrics.avg_return != null) metrics.avg_return = -Math.abs(metrics.avg_return);
                     return { ...match, ...metrics };
                 }
 
@@ -287,12 +259,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         );
 
         if (match) {
-            return [{
-                ...match,
-                success_rate: selectedRow.success_rate,
-                avg_return: selectedRow.avg_return,
-                test_count: selectedRow.test_count || selectedRow.test_count_0
-            }];
+            // A best-interval table picks its period from a limited grid; show the chart at that period
+            return [{ ...match, best_period: selectedRow.best_period ?? match.best_period }];
         }
         return [];
     }, [selectedRow, detailedRowData, activeSubTab, activeTab]);

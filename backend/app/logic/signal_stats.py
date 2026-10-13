@@ -23,17 +23,26 @@ import pandas as pd
 # Holding periods (in bars) eligible as "best period"
 BEST_PERIOD_GRID = [1, 2, 3, 5, 10, 15, 20, 30, 50, 100]
 
+# Defaults for the filters below; the analysis reads them from the configuration (evaluation.*)
 # Minimum signals measured at a period before it can be chosen as best
-MIN_SAMPLES = 5
+MIN_SAMPLES = 3
 
 # Minimum excess return (%) over the rest of the stock list for the result tables
 MIN_EXCESS_RETURN = 5.0
+
+# Minimum success rate (%) for the result tables
+MIN_SUCCESS_RATE = 50.0
 
 # Minimum earlier signals needed before a walk-forward choice is made
 MIN_PRIOR_SIGNALS = 2
 
 # Minimum walk-forward out-of-sample trades required for the result tables
 MIN_OOS_COUNT = 3
+
+EVALUATION_DEFAULTS = {
+    'min_samples': MIN_SAMPLES, 'min_excess_return': MIN_EXCESS_RETURN, 'min_success_rate': MIN_SUCCESS_RATE,
+    'min_prior_signals': MIN_PRIOR_SIGNALS, 'min_oos_count': MIN_OOS_COUNT,
+}
 
 # Pooled (whole stock list) test: an interval/period has an edge when the mean excess return
 # over all signals is at least POOLED_MIN_T standard errors from zero, with standard errors
@@ -93,7 +102,7 @@ def walk_forward_oos(returns_df, data_index, grid=BEST_PERIOD_GRID, bullish=True
     }
 
 
-def add_signal_stats(result, returns_df, data_frame, bullish=True):
+def add_signal_stats(result, returns_df, data_frame, bullish=True, min_prior=MIN_PRIOR_SIGNALS):
     """
     Add per-signal data needed for the stock-list baseline (signal timestamps and the return at
     each grid period, aligned) and the walk-forward out-of-sample fields to an evaluation result.
@@ -106,7 +115,7 @@ def add_signal_stats(result, returns_df, data_frame, bullish=True):
         for p in BEST_PERIOD_GRID:
             col = f'return_{p}'
             result[f'grid_returns_{p}'] = [None if pd.isna(v) else float(v) for v in df[col]] if col in df else []
-    result.update(walk_forward_oos(returns_df, data_frame.index, bullish=bullish))
+    result.update(walk_forward_oos(returns_df, data_frame.index, bullish=bullish, min_prior=min_prior))
     return result
 
 
@@ -140,7 +149,7 @@ def universe_forward_returns(all_ticker_data, interval, grid=BEST_PERIOD_GRID):
     return result
 
 
-def apply_universe_baseline(eval_results, all_ticker_data, bullish=True):
+def apply_universe_baseline(eval_results, all_ticker_data, bullish=True, min_samples=MIN_SAMPLES):
     """
     Fill per-row excess returns against the rest of the stock list over the same bars:
       excess_returns_{p}: per-signal excess list, excess_return_{p}: its mean,
@@ -183,7 +192,7 @@ def apply_universe_baseline(eval_results, all_ticker_data, bullish=True):
             # sample size of the excess measurement
             row[f'excess_count_{p}'] = len(excess)
 
-        best = choose_best_period(row, BEST_PERIOD_GRID, bullish)
+        best = choose_best_period(row, BEST_PERIOD_GRID, bullish, min_samples)
         row['best_period'] = best
         row['best_excess_return'] = row.get(f'excess_return_{best}') if best is not None else None
     return eval_results
@@ -248,24 +257,26 @@ def pooled_edges(pooled_rows):
     return {(r['interval'], r['period']): r['mean_excess_return'] for r in pooled_rows if r['has_edge']}
 
 
-def select_best_rows(df, grid, bullish=True, one_per_ticker=True, edges=None):
+def select_best_rows(df, grid, bullish=True, one_per_ticker=True, edges=None, settings=None):
     """
-    Pick a best holding period per row from `grid`, keep rows that beat the rest of the stock list by
-    MIN_EXCESS_RETURN with at least 50% success rate and whose walk-forward out-of-sample
-    return points the same way, and (optionally) the best row per ticker.
+    Pick a best holding period per row from `grid` (at least min_samples signals), keep rows that beat
+    the rest of the stock list by min_excess_return with at least min_success_rate, at least min_oos_count
+    walk-forward out-of-sample trades whose return points the same way, and (optionally) the best row per
+    ticker. `settings` holds those thresholds (configuration evaluation.*), defaults otherwise.
 
     Per-stock results on ~2 years of data are noisy, so with REQUIRE_POOLED_EDGE only periods where
     the whole stock list shows an edge (`edges`, from pooled_edges) can be chosen for an interval.
     """
     if df.empty:
         return df.copy()
+    settings = {**EVALUATION_DEFAULTS, **(settings or {})}
     rows = []
     for _, row in df.iterrows():
         row = row.to_dict()
         row_grid = grid
         if REQUIRE_POOLED_EDGE and edges is not None:
             row_grid = [p for p in grid if (row['interval'], p) in edges]
-        p = choose_best_period(row, row_grid, bullish)
+        p = choose_best_period(row, row_grid, bullish, settings['min_samples'])
         if p is None:
             continue
         row['best_period'] = p
@@ -282,13 +293,13 @@ def select_best_rows(df, grid, bullish=True, one_per_ticker=True, edges=None):
         return out
 
     if bullish:
-        out = out[out['excess_return'] >= MIN_EXCESS_RETURN]
+        out = out[out['excess_return'] >= settings['min_excess_return']]
     else:
-        out = out[out['excess_return'] <= -MIN_EXCESS_RETURN]
-    out = out[out['success_rate'] >= 50]
+        out = out[out['excess_return'] <= -settings['min_excess_return']]
+    out = out[out['success_rate'] >= settings['min_success_rate']]
     oos = pd.to_numeric(out.get('oos_avg_return'), errors='coerce')
     oos_count = pd.to_numeric(out.get('oos_count'), errors='coerce').fillna(0)
-    out = out[(oos_count >= MIN_OOS_COUNT) & ((oos > 0) if bullish else (oos < 0))]
+    out = out[(oos_count >= settings['min_oos_count']) & ((oos > 0) if bullish else (oos < 0))]
     if out.empty or not one_per_ticker:
         return out
 

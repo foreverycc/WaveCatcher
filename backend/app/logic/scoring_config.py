@@ -37,6 +37,17 @@ DEFAULT_CONFIG = {
         "lookback_bars": 20,
         "cd_return_threshold": 5.0,
         "mc_return_threshold": -5.0
+    },
+    # Return evaluation and result-table filters (take effect on the next analysis run;
+    # lookback_days also sets how far back the price charts show signals)
+    "evaluation": {
+        "lookback_days": {"1h": 180, "2h": 180, "3h": 365, "4h": 365, "1d": 730},
+        "max_signals": 20,
+        "min_samples": 3,
+        "min_excess_return": 5.0,
+        "min_success_rate": 50.0,
+        "min_oos_count": 3,
+        "min_prior_signals": 2
     }
 }
 
@@ -57,6 +68,9 @@ def get_config() -> dict:
                 if key in config:
                     if isinstance(DEFAULT_CONFIG[key], dict):
                         merged[key] = {**DEFAULT_CONFIG[key], **config[key]}
+                        if key == 'evaluation':
+                            merged[key]['lookback_days'] = {**DEFAULT_CONFIG[key]['lookback_days'],
+                                                            **config[key].get('lookback_days', {})}
                     else:
                         merged[key] = config[key]
             return merged
@@ -110,6 +124,26 @@ def save_config(config: dict) -> dict:
             hr_validated['mc_return_threshold'] = max(-50, min(0, float(hr['mc_return_threshold'])))
         validated['hq_high_return'] = hr_validated
     
+    # Validate evaluation params
+    if 'evaluation' in config and isinstance(config['evaluation'], dict):
+        ev = config['evaluation']
+        ev_validated = validated['evaluation']
+        if isinstance(ev.get('lookback_days'), dict):
+            for intv in ['1h', '2h', '3h', '4h', '1d']:
+                if intv in ev['lookback_days']:
+                    ev_validated['lookback_days'][intv] = max(30, min(3650, int(ev['lookback_days'][intv])))
+        limits = {
+            'max_signals': (1, 200, int),
+            'min_samples': (1, 50, int),
+            'min_excess_return': (0, 100, float),
+            'min_success_rate': (0, 100, float),
+            'min_oos_count': (0, 50, int),
+            'min_prior_signals': (1, 20, int),
+        }
+        for key, (lo, hi, cast) in limits.items():
+            if key in ev:
+                ev_validated[key] = max(lo, min(hi, cast(ev[key])))
+
     with open(_CONFIG_FILE, 'w') as f:
         json.dump(validated, f, indent=2)
     
@@ -161,3 +195,8 @@ def get_hq_high_return_config() -> dict:
     """Return the high-return HQ configuration parameters."""
     config = get_config()
     return config.get('hq_high_return', DEFAULT_CONFIG['hq_high_return'])
+
+
+def get_evaluation_config() -> dict:
+    """Return the return-evaluation / result-table filter parameters."""
+    return get_config()['evaluation']

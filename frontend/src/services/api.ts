@@ -32,6 +32,15 @@ export interface ScoringConfig {
         cd_return_threshold: number;
         mc_return_threshold: number;
     };
+    evaluation: {
+        lookback_days: { '1h': number; '2h': number; '3h': number; '4h': number; '1d': number };
+        max_signals: number;
+        min_samples: number;
+        min_excess_return: number;
+        min_success_rate: number;
+        min_oos_count: number;
+        min_prior_signals: number;
+    };
 }
 
 export interface StockList {

@@ -6,6 +6,7 @@ import { RunReportButton } from './RunReportButton';
 import { cn } from '../utils/cn';
 import { parseISO, format } from 'date-fns';
 import { DetailedChartRow, InteractiveOptionChart } from '../pages/Dashboard';
+import { extractBestMetrics } from '../utils/chartUtils';
 import { Maximize2, Minimize2, AlertTriangle, X, ChevronDown, ChevronRight } from 'lucide-react';
 
 const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bull' | 'bear', runId: number | undefined, onClose: () => void }) => {
@@ -22,15 +23,11 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
         if (!detailedData || !Array.isArray(detailedData)) return null;
         const match = detailedData.find((d: any) => d.interval === row.interval) || detailedData[0];
         if (match) {
-            return {
-                ...match,
-                success_rate: row.success_rate,
-                avg_return: row.avg_return,
-                test_count: row.test_count
-            };
+            // The table's row was picked at its own best period; show the chart at that period
+            return { ...match, best_period: row.best_period ?? match.best_period };
         }
         return null;
-    }, [detailedData, row.interval, row.success_rate, row.avg_return, row.test_count]);
+    }, [detailedData, row.interval, row.best_period]);
 
     const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -96,42 +93,6 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
     return body;
 };
 
-// Helper to extract best metrics from detailed row (copied from Dashboard.tsx logic)
-const extractBestMetrics = (row: any) => {
-    // Prefer the backend's best period (fixed grid, minimum samples, excess over baseline)
-    if (row.best_period != null && row[`avg_return_${row.best_period}`] !== undefined) {
-        return {
-            success_rate: row[`success_rate_${row.best_period}`] ?? 0,
-            avg_return: row[`avg_return_${row.best_period}`] ?? 0,
-            test_count: row[`test_count_${row.best_period}`] ?? 0
-        };
-    }
-
-    let maxSuccessRate = -1;
-    let bestReturn = -1;
-    let bestCount = 0;
-
-    for (let i = 0; i <= 100; i++) {
-        const rate = row[`success_rate_${i}`];
-        const ret = row[`avg_return_${i}`];
-        const count = row[`test_count_${i}`];
-
-        if (rate !== undefined && ret !== undefined) {
-            if (rate > maxSuccessRate || (rate === maxSuccessRate && ret > bestReturn)) {
-                maxSuccessRate = rate;
-                bestReturn = ret;
-                bestCount = count;
-            }
-        }
-    }
-
-    return {
-        success_rate: maxSuccessRate !== -1 ? maxSuccessRate : 0,
-        avg_return: bestReturn !== -1 ? bestReturn : 0,
-        test_count: bestCount
-    };
-};
-
 const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 'bull' | 'bear', runId: number | undefined, onClose: () => void }) => {
     const resultType = type === 'bull' ? 'cd_eval_custom_detailed' : 'mc_eval_custom_detailed';
     const [fullscreen, setFullscreen] = React.useState(false);
@@ -151,7 +112,7 @@ const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 
             const match = detailedData.find((d: any) => d.interval === interval);
             if (match) {
                 const metrics = extractBestMetrics(match);
-                if (type === 'bear') metrics.avg_return = -Math.abs(metrics.avg_return);
+                if (type === 'bear' && metrics.avg_return != null) metrics.avg_return = -Math.abs(metrics.avg_return);
                 return { ...match, ...metrics };
             }
             return { ticker: row.ticker, interval, success_rate: 0, avg_return: 0, test_count: 0 };
@@ -480,7 +441,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
 
                     if (matchingRow) {
                         const metrics = extractBestMetrics(matchingRow);
-                        returns.push(metrics.avg_return);
+                        returns.push(metrics.avg_return ?? 0);
                     } else {
                         returns.push(0);
                     }

@@ -1,11 +1,7 @@
 """The Summary tab and exported report consume these exact, run-scoped figures."""
 import pandas as pd
 
-from app.logic.indicators import (
-    compute_cd_indicator, compute_mc_indicator, compute_cd_score, compute_mc_score,
-    compute_cd_break_through, compute_mc_break_through,
-)
-from app.logic.hq_filters import compute_high_return_cd, compute_high_return_mc
+from app.logic.signals import compute_signals
 from app.logic.scoring_config import DEFAULT_CONFIG
 
 BREADTH_FIELDS = {
@@ -27,22 +23,11 @@ def price_history(rows, scoring):
     } for row in rows])
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     df = df.set_index('timestamp').sort_index()
-    for side, indicator, score_fn, breakthrough_fn, hq_fn in [
-        ('cd', compute_cd_indicator, compute_cd_score, compute_cd_break_through, compute_high_return_cd),
-        ('mc', compute_mc_indicator, compute_mc_score, compute_mc_break_through, compute_high_return_mc),
-    ]:
-        weights = config[f'{side}_component_weights']
-        score = score_fn(df, weights=tuple(weights[key] for key in ['divergence', 'price_position', 'volume']))
-        signal = indicator(df).fillna(False).astype(bool) & score.ge(config[f'{side}_threshold'])
-        if config['hq_algorithm'] == 'high_return':
-            hq = signal & hq_fn(df, signal, **config['hq_high_return'])
-        else:
-            breakthrough = breakthrough_fn(df).fillna(False).astype(bool)
-            recent = breakthrough.rolling(10, min_periods=1).max().shift(1).fillna(False).astype(bool)
-            hq = signal & (breakthrough | recent)
-        df[f'{side}_signal'] = signal
-        df[f'{side}_1234_signal'] = hq
-        df[f'{side}_score'] = score
+    for side in ['cd', 'mc']:
+        signals = compute_signals(df, side, config)
+        df[f'{side}_signal'] = signals['signal']
+        df[f'{side}_1234_signal'] = signals['hq']
+        df[f'{side}_score'] = signals['score']
     for span in [13, 21, 144, 169, 20]:
         df[f'ema_{span}'] = df.Close.ewm(span=span, adjust=False).mean()
     for span in [50, 100, 200]:
