@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, JSON, BigInteger, Text
+from sqlalchemy import Column, Integer, String, Float, Date, DateTime, ForeignKey, JSON, BigInteger, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
@@ -67,3 +67,16 @@ class OptionChain(Base):
     data = Column(JSON) # List of {strike, calls, puts}
     current_price = Column(Float)
     max_pain = Column(Float, nullable=True)
+
+
+class QuarterlyFinancial(Base):
+    """Quarterly income statement figures per ticker (from yfinance quarterly_income_stmt)."""
+    __tablename__ = "quarterly_financials"
+
+    ticker = Column(String, primary_key=True, index=True)
+    period_end = Column(Date, primary_key=True)  # fiscal quarter end date
+    revenue = Column(Float, nullable=True)
+    gross_profit = Column(Float, nullable=True)
+    net_income = Column(Float, nullable=True)
+    eps = Column(Float, nullable=True)  # diluted EPS
+    fetched_at = Column(DateTime, default=datetime.utcnow)

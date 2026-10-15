@@ -18,6 +18,7 @@ from app.logic.db_utils import save_price_history
 from app.logic.options import get_option_data
 from app.logic.scoring_config import get_config as get_scoring_config, save_config as save_scoring_config, DEFAULT_CONFIG as SCORING_DEFAULTS
 from app.logic.signals import compute_signals, signal_lookback_days
+from app.logic.fundamentals import ticker_quarterly, aggregate_quarterly, refresh_quarterly
 
 logger = logging.getLogger(__name__)
 
@@ -866,6 +867,23 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
         "cd_breakthrough_score_breadth": cd_breakthrough_score_breadth,
         "mc_breakthrough_score_breadth": mc_breakthrough_score_breadth,
     }
+
+
+class FundamentalsRequest(BaseModel):
+    tickers: List[str]
+
+
+@router.get("/fundamentals/{ticker}")
+def get_fundamentals(ticker: str):
+    """Quarterly revenue / gross profit / net income / EPS for one ticker (fetched on demand)."""
+    refresh_quarterly(ticker)
+    return ticker_quarterly(ticker)
+
+
+@router.post("/fundamentals/aggregate")
+async def get_fundamentals_aggregate(request: FundamentalsRequest):
+    """Calendar-quarter totals over a stock list (same companies in every quarter) and % with EPS up."""
+    return aggregate_quarterly(request.tickers)
 
 
 @router.get("/options/{ticker}")

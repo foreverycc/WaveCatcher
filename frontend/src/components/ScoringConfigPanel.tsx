@@ -202,6 +202,7 @@ const ScoringConfigPanel: React.FC<ScoringConfigPanelProps> = ({ onConfigChange 
                     >
                         <option value="breakthrough">Breakthrough (price crosses EMA envelope)</option>
                         <option value="high_return">High Return (previous signals had favorable returns)</option>
+                        <option value="trend_regime">Trend + Market Regime (deep decline for CD; market near/below its EMA)</option>
                     </select>
 
                     {config.hq_algorithm === 'high_return' && (
@@ -259,6 +260,90 @@ const ScoringConfigPanel: React.FC<ScoringConfigPanelProps> = ({ onConfigChange 
                                         className="w-full text-sm text-center bg-background border border-input rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
                                     />
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {config.hq_algorithm === 'trend_regime' && (
+                        <div className="mt-3 p-3 rounded-lg bg-muted/30 border border-border/50 space-y-3">
+                            <div>
+                                <div className="text-xs text-muted-foreground mb-1.5">
+                                    CD: close at least this % below its EMA{config.hq_trend_regime.stock_ema}
+                                </div>
+                                <div className="flex gap-4 flex-wrap items-center">
+                                    {INTERVALS.map(intv => (
+                                        <div key={intv} className="flex items-center gap-2">
+                                            <span className="text-xs text-muted-foreground w-6">{intv}</span>
+                                            <input
+                                                type="number"
+                                                min={0} max={80} step={0.5}
+                                                value={config.hq_trend_regime.cd_below_ema_pct[intv]}
+                                                onChange={e => updateField('hq_trend_regime', {
+                                                    ...config.hq_trend_regime,
+                                                    cd_below_ema_pct: { ...config.hq_trend_regime.cd_below_ema_pct, [intv]: Number(e.target.value) }
+                                                })}
+                                                className="w-14 text-center text-xs bg-background border border-input rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
+                                            />
+                                        </div>
+                                    ))}
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-muted-foreground">Stock EMA</span>
+                                        <input
+                                            type="number"
+                                            min={5} max={400} step={1}
+                                            value={config.hq_trend_regime.stock_ema}
+                                            onChange={e => updateField('hq_trend_regime', { ...config.hq_trend_regime, stock_ema: Number(e.target.value) })}
+                                            className="w-14 text-center text-xs bg-background border border-input rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
+                                <div>
+                                    <label className="text-xs text-muted-foreground block mb-1">Market Index</label>
+                                    <input
+                                        type="text"
+                                        value={config.hq_trend_regime.market_symbol}
+                                        onChange={e => updateField('hq_trend_regime', { ...config.hq_trend_regime, market_symbol: e.target.value })}
+                                        className="w-full text-sm text-center bg-background border border-input rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground block mb-1">Market EMA</label>
+                                    <input
+                                        type="number"
+                                        min={5} max={400} step={1}
+                                        value={config.hq_trend_regime.market_ema}
+                                        onChange={e => updateField('hq_trend_regime', { ...config.hq_trend_regime, market_ema: Number(e.target.value) })}
+                                        className="w-full text-sm text-center bg-background border border-input rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground block mb-1">Max % Above EMA</label>
+                                    <input
+                                        type="number"
+                                        min={-50} max={50} step={0.5}
+                                        value={config.hq_trend_regime.market_max_above_ema_pct}
+                                        onChange={e => updateField('hq_trend_regime', { ...config.hq_trend_regime, market_max_above_ema_pct: Number(e.target.value) })}
+                                        className="w-full text-sm text-center bg-background border border-input rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                                    />
+                                </div>
+                                <label className="flex items-center gap-2 text-xs text-muted-foreground pb-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={config.hq_trend_regime.use_market_cd}
+                                        onChange={e => updateField('hq_trend_regime', { ...config.hq_trend_regime, use_market_cd: e.target.checked })}
+                                    />
+                                    Market filter for CD
+                                </label>
+                                <label className="flex items-center gap-2 text-xs text-muted-foreground pb-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={config.hq_trend_regime.use_market_mc}
+                                        onChange={e => updateField('hq_trend_regime', { ...config.hq_trend_regime, use_market_mc: e.target.checked })}
+                                    />
+                                    Market filter for MC
+                                </label>
                             </div>
                         </div>
                     )}

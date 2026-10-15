@@ -54,7 +54,7 @@ def process_ticker_1234(ticker, data_ticker=None, side='cd'):
             continue
 
         try:
-            signals = compute_signals(data, side)
+            signals = compute_signals(data, side, interval=interval)
             breakthrough_dates = data.index[signals['breakthrough'].values]
 
             # All signals (not just HQ) feed the signal/score breadth

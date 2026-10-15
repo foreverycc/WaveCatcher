@@ -14,6 +14,7 @@ import {
     ReferenceArea
 } from 'recharts';
 import { format } from 'date-fns';
+import type { QuarterlyFundamentals } from '../services/api';
 
 interface BreadthDataPoint {
     date: string;
@@ -88,6 +89,7 @@ interface MarketBreadthChartProps {
     selectedTicker?: string;
     onTickerChange?: (ticker: string) => void;
     indexTitle?: string;
+    fundamentals?: QuarterlyFundamentals[];
 }
 
 // Colors for each interval in stacked bar charts
@@ -244,6 +246,32 @@ const VolumeTooltip = ({ active, payload }: any) => {
 
 const INTERVAL_KEYS = ['1h', '2h', '3h', '4h', '1d'] as const;
 
+const formatMoney = (v: number | null | undefined) => {
+    if (v == null) return '-';
+    const a = Math.abs(v);
+    const sign = v < 0 ? '-' : '';
+    return a >= 1e12 ? `${sign}$${(a / 1e12).toFixed(2)}T` : a >= 1e9 ? `${sign}$${(a / 1e9).toFixed(2)}B`
+        : a >= 1e6 ? `${sign}$${(a / 1e6).toFixed(1)}M` : `${sign}$${a.toFixed(0)}`;
+};
+
+const FundamentalsTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    if (!d.fin_period) return null;
+    return (
+        <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
+            <p className="font-semibold mb-1">Quarter ending {d.fin_period}{d.fin_companies ? ` (${d.fin_companies} companies)` : ''}</p>
+            <div className="grid grid-cols-2 gap-x-4">
+                <span className="text-muted-foreground">Revenue:</span><span className="text-right text-[#60a5fa]">{formatMoney(d.fin_revenue)}</span>
+                <span className="text-muted-foreground">Gross Margin:</span><span className="text-right text-[#fbbf24]">{d.fin_gross_margin != null ? `${d.fin_gross_margin.toFixed(1)}%` : '-'}</span>
+                <span className="text-muted-foreground">Net Income:</span><span className="text-right text-[#34d399]">{formatMoney(d.fin_net)}</span>
+                {d.fin_eps != null && <><span className="text-muted-foreground">EPS:</span><span className="text-right text-[#a78bfa]">{d.fin_eps.toFixed(2)}</span></>}
+                {d.fin_eps_up != null && <><span className="text-muted-foreground">EPS up vs prev Q:</span><span className="text-right text-[#a78bfa]">{d.fin_eps_up.toFixed(0)}%</span></>}
+            </div>
+        </div>
+    );
+};
+
 const SignalTooltip = ({ active, payload, signalType }: any) => {
     if (!active || !payload?.length) return null;
     const d = payload[0].payload;
@@ -334,7 +362,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     tickers = [],
     selectedTicker = '',
     onTickerChange,
-    indexTitle
+    indexTitle,
+    fundamentals = []
 }) => {
     // Effective interval weights: use prop if provided, else fall back to SCORE_WEIGHTS constant
     const effectiveWeights = intervalWeights || SCORE_WEIGHTS;
@@ -534,6 +563,22 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         let result = Array.from(dataMap.values())
             .sort((a, b) => a.date.localeCompare(b.date));
 
+        // Quarterly fundamentals: each day shows the latest quarter that had ended by then
+        const quarters = [...(fundamentals || [])].sort((a, b) => a.period_end.localeCompare(b.period_end));
+        let qi = -1;
+        result.forEach(d => {
+            while (qi + 1 < quarters.length && quarters[qi + 1].period_end <= d.date) qi++;
+            if (qi < 0) return;
+            const q = quarters[qi];
+            d.fin_period = q.period_end;
+            d.fin_companies = q.companies;
+            d.fin_revenue = q.revenue;
+            d.fin_gross_margin = q.gross_profit != null && q.revenue ? (q.gross_profit / q.revenue) * 100 : null;
+            d.fin_net = q.net_income;
+            d.fin_eps = q.eps ?? null;
+            d.fin_eps_up = q.eps_up_pct ?? null;
+        });
+
         if (minDate) {
             const minStr = format(minDate, 'yyyy-MM-dd');
             result = result.filter(d => d.date >= minStr);
@@ -547,7 +592,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         result = result.filter(d => d.close !== undefined);
 
         return result;
-    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, effectiveWeights, minDate, maxDate, selectedTicker, tickers]);
+    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, effectiveWeights, minDate, maxDate, selectedTicker, tickers, fundamentals]);
 
     // Visible slice
     const visibleData = useMemo(() => {
@@ -710,7 +755,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     const spxPadding = (validMax - validMin) * 0.25; // 50% padding for signals visibility
     const spxDomain = [validMin - spxPadding, validMax + spxPadding];
 
-    const ReferenceBlock = () => (
+    const ReferenceBlock = ({ yAxisId }: { yAxisId?: string }) => (
         selection && visibleData[Math.min(selection.start, selection.end)] && visibleData[Math.max(selection.start, selection.end)] ? (
             <ReferenceArea
                 x1={visibleData[Math.min(selection.start, selection.end)].date}
@@ -718,13 +763,14 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 strokeOpacity={0}
                 fill="hsl(var(--primary))"
                 fillOpacity={0.1}
+                {...(yAxisId ? { yAxisId } : {})}
             />
         ) : <></>
     );
 
 
     return (
-        <div className="flex flex-col h-[828px] border rounded-lg bg-card p-4">
+        <div className="flex flex-col h-[988px] border rounded-lg bg-card p-4">
             <div className="flex justify-between items-center mb-2 gap-2">
                 <h3 className="text-lg font-semibold text-foreground shrink-0">
                     {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}
@@ -1135,12 +1181,12 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 12. MC HQ Score (indicator-weighted, HQ only) */}
-                <div className="flex-[0.6] min-h-0 border-b border-border/50 relative" style={{ zIndex: 10 }}>
+                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative" style={{ zIndex: 10 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#ef4444] z-10">MC HQ Score</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
-                            {commonXAxis(false)}
+                            {commonXAxis(true)}
                             <YAxis
                                 orientation="left"
                                 mirror={true}
@@ -1157,6 +1203,70 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 name="MC HQ Score"
                                 isAnimationActive={false}
                             />
+                            <ReferenceBlock />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Quarterly fundamentals: revenue / net income / gross margin */}
+                <div className="flex-[0.7] min-h-0 border-b border-border/50 relative" style={{ zIndex: 8 }}>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium z-10">
+                        <span className="text-[#60a5fa]">Revenue</span> / <span className="text-[#fbbf24]">Gross Margin % (right)</span> / <span className="text-[#34d399]">Net Income</span>
+                        <span className="text-muted-foreground"> {selectedTicker ? '(quarterly)' : '(stock list total, quarterly)'}</span>
+                    </span>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(true)}
+                            <YAxis
+                                yAxisId="money"
+                                orientation="left"
+                                mirror={true}
+                                domain={['auto', 'auto']}
+                                tickFormatter={(val) => formatMoney(val)}
+                                width={50}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={<FundamentalsTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <YAxis
+                                yAxisId="margin"
+                                orientation="right"
+                                mirror={true}
+                                domain={['auto', 'auto']}
+                                tickFormatter={(val) => `${Number(val).toFixed(0)}%`}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Line yAxisId="money" type="stepAfter" dataKey="fin_revenue" stroke="#60a5fa" dot={false} strokeWidth={1.5} isAnimationActive={false} connectNulls />
+                            <Line yAxisId="money" type="stepAfter" dataKey="fin_net" stroke="#34d399" dot={false} strokeWidth={1.5} isAnimationActive={false} connectNulls />
+                            <Line yAxisId="margin" type="stepAfter" dataKey="fin_gross_margin" stroke="#fbbf24" dot={false} strokeWidth={1.5} strokeDasharray="4 2" isAnimationActive={false} connectNulls />
+                            <ReferenceBlock yAxisId="money" />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* Quarterly fundamentals: EPS (stock) or share of companies with rising EPS (stock list) */}
+                <div className="flex-[0.7] min-h-0 relative" style={{ zIndex: 6 }}>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium text-[#a78bfa] z-10">
+                        {selectedTicker ? 'EPS (quarterly, diluted)' : 'EPS up vs previous quarter (% of companies)'}
+                    </span>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(false)}
+                            <YAxis
+                                orientation="left"
+                                mirror={true}
+                                domain={selectedTicker ? ['auto', 'auto'] : [0, 100]}
+                                tickFormatter={(val) => selectedTicker ? Number(val).toFixed(2) : `${val}%`}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={<FundamentalsTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Line type="stepAfter" dataKey={selectedTicker ? 'fin_eps' : 'fin_eps_up'} stroke="#a78bfa" dot={false} strokeWidth={1.5} isAnimationActive={false} connectNulls />
                             <ReferenceBlock />
                         </ComposedChart>
                     </ResponsiveContainer>

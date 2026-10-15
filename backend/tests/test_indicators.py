@@ -133,3 +133,32 @@ def test_golden_samples_match_futu(path):
         start = 200
         mismatch = np.flatnonzero(ours[start:] != futu[start:]) + start
         assert len(mismatch) == 0, f'{os.path.basename(path)} {col}: differs at {list(df.index[mismatch][:10])}'
+
+
+def test_trend_regime_hq():
+    from app.logic import market_regime as mr
+    import copy
+    df = random_ohlcv(5, 1500)
+    idx = df.index.tz_localize(None).normalize()
+    # Market index: below its EMA in the first half, far above it in the second half
+    market = pd.Series(np.r_[np.linspace(200, 100, 750), np.linspace(100, 400, 750)], index=idx)
+    config = copy.deepcopy(DEFAULT_CONFIG)
+    config['hq_algorithm'] = 'trend_regime'
+    original = mr._index_closes
+    try:
+        mr._index_closes = lambda symbol: market
+        cd = compute_signals(df, 'cd', config)
+        mc = compute_signals(df, 'mc', config)
+    finally:
+        mr._index_closes = original
+    assert not (cd['hq'] & ~cd['signal']).any() and not (mc['hq'] & ~mc['signal']).any()
+    ok = mr.market_ok(df.index, '1d', closes=market)
+    assert not (cd['hq'] & ~ok).any() and not (mc['hq'] & ~ok).any()
+    # MC HQ = signal in a weak market; CD HQ also needs the close well below its EMA50
+    assert mc['hq'].equals(mc['signal'] & ok)
+    close = df['Close']
+    deep = (close / close.ewm(span=50, adjust=False).mean() - 1) * 100 <= -config['hq_trend_regime']['cd_below_ema_pct']['1d']
+    assert cd['hq'].equals(cd['signal'] & ok & deep)
+    # Intraday bars use the previous day's market state
+    shifted = mr.market_ok(df.index, '1h', closes=market)
+    assert (shifted[1:] == ok[:-1]).mean() > 0.95

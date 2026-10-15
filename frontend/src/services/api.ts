@@ -25,12 +25,21 @@ export interface ScoringConfig {
     interval_weights: { '1h': number; '2h': number; '3h': number; '4h': number; '1d': number };
     cd_threshold: number;
     mc_threshold: number;
-    hq_algorithm: 'breakthrough' | 'high_return';
+    hq_algorithm: 'breakthrough' | 'high_return' | 'trend_regime';
     hq_high_return: {
         lookback_signals: number;
         lookback_bars: number;
         cd_return_threshold: number;
         mc_return_threshold: number;
+    };
+    hq_trend_regime: {
+        stock_ema: number;
+        cd_below_ema_pct: { '1h': number; '2h': number; '3h': number; '4h': number; '1d': number };
+        use_market_cd: boolean;
+        use_market_mc: boolean;
+        market_symbol: string;
+        market_ema: number;
+        market_max_above_ema_pct: number;
     };
     evaluation: {
         lookback_days: { '1h': number; '2h': number; '3h': number; '4h': number; '1d': number };
@@ -41,6 +50,17 @@ export interface ScoringConfig {
         min_oos_count: number;
         min_prior_signals: number;
     };
+}
+
+export interface QuarterlyFundamentals {
+    period_end: string;
+    quarter?: string;
+    companies?: number;
+    revenue: number | null;
+    gross_profit: number | null;
+    net_income: number | null;
+    eps?: number | null;
+    eps_up_pct?: number | null;
 }
 
 export interface StockList {
@@ -190,6 +210,16 @@ export const analysisApi = {
             cd_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
             mc_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
         }>(`/analysis/ticker_signals/${ticker}`);
+        return response.data;
+    },
+
+    getFundamentals: async (ticker: string) => {
+        const response = await api.get<QuarterlyFundamentals[]>(`/analysis/fundamentals/${ticker}`);
+        return response.data;
+    },
+
+    getFundamentalsAggregate: async (tickers: string[]) => {
+        const response = await api.post<QuarterlyFundamentals[]>('/analysis/fundamentals/aggregate', { tickers });
         return response.data;
     },
 

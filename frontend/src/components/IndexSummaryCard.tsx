@@ -125,6 +125,14 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         enabled: !staticSummary && !!effectiveTicker && cardView === 'chart'
     });
 
+    // Quarterly revenue / gross profit / net income / EPS: the selected stock, or the stock-list totals
+    const { data: fundamentals } = useQuery({
+        queryKey: ['fundamentals', selectedTicker || `list:${title}`, selectedTicker ? '' : tickers.length],
+        queryFn: () => selectedTicker ? analysisApi.getFundamentals(selectedTicker) : analysisApi.getFundamentalsAggregate(tickers),
+        staleTime: 1000 * 60 * 60,
+        enabled: !staticSummary && cardView === 'chart' && (!!selectedTicker || tickers.length > 0)
+    });
+
     // When a ticker is selected, swap index-level breadth with per-ticker data
     // If NO ticker selected (Index view):
     // - Panels use CD/MC Breadth (Sector Sums) passed via props
@@ -374,8 +382,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             <div
                 className="relative w-full"
                 style={{
-                    height: cardView !== 'summary' ? '888px' : 'auto',
-                    minHeight: cardView !== 'summary' ? '888px' : '435px',
+                    height: cardView === 'chart' ? '1048px' : cardView === 'histogram' ? '888px' : 'auto',
+                    minHeight: cardView === 'chart' ? '1048px' : cardView === 'histogram' ? '888px' : '435px',
                     transition: 'height 0.4s ease, min-height 0.4s ease'
                 }}
             >
@@ -616,6 +624,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                     selectedTicker={selectedTicker}
                                     onTickerChange={setSelectedTicker}
                                     indexTitle={title}
+                                    fundamentals={fundamentals}
                                 />
                             )}
                         </div>
@@ -667,6 +676,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             selectedTicker={selectedTicker}
                             onTickerChange={setSelectedTicker}
                             indexTitle={title}
+                            fundamentals={fundamentals}
                         />
                     </div>
                 </div>

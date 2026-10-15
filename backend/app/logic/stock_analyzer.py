@@ -33,6 +33,7 @@ from app.logic.get_resonance_signal_MC import (
     identify_mc_1234, 
 )
 from app.logic.get_best_CD_interval import evaluate_interval
+from app.logic.fundamentals import refresh_quarterly
 from app.logic.get_best_MC_interval import evaluate_interval as evaluate_mc_interval
 from multiprocessing import Pool, cpu_count
 import functools
@@ -197,6 +198,7 @@ def process_ticker_all(ticker, end_date=None):
         # Download data once for all analyses
         data = download_stock_data(ticker, end_date=end_date)
         data = fill_gaps_from_history(ticker, data)
+        refresh_quarterly(ticker)  # quarterly financials, refetched at most weekly
         
         # Skip if no data available
         if all(df.empty for key, df in data.items() if isinstance(df, pd.DataFrame)):

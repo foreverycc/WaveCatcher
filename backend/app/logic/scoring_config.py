@@ -38,6 +38,17 @@ DEFAULT_CONFIG = {
         "cd_return_threshold": 5.0,
         "mc_return_threshold": -5.0
     },
+    # trend_regime HQ: CD needs a deep decline below the stock's EMA, CD/MC need the market index
+    # near or below its EMA (see hq_filters.compute_trend_regime and market_regime.py)
+    "hq_trend_regime": {
+        "stock_ema": 50,
+        "cd_below_ema_pct": {"1h": 4.5, "2h": 6.5, "3h": 8.0, "4h": 10.0, "1d": 14.0},
+        "use_market_cd": True,
+        "use_market_mc": True,
+        "market_symbol": "^SPX",
+        "market_ema": 50,
+        "market_max_above_ema_pct": 1.0
+    },
     # Return evaluation and result-table filters (take effect on the next analysis run;
     # lookback_days also sets how far back the price charts show signals)
     "evaluation": {
@@ -71,6 +82,9 @@ def get_config() -> dict:
                         if key == 'evaluation':
                             merged[key]['lookback_days'] = {**DEFAULT_CONFIG[key]['lookback_days'],
                                                             **config[key].get('lookback_days', {})}
+                        if key == 'hq_trend_regime':
+                            merged[key]['cd_below_ema_pct'] = {**DEFAULT_CONFIG[key]['cd_below_ema_pct'],
+                                                               **config[key].get('cd_below_ema_pct', {})}
                     else:
                         merged[key] = config[key]
             return merged
@@ -107,7 +121,7 @@ def save_config(config: dict) -> dict:
     # Validate HQ algorithm
     if 'hq_algorithm' in config:
         algo = config['hq_algorithm']
-        if algo in ('breakthrough', 'high_return'):
+        if algo in ('breakthrough', 'high_return', 'trend_regime'):
             validated['hq_algorithm'] = algo
     
     # Validate HQ high-return params
@@ -124,6 +138,26 @@ def save_config(config: dict) -> dict:
             hr_validated['mc_return_threshold'] = max(-50, min(0, float(hr['mc_return_threshold'])))
         validated['hq_high_return'] = hr_validated
     
+    # Validate trend_regime HQ params
+    if 'hq_trend_regime' in config and isinstance(config['hq_trend_regime'], dict):
+        tr = config['hq_trend_regime']
+        tr_validated = validated['hq_trend_regime']
+        if 'stock_ema' in tr:
+            tr_validated['stock_ema'] = max(5, min(400, int(tr['stock_ema'])))
+        if isinstance(tr.get('cd_below_ema_pct'), dict):
+            for intv in ['1h', '2h', '3h', '4h', '1d']:
+                if intv in tr['cd_below_ema_pct']:
+                    tr_validated['cd_below_ema_pct'][intv] = max(0, min(80, float(tr['cd_below_ema_pct'][intv])))
+        for key in ['use_market_cd', 'use_market_mc']:
+            if key in tr:
+                tr_validated[key] = bool(tr[key])
+        if isinstance(tr.get('market_symbol'), str) and tr['market_symbol'].strip():
+            tr_validated['market_symbol'] = tr['market_symbol'].strip()[:20]
+        if 'market_ema' in tr:
+            tr_validated['market_ema'] = max(5, min(400, int(tr['market_ema'])))
+        if 'market_max_above_ema_pct' in tr:
+            tr_validated['market_max_above_ema_pct'] = max(-50, min(50, float(tr['market_max_above_ema_pct'])))
+
     # Validate evaluation params
     if 'evaluation' in config and isinstance(config['evaluation'], dict):
         ev = config['evaluation']
@@ -183,10 +217,10 @@ def get_mc_threshold() -> float:
 
 
 def get_hq_algorithm() -> str:
-    """Return the HQ algorithm: 'breakthrough' or 'high_return'."""
+    """Return the HQ algorithm: 'breakthrough', 'high_return' or 'trend_regime'."""
     config = get_config()
     algo = config.get('hq_algorithm', 'breakthrough')
-    if algo not in ('breakthrough', 'high_return'):
+    if algo not in ('breakthrough', 'high_return', 'trend_regime'):
         return 'breakthrough'
     return algo
 

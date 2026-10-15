@@ -12,7 +12,7 @@ from app.logic.indicators import (
     compute_cd_indicator, compute_mc_indicator, compute_cd_score, compute_mc_score,
     compute_cd_break_through, compute_mc_break_through,
 )
-from app.logic.hq_filters import compute_high_return_cd, compute_high_return_mc
+from app.logic.hq_filters import compute_high_return_cd, compute_high_return_mc, compute_trend_regime
 from app.logic.scoring_config import get_config, DEFAULT_CONFIG
 from app.logic.data_loader import unfinished_bars
 
@@ -49,7 +49,8 @@ def compute_signals(df, side, config=None, interval=None):
         df: OHLCV DataFrame
         side: 'cd' or 'mc'
         config: scoring config (defaults to the saved config); a report passes the config of its run
-        interval: when given, no signal on a bar that is still forming at the moment
+        interval: when given, no signal on a bar that is still forming at the moment; also picks the
+                  interval's thresholds of the trend_regime HQ filter (daily ones when not given)
 
     Returns DataFrame indexed like df:
         raw:          the indicator fired
@@ -72,6 +73,8 @@ def compute_signals(df, side, config=None, interval=None):
     breakthrough = breakthrough_fn(df).fillna(False).astype(bool)
     if config.get('hq_algorithm') == 'high_return':
         hq = signal & high_return_fn(df, signal, **config['hq_high_return'])
+    elif config.get('hq_algorithm') == 'trend_regime':
+        hq = signal & compute_trend_regime(df, signal, side, interval, **config['hq_trend_regime'])
     else:
         recent = breakthrough.astype(int).rolling(HQ_RECENT_BARS, min_periods=1).max().shift(1).fillna(0).astype(bool)
         hq = signal & (breakthrough | recent)

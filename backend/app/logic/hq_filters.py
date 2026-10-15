@@ -122,3 +122,32 @@ def compute_high_return_mc(df, mc_signals, lookback_signals=3, lookback_bars=20,
             result.iloc[sig_idx] = True
     
     return result
+
+
+def compute_trend_regime(df, signals, side, interval=None, stock_ema=50, cd_below_ema_pct=None,
+                         use_market_cd=True, use_market_mc=True, market_symbol='^SPX', market_ema=50,
+                         market_max_above_ema_pct=1.0, market_closes=None, **kwargs):
+    """
+    Trend / market-regime HQ filter.
+
+    CD: the close is at least cd_below_ema_pct[interval] % below its EMA(stock_ema) (a deep decline,
+        not a shallow pullback) and, with use_market_cd, the market index is near or below its EMA.
+    MC: with use_market_mc, the market index is near or below its EMA (see market_regime.market_ok).
+    """
+    from app.logic.market_regime import market_ok
+    interval = {'60m': '1h'}.get(interval, interval)
+    result = pd.Series(np.asarray(signals, dtype=bool), index=df.index)
+    if not result.any():
+        return result
+    use_market = use_market_cd if side == 'cd' else use_market_mc
+    if use_market:
+        result &= market_ok(df.index, interval or '1d', market_symbol, market_ema,
+                            market_max_above_ema_pct, closes=market_closes)
+    if side == 'cd':
+        close = df['Close']
+        if isinstance(close, pd.DataFrame):
+            close = close.iloc[:, 0]
+        ema = close.ewm(span=stock_ema, adjust=False).mean()
+        threshold = (cd_below_ema_pct or {}).get(interval or '1d', 10.0)
+        result &= (close / ema - 1) * 100 <= -threshold
+    return result

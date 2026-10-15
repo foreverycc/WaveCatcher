@@ -337,7 +337,7 @@ def evaluate_interval(ticker, interval, side, data=None):
             return None
 
         config = get_config()
-        signals = compute_signals(data_frame, side, config)
+        signals = compute_signals(data_frame, side, config, interval)
         signal_mask = signals['signal'].values
         signal_count = int(signal_mask.sum())
 
