@@ -287,13 +287,13 @@ export const BreadthHistogramPanel: React.FC<BreadthHistogramPanelProps> = ({
                 ]
             },
             {
-                section: 'CD/MC HQ', items: [
+                section: 'CD/MC Proc', items: [
                     { label: 'CD', values: pad(cdBt.values), today: cdBt.today, color: 'green' as const },
                     { label: 'MC', values: pad(mcBt.values), today: mcBt.today, color: 'red' as const },
                 ]
             },
             {
-                section: 'CD/MC HQ Score', items: [
+                section: 'CD/MC Proc Score', items: [
                     { label: 'CD', values: pad(cdBtScore.values), today: cdBtScore.today, color: 'green' as const },
                     { label: 'MC', values: pad(mcBtScore.values), today: mcBtScore.today, color: 'red' as const },
                 ]

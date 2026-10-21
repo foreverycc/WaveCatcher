@@ -52,6 +52,16 @@ export interface ScoringConfig {
     };
 }
 
+export interface ScoreDistribution {
+    bin_width: number;
+    bins: number[];  // lower edge of each score bin
+    tickers: number;
+    cd: Record<string, number[]>;  // interval -> count per bin
+    mc: Record<string, number[]>;
+    run_id: number;
+    run_timestamp: string | null;
+}
+
 export interface QuarterlyFundamentals {
     period_end: string;
     quarter?: string;
@@ -258,6 +268,11 @@ export const analysisApi = {
 
     runMultiIndex: async (indices: string[], end_date?: string) => {
         const response = await api.post<JobStatus>('/analysis/run_multi_index', { indices, end_date });
+        return response.data;
+    },
+
+    getScoreDistribution: async () => {
+        const response = await api.get<ScoreDistribution | null>('/analysis/score_distribution');
         return response.data;
     },
 

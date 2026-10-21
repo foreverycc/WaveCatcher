@@ -869,6 +869,22 @@ async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
     }
 
 
+@router.get("/score_distribution")
+def get_score_distribution(db: Session = Depends(get_db)):
+    """Score distribution of every CD/MC indicator firing (before the threshold) from the latest run that has one."""
+    row = db.query(AnalysisResult, AnalysisRun.timestamp).join(
+        AnalysisRun, AnalysisResult.run_id == AnalysisRun.id
+    ).filter(
+        AnalysisRun.status == "completed",
+        AnalysisResult.result_type == "score_distribution",
+        AnalysisResult.ticker == "ALL",
+    ).order_by(desc(AnalysisRun.timestamp)).first()
+    if not row:
+        return None
+    result, timestamp = row
+    return {**(result.data or {}), "run_id": result.run_id, "run_timestamp": timestamp.isoformat() if timestamp else None}
+
+
 class FundamentalsRequest(BaseModel):
     tickers: List[str]
 

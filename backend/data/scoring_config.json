@@ -16,9 +16,9 @@
     "4h": 8.0,
     "1d": 32.0
   },
-  "cd_threshold": 0,
-  "mc_threshold": 0,
-  "hq_algorithm": "high_return",
+  "cd_threshold": 60.0,
+  "mc_threshold": 60.0,
+  "hq_algorithm": "breakthrough",
   "hq_high_return": {
     "lookback_signals": 3,
     "lookback_bars": 20,

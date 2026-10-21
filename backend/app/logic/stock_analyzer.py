@@ -34,6 +34,7 @@ from app.logic.get_resonance_signal_MC import (
 )
 from app.logic.get_best_CD_interval import evaluate_interval
 from app.logic.fundamentals import refresh_quarterly
+from app.logic.score_distribution import aggregate_score_histograms
 from app.logic.get_best_MC_interval import evaluate_interval as evaluate_mc_interval
 from multiprocessing import Pool, cpu_count
 import functools
@@ -222,11 +223,14 @@ def process_ticker_all(ticker, end_date=None):
         # (a signal on a still-forming bar can disappear by the time the bar closes)
         data = drop_unfinished_bars(data)
         
-        # Process for 1234 breakout (CD signals)
-        results_1234 = process_ticker_1234(ticker, data)
+        # Process for 1234 breakout (CD signals); score_hist collects the scores of every
+        # indicator firing (before the threshold) for the score distribution chart
+        score_hist = {'cd': {}, 'mc': {}}
+        results_1234 = process_ticker_1234(ticker, data, score_hist=score_hist['cd'])
         
         # Process for MC 1234 breakout (MC signals)
-        mc_results_1234 = process_ticker_mc_1234(ticker, data)
+        mc_results_1234 = process_ticker_mc_1234(ticker, data, score_hist=score_hist['mc'])
+        data['_score_hist'] = score_hist
         
         # Process for CD signal evaluation
         cd_results = []
@@ -633,6 +637,8 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         if mc_hq_score:
             save_analysis_result(run_id, "ALL", "ALL", 'mc_breakthrough_score_by_interval', mc_hq_score)
 
+        save_analysis_result(run_id, "ALL", "ALL", 'score_distribution', aggregate_score_histograms(all_ticker_data))
+
         # 5-6. Save CD / MC evaluation results
         save_eval_results(run_id, cd_eval_results, 'cd', all_ticker_data)
         save_eval_results(run_id, mc_eval_results, 'mc', all_ticker_data)
@@ -969,6 +975,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
             'successful_tickers': len(all_ticker_data),
         }
         save_analysis_result(run_id, "ALL", "ALL", 'data_quality_warnings', quality_report)
+        save_analysis_result(run_id, "ALL", "ALL", 'score_distribution', aggregate_score_histograms(all_ticker_data))
         
         if all_warnings:
             logger.warning(f"Data quality: {len(all_warnings)} warning(s) across tickers")

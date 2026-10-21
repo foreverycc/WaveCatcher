@@ -6,6 +6,7 @@ One implementation for both sides; get_resonance_signal_CD / get_resonance_signa
 import pandas as pd
 from app.logic.utils import calculate_current_nx_values, get_trading_day_window_end
 from app.logic.signals import compute_signals
+from app.logic.score_distribution import score_histogram
 
 INTERVAL_SCORE_WEIGHTS = {'1h': 6, '2h': 7, '3h': 8, '4h': 9, '1d': 10}
 
@@ -26,7 +27,7 @@ def calculate_score(data, interval, signal_date):
     return round(score, 2)
 
 
-def process_ticker_1234(ticker, data_ticker=None, side='cd'):
+def process_ticker_1234(ticker, data_ticker=None, side='cd', score_hist=None):
     """
     Every `side` signal of a ticker on each interval, with its scores and whether it is HQ.
 
@@ -34,6 +35,8 @@ def process_ticker_1234(ticker, data_ticker=None, side='cd'):
         ticker: Stock symbol
         data_ticker: pre-downloaded data dictionary, key is interval, value is dataframe
         side: 'cd' or 'mc'
+        score_hist: optional dict filled with {interval: counts per score bin} of every bar where the
+                    indicator fired, before the score threshold (see score_distribution.py)
 
     Returns:
         List of results
@@ -56,6 +59,8 @@ def process_ticker_1234(ticker, data_ticker=None, side='cd'):
         try:
             signals = compute_signals(data, side, interval=interval)
             breakthrough_dates = data.index[signals['breakthrough'].values]
+            if score_hist is not None:
+                score_hist[interval] = score_histogram(signals.loc[signals['raw'], 'score'])
 
             # All signals (not just HQ) feed the signal/score breadth
             for date, row in signals[signals['signal']].iterrows():

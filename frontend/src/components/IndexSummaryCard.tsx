@@ -5,6 +5,7 @@ import { analysisApi } from '../services/api';
 import { MarketBreadthChart } from './MarketBreadthChart';
 import { BreadthHistogramPanel } from './BreadthHistogramPanel';
 import { cn } from '../utils/cn';
+import { procBreadth } from '../utils/procBreadth';
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface BreadthDataPoint {
@@ -148,6 +149,13 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     const effectiveCdBtScoreBreadth = useTickerSignals ? (tickerSignals!.cd_breakthrough_score_breadth ?? []) : cdBreakthroughScoreBreadth;
     const effectiveMcBtScoreBreadth = useTickerSignals ? (tickerSignals!.mc_breakthrough_score_breadth ?? []) : mcBreakthroughScoreBreadth;
 
+    // Proc series (index level): previous trading day + today, for signal counts and scores
+    const tradingDates = useMemo(() => (spxData || []).map(d => d.time?.split('T')[0] ?? '').filter(Boolean), [spxData]);
+    const cdProcBreadth = useMemo(() => procBreadth(cdSignalBreadth, tradingDates, 'count'), [cdSignalBreadth, tradingDates]);
+    const mcProcBreadth = useMemo(() => procBreadth(mcSignalBreadth, tradingDates, 'count'), [mcSignalBreadth, tradingDates]);
+    const cdProcScoreBreadth = useMemo(() => procBreadth(cdScoreBreadth, tradingDates, 'score'), [cdScoreBreadth, tradingDates]);
+    const mcProcScoreBreadth = useMemo(() => procBreadth(mcScoreBreadth, tradingDates, 'score'), [mcScoreBreadth, tradingDates]);
+
     // --- Filter data by date range ---
     const minDateStr = useMemo(() => format(minDate, 'yyyy-MM-dd'), [minDate]);
     const maxDateStr = useMemo(() => maxDate ? format(maxDate, 'yyyy-MM-dd') : null, [maxDate]);
@@ -255,10 +263,10 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             return { today, avg, median, percentile };
         };
         return {
-            cd: computeStats(cdBreadth),
-            mc: computeStats(mcBreadth)
+            cd: computeStats(cdProcBreadth),
+            mc: computeStats(mcProcBreadth)
         };
-    }, [cdBreadth, mcBreadth, filteredSpxData, tickers, filterByDateRange]);
+    }, [cdProcBreadth, mcProcBreadth, filteredSpxData, tickers, filterByDateRange]);
 
     // Signal Breadth stats (Today vs Avg + Percentile)
     const signalStats = useMemo(() => {
@@ -351,10 +359,10 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             return { today, avg, median, percentile };
         };
         return {
-            cd: computeStats(effectiveCdBtScoreBreadth),
-            mc: computeStats(effectiveMcBtScoreBreadth)
+            cd: computeStats(cdProcScoreBreadth),
+            mc: computeStats(mcProcScoreBreadth)
         };
-    }, [effectiveCdBtScoreBreadth, effectiveMcBtScoreBreadth, filteredSpxData, tickers, intervalWeights, filterByDateRange]);
+    }, [cdProcScoreBreadth, mcProcScoreBreadth, filteredSpxData, tickers, intervalWeights, filterByDateRange]);
 
     // Volume: today vs 1yr average + percentile
     const volumeStats = useMemo(() => {
@@ -489,9 +497,9 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         />
                     </div>
 
-                    {/* Panel 3: CD/MC Breakthrough (was Buy/Sell) */}
+                    {/* Panel 3: CD/MC Proc (previous + current day signal counts) */}
                     <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">CD/MC HQ</div>
+                        <div className="text-xs text-muted-foreground font-medium">CD/MC Proc</div>
                         <PercentileMeter
                             percentile={breadthStats.cd.percentile}
                             label="Buy"
@@ -506,9 +514,9 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         />
                     </div>
 
-                    {/* Panel 4: CD/MC Breakthrough Score + Volume */}
+                    {/* Panel 4: CD/MC Proc Score (previous + current day) + Volume */}
                     <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">CD/MC HQ Score</div>
+                        <div className="text-xs text-muted-foreground font-medium">CD/MC Proc Score</div>
                         <PercentileMeter
                             percentile={breakthroughScoreStats.cd.percentile}
                             label="Buy"
@@ -562,10 +570,10 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             mcSignalBreadth={filterByDateRange(mcSignalBreadth)}
                             cdScoreBreadth={filterByDateRange(cdScoreBreadth)}
                             mcScoreBreadth={filterByDateRange(mcScoreBreadth)}
-                            cdBreadth={filterByDateRange(cdBreadth)}
-                            mcBreadth={filterByDateRange(mcBreadth)}
-                            cdBreakthroughScoreBreadth={filterByDateRange(cdBreakthroughScoreBreadth)}
-                            mcBreakthroughScoreBreadth={filterByDateRange(mcBreakthroughScoreBreadth)}
+                            cdBreadth={filterByDateRange(cdProcBreadth)}
+                            mcBreadth={filterByDateRange(mcProcBreadth)}
+                            cdBreakthroughScoreBreadth={filterByDateRange(cdProcScoreBreadth)}
+                            mcBreakthroughScoreBreadth={filterByDateRange(mcProcScoreBreadth)}
                             intervalWeights={intervalWeights}
                             tickers={tickers}
                             filteredSpxData={filteredSpxData}
@@ -694,10 +702,10 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         mcSignalBreadth={filterByDateRange(mcSignalBreadth)}
                         cdScoreBreadth={filterByDateRange(cdScoreBreadth)}
                         mcScoreBreadth={filterByDateRange(mcScoreBreadth)}
-                        cdBreadth={filterByDateRange(cdBreadth)}
-                        mcBreadth={filterByDateRange(mcBreadth)}
-                        cdBreakthroughScoreBreadth={filterByDateRange(cdBreakthroughScoreBreadth)}
-                        mcBreakthroughScoreBreadth={filterByDateRange(mcBreakthroughScoreBreadth)}
+                        cdBreadth={filterByDateRange(cdProcBreadth)}
+                        mcBreadth={filterByDateRange(mcProcBreadth)}
+                        cdBreakthroughScoreBreadth={filterByDateRange(cdProcScoreBreadth)}
+                        mcBreakthroughScoreBreadth={filterByDateRange(mcProcScoreBreadth)}
                         intervalWeights={intervalWeights}
                         tickers={tickers}
                         filteredSpxData={filteredSpxData}

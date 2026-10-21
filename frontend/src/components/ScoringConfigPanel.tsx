@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { analysisApi, type ScoringConfig } from '../services/api';
+import { analysisApi, type ScoringConfig, type ScoreDistribution } from '../services/api';
+import { ScoreDistributionChart, availableBinWidths } from './ScoreDistributionChart';
 import { Settings, RotateCcw } from 'lucide-react';
 
 interface ScoringConfigPanelProps {
@@ -59,8 +60,12 @@ const ScoringConfigPanel: React.FC<ScoringConfigPanelProps> = ({ onConfigChange 
     const [saving, setSaving] = useState(false);
     const [dirty, setDirty] = useState(false);
 
+    const [scoreDist, setScoreDist] = useState<ScoreDistribution | null>(null);
+    const [binWidth, setBinWidth] = useState(5);
+
     useEffect(() => {
         analysisApi.getScoringConfig().then(setConfig).catch(console.error);
+        analysisApi.getScoreDistribution().then(setScoreDist).catch(console.error);
     }, []);
 
     const updateField = useCallback((field: keyof ScoringConfig, value: any) => {
@@ -150,40 +155,67 @@ const ScoringConfigPanel: React.FC<ScoringConfigPanelProps> = ({ onConfigChange 
                             (signals below threshold are ignored)
                         </span>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex items-center gap-3">
-                            <span className="w-24 text-xs text-muted-foreground">CD (Buy)</span>
-                            <input
-                                type="range"
-                                min={0} max={100} step={5}
-                                value={config.cd_threshold}
-                                onChange={e => updateField('cd_threshold', Number(e.target.value))}
-                                className="flex-1 accent-primary h-1.5"
-                            />
-                            <input
-                                type="number"
-                                min={0} max={100} step={5}
-                                value={config.cd_threshold}
-                                onChange={e => updateField('cd_threshold', Number(e.target.value))}
-                                className="w-14 text-center text-xs bg-background border border-input rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
-                            />
+                    {scoreDist && (
+                        <div className="text-[11px] text-muted-foreground mb-2">
+                            Score of every indicator firing (before the threshold) across {scoreDist.tickers.toLocaleString()} tickers in the latest analysis run
+                            {scoreDist.run_timestamp ? ` (${scoreDist.run_timestamp.slice(0, 10)})` : ''}, stacked by interval.
+                            Scores depend on the component weights above as they were when that run happened.
+                            <label className="ml-2 inline-flex items-center gap-1">
+                                Bin width
+                                <select
+                                    value={binWidth}
+                                    onChange={e => setBinWidth(Number(e.target.value))}
+                                    className="text-[11px] bg-background border border-input rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                                >
+                                    {availableBinWidths(scoreDist).map(w => <option key={w} value={w}>{w}</option>)}
+                                </select>
+                            </label>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <span className="w-24 text-xs text-muted-foreground">MC (Sell)</span>
-                            <input
-                                type="range"
-                                min={0} max={100} step={5}
-                                value={config.mc_threshold}
-                                onChange={e => updateField('mc_threshold', Number(e.target.value))}
-                                className="flex-1 accent-primary h-1.5"
-                            />
-                            <input
-                                type="number"
-                                min={0} max={100} step={5}
-                                value={config.mc_threshold}
-                                onChange={e => updateField('mc_threshold', Number(e.target.value))}
-                                className="w-14 text-center text-xs bg-background border border-input rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
-                            />
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-3">
+                                <span className="w-24 text-xs text-muted-foreground">CD (Buy)</span>
+                                <input
+                                    type="range"
+                                    min={0} max={100} step={5}
+                                    value={config.cd_threshold}
+                                    onChange={e => updateField('cd_threshold', Number(e.target.value))}
+                                    className="flex-1 accent-primary h-1.5"
+                                />
+                                <input
+                                    type="number"
+                                    min={0} max={100} step={5}
+                                    value={config.cd_threshold}
+                                    onChange={e => updateField('cd_threshold', Number(e.target.value))}
+                                    className="w-14 text-center text-xs bg-background border border-input rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
+                                />
+                            </div>
+                            {scoreDist && (
+                                <ScoreDistributionChart dist={scoreDist} side="cd" threshold={config.cd_threshold} binWidth={binWidth} />
+                            )}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-3">
+                                <span className="w-24 text-xs text-muted-foreground">MC (Sell)</span>
+                                <input
+                                    type="range"
+                                    min={0} max={100} step={5}
+                                    value={config.mc_threshold}
+                                    onChange={e => updateField('mc_threshold', Number(e.target.value))}
+                                    className="flex-1 accent-primary h-1.5"
+                                />
+                                <input
+                                    type="number"
+                                    min={0} max={100} step={5}
+                                    value={config.mc_threshold}
+                                    onChange={e => updateField('mc_threshold', Number(e.target.value))}
+                                    className="w-14 text-center text-xs bg-background border border-input rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
+                                />
+                            </div>
+                            {scoreDist && (
+                                <ScoreDistributionChart dist={scoreDist} side="mc" threshold={config.mc_threshold} binWidth={binWidth} />
+                            )}
                         </div>
                     </div>
                 </div>
