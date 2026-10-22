@@ -315,6 +315,22 @@ const ScoreTooltip = ({ active, payload, scoreKey, label, color }: any) => {
     );
 };
 
+const SignalProcTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    const net = d.signalProc ?? 0;
+    return (
+        <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
+            <div className="grid grid-cols-2 gap-x-4">
+                <span className="text-muted-foreground">CD Score:</span><span className="text-right text-green-400">{(d.cdNewScore || 0).toFixed(1)}</span>
+                <span className="text-muted-foreground">MC Score:</span><span className="text-right text-red-400">{(d.mcNewScore || 0).toFixed(1)}</span>
+                <span className="text-muted-foreground font-semibold border-t border-border/50 pt-0.5 mt-0.5">Signal Proc:</span>
+                <span className={`text-right font-semibold border-t border-border/50 pt-0.5 mt-0.5 ${net >= 0 ? 'text-green-400' : 'text-red-400'}`}>{net.toFixed(1)}</span>
+            </div>
+        </div>
+    );
+};
+
 const BreakthroughTooltip = ({ active, payload, signalType }: any) => {
     if (!active || !payload?.length) return null;
     const d = payload[0].payload;
@@ -591,6 +607,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             });
             d.cdProcScore = (d.cdNewScore || 0) + (prev.cdNewScore || 0);
             d.mcProcScore = (d.mcNewScore || 0) + (prev.mcNewScore || 0);
+            // Signal Proc: today's CD Score minus today's MC Score (negative when selling dominates)
+            d.signalProc = (d.cdNewScore || 0) - (d.mcNewScore || 0);
         });
 
         if (minDate) {
@@ -781,7 +799,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
 
     return (
-        <div className="flex flex-col h-[988px] border rounded-lg bg-card p-4">
+        <div className="flex flex-col h-[1048px] border rounded-lg bg-card p-4">
             <div className="flex justify-between items-center mb-2 gap-2">
                 <h3 className="text-lg font-semibold text-foreground shrink-0">
                     {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}
@@ -1214,6 +1232,36 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 name="MC Proc Score"
                                 isAnimationActive={false}
                             />
+                            <ReferenceBlock />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
+
+                {/* 13. Signal Proc: today's CD Score - MC Score */}
+                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative" style={{ zIndex: 9 }}>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium z-10">
+                        Signal Proc <span className="text-muted-foreground font-normal">(<span className="text-[#22c55e]">CD Score</span> − <span className="text-[#ef4444]">MC Score</span>, today)</span>
+                    </span>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(true)}
+                            <YAxis
+                                orientation="left"
+                                mirror={true}
+                                domain={['auto', 'auto']}
+                                tickFormatter={(val) => val === 0 ? '0' : Number.isInteger(val) ? val : val.toFixed(2)}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={<SignalProcTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.6} />
+                            <Bar dataKey="signalProc" name="Signal Proc" isAnimationActive={false}>
+                                {visibleData.map((d: any, i: number) => (
+                                    <Cell key={i} fill={(d.signalProc ?? 0) >= 0 ? '#22c55e' : '#ef4444'} />
+                                ))}
+                            </Bar>
                             <ReferenceBlock />
                         </ComposedChart>
                     </ResponsiveContainer>

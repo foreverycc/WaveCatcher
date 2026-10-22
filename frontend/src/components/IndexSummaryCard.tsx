@@ -390,8 +390,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             <div
                 className="relative w-full"
                 style={{
-                    height: cardView === 'chart' ? '1048px' : cardView === 'histogram' ? '888px' : 'auto',
-                    minHeight: cardView === 'chart' ? '1048px' : cardView === 'histogram' ? '888px' : '435px',
+                    height: cardView === 'chart' ? '1108px' : cardView === 'histogram' ? '888px' : 'auto',
+                    minHeight: cardView === 'chart' ? '1108px' : cardView === 'histogram' ? '888px' : '435px',
                     transition: 'height 0.4s ease, min-height 0.4s ease'
                 }}
             >
