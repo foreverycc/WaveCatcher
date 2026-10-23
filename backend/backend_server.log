@@ -8294,3 +8294,8 @@
 2026-10-22 19:28:49,380 - app.api.endpoints.analysis - INFO - [HQ] SOXX/3h: cd_sig=10, cd_1234=4, mc_sig=35, mc_1234=3
 2026-10-22 19:28:49,413 - app.api.endpoints.analysis - INFO - [HQ] SOXX/4h: cd_sig=3, cd_1234=2, mc_sig=22, mc_1234=4
 2026-10-22 19:28:49,451 - app.api.endpoints.analysis - INFO - [HQ] SOXX/1d: cd_sig=1, cd_1234=1, mc_sig=9, mc_1234=3
+2026-10-22 19:31:23,114 - app.api.endpoints.analysis - INFO - [HQ] QQQ/1h: cd_sig=21, cd_1234=5, mc_sig=62, mc_1234=7
+2026-10-22 19:31:23,175 - app.api.endpoints.analysis - INFO - [HQ] QQQ/2h: cd_sig=12, cd_1234=5, mc_sig=40, mc_1234=2
+2026-10-22 19:31:23,215 - app.api.endpoints.analysis - INFO - [HQ] QQQ/3h: cd_sig=9, cd_1234=3, mc_sig=36, mc_1234=1
+2026-10-22 19:31:23,289 - app.api.endpoints.analysis - INFO - [HQ] QQQ/4h: cd_sig=2, cd_1234=1, mc_sig=21, mc_1234=3
+2026-10-22 19:31:23,309 - app.api.endpoints.analysis - INFO - [HQ] QQQ/1d: cd_sig=1, cd_1234=0, mc_sig=13, mc_1234=4
