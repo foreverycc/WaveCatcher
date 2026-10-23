@@ -5,7 +5,8 @@ import { analysisApi } from '../services/api';
 import { MarketBreadthChart } from './MarketBreadthChart';
 import { BreadthHistogramPanel } from './BreadthHistogramPanel';
 import { cn } from '../utils/cn';
-import { breadthShare, breadthScore, companiesFromSignalBreadth, type CompanyBreadthPoint, type ValuePoint } from '../utils/marketBreadth';
+import { breadthShare, breadthScore, companiesFromSignalBreadth, balanceIndex, signalCountSeries, scoreSeries, type CompanyBreadthPoint } from '../utils/marketBreadth';
+import { Gauge, PLAIN_ZONES, BALANCE_ZONES, zoneOf, toneText } from './Gauge';
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface BreadthDataPoint {
@@ -47,43 +48,6 @@ export interface IndexSummaryCardProps {
     tickers?: string[];
     indexTicker?: string;
 }
-
-// Percentile meter: a horizontal bar showing where the current value falls
-const PercentileMeter = ({ percentile, label, value, color }: {
-    percentile: number,
-    label: string,
-    value: string,
-    color: 'green' | 'red' | 'blue'
-}) => {
-    const colorMap = {
-        green: { bg: 'bg-green-500', track: 'bg-green-500/15', text: 'text-green-600' },
-        red: { bg: 'bg-red-500', track: 'bg-red-500/15', text: 'text-red-600' },
-        blue: { bg: 'bg-blue-500', track: 'bg-blue-500/15', text: 'text-blue-600' }
-    };
-    const c = colorMap[color];
-
-    return (
-        <div className="flex items-center gap-1">
-            <span className={cn("text-xs font-medium w-8 shrink-0", c.text)}>{label}</span>
-            <div className="flex-1 flex items-center gap-2">
-                <div className={cn("relative h-2 flex-1 rounded-full overflow-hidden", c.track)}>
-                    <div
-                        className={cn("absolute inset-y-0 left-0 rounded-full transition-all duration-500", c.bg)}
-                        style={{ width: `${Math.min(100, Math.max(0, percentile))}%`, opacity: 0.8 }}
-                    />
-                    {/* Marker line at 50th percentile */}
-                    <div className="absolute inset-y-0 left-1/2 w-px bg-foreground/20" />
-                </div>
-                <span className="text-[10px] text-muted-foreground w-24 text-right shrink-0 whitespace-nowrap">
-                    {value}
-                </span>
-                <span className={cn("text-[10px] font-semibold w-8 text-right shrink-0", c.text)}>
-                    P{Math.round(percentile)}
-                </span>
-            </div>
-        </div>
-    );
-};
 
 export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     title,
@@ -240,99 +204,28 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         return ((below + equal * 0.5) / sorted.length) * 100;
     };
 
-    // Stats of a daily value series over the selected range; days without a value count as 0
-    const valueStats = useCallback((series: ValuePoint[]) => {
-        const totalDays = filteredSpxData ? filteredSpxData.length : 0;
-        const latestDate = totalDays > 0 ? filteredSpxData[totalDays - 1]?.time?.split('T')[0] ?? '' : '';
-        const filtered = filterByDateRange(series);
-        if (totalDays === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
-        const today = filtered.find(d => d.date === latestDate)?.value ?? 0;
-        const values = [...filtered.map(d => d.value), ...new Array(Math.max(0, totalDays - filtered.length)).fill(0)];
-        const avg = values.reduce((a, b) => a + b, 0) / values.length;
-        const sorted = [...values].sort((a, b) => a - b);
-        const median = sorted.length % 2 === 0
-            ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
-            : sorted[Math.floor(sorted.length / 2)];
-        return { today, avg, median, percentile: computePercentile(today, values) };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filteredSpxData, filterByDateRange]);
-
-    // Market breadth stats: % of the list's companies with a signal that day
-    const breadthStats = useMemo(() => {
+    // CD vs MC balance gauges (0-100): percentile of today's CD - MC among the days in range
+    const gauges = useMemo(() => {
+        const days = (filteredSpxData || []).map((d: any) => d.time?.split('T')[0] ?? '').filter(Boolean);
         const n = tickers.length > 0 ? tickers.length : 1;
+        const last = (idx: number[]) => idx.length ? idx[idx.length - 1] : 50;
         const pct = (rows: CompanyBreadthPoint[]) => breadthShare(rows, n).map(r => ({ date: r.date, value: r.value * 100 }));
-        return { cd: valueStats(pct(cdCompanyBreadth)), mc: valueStats(pct(mcCompanyBreadth)) };
-    }, [cdCompanyBreadth, mcCompanyBreadth, tickers, valueStats]);
-
-    // Signal Breadth stats (Today vs Avg + Percentile)
-    const signalStats = useMemo(() => {
-        const latestDate = filteredSpxData && filteredSpxData.length > 0
-            ? filteredSpxData[filteredSpxData.length - 1]?.time?.split('T')[0] ?? ''
-            : '';
-        const divisor = tickers.length > 0 ? tickers.length : 1;
-
-        const computeStats = (data: any[]) => {
-            const filtered = filterByDateRange(data);
-            if (!filtered || filtered.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
-            const totalCount = (d: any) => ((d.count_1h || 0) + (d.count_2h || 0) + (d.count_3h || 0) + (d.count_4h || 0) + (d.count_1d || 0)) / divisor;
-            const todayEntry = filtered.find(d => d.date === latestDate);
-            const today = todayEntry ? totalCount(todayEntry) : 0;
-            const counts = filtered.map(d => totalCount(d));
-            const avg = counts.reduce((a, b) => a + b, 0) / counts.length;
-            const sorted = [...counts].sort((a, b) => a - b);
-            const median = sorted.length % 2 === 0
-                ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
-                : sorted[Math.floor(sorted.length / 2)];
-            const percentile = computePercentile(today, counts);
-            return { today, avg, median, percentile };
-        };
+        const bs = balanceIndex(
+            breadthScore(cdCompanyBreadth, cdScoreBreadth, intervalWeights, n),
+            breadthScore(mcCompanyBreadth, mcScoreBreadth, intervalWeights, n), days);
+        const ago = (k: number) => bs.length > k ? bs[bs.length - 1 - k] : null;
         return {
-            cd: computeStats(cdSignalBreadth),
-            mc: computeStats(mcSignalBreadth)
+            breadthScore: last(bs),
+            history: [
+                { label: 'Previous day', value: ago(1) },
+                { label: '1 week ago', value: ago(5) },
+                { label: '1 month ago', value: ago(21) },
+            ],
+            signals: last(balanceIndex(signalCountSeries(cdSignalBreadth, n), signalCountSeries(mcSignalBreadth, n), days)),
+            scores: last(balanceIndex(scoreSeries(cdScoreBreadth, intervalWeights, n), scoreSeries(mcScoreBreadth, intervalWeights, n), days)),
+            breadth: last(balanceIndex(pct(cdCompanyBreadth), pct(mcCompanyBreadth), days)),
         };
-    }, [cdSignalBreadth, mcSignalBreadth, filteredSpxData, tickers, filterByDateRange]);
-
-    // Score Breadth stats (Today vs Avg + Percentile)
-    const scoreStats = useMemo(() => {
-        const latestDate = filteredSpxData && filteredSpxData.length > 0
-            ? filteredSpxData[filteredSpxData.length - 1]?.time?.split('T')[0] ?? ''
-            : '';
-        const divisor = tickers.length > 0 ? tickers.length : 1;
-        const effectiveWeights = intervalWeights || { '1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32 };
-        const totalScore = (d: any) => {
-            return ((d.score_1h || 0) * effectiveWeights['1h'] + (d.score_2h || 0) * effectiveWeights['2h']
-                + (d.score_3h || 0) * effectiveWeights['3h'] + (d.score_4h || 0) * effectiveWeights['4h']
-                + (d.score_1d || 0) * effectiveWeights['1d']) / divisor;
-        };
-
-        const computeStats = (data: any[]) => {
-            const filtered = filterByDateRange(data);
-            if (!filtered || filtered.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
-            const todayEntry = filtered.find(d => d.date === latestDate);
-            const today = todayEntry ? totalScore(todayEntry) : 0;
-            const scores = filtered.map(d => totalScore(d));
-            const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-            const sorted = [...scores].sort((a, b) => a - b);
-            const median = sorted.length % 2 === 0
-                ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
-                : sorted[Math.floor(sorted.length / 2)];
-            const percentile = computePercentile(today, scores);
-            return { today, avg, median, percentile };
-        };
-        return {
-            cd: computeStats(cdScoreBreadth),
-            mc: computeStats(mcScoreBreadth)
-        };
-    }, [cdScoreBreadth, mcScoreBreadth, filteredSpxData, tickers, intervalWeights, filterByDateRange]);
-
-    // Breadth score stats: Score x share of companies with a signal (zero on days without one)
-    const breakthroughScoreStats = useMemo(() => {
-        const n = tickers.length > 0 ? tickers.length : 1;
-        return {
-            cd: valueStats(breadthScore(cdCompanyBreadth, cdScoreBreadth, intervalWeights, n)),
-            mc: valueStats(breadthScore(mcCompanyBreadth, mcScoreBreadth, intervalWeights, n)),
-        };
-    }, [cdCompanyBreadth, mcCompanyBreadth, cdScoreBreadth, mcScoreBreadth, intervalWeights, tickers, valueStats]);
+    }, [filteredSpxData, tickers, cdCompanyBreadth, mcCompanyBreadth, cdScoreBreadth, mcScoreBreadth, cdSignalBreadth, mcSignalBreadth, intervalWeights]);
 
     // Volume: today vs 1yr average + percentile
     const volumeStats = useMemo(() => {
@@ -347,21 +240,13 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         return { today: todayVol, avg, ratio, percentile };
     }, [filteredSpxData]);
 
-    // Format volume
-    const formatVol = (v: number) => {
-        if (v >= 1e9) return `${(v / 1e9).toFixed(1)}B`;
-        if (v >= 1e6) return `${(v / 1e6).toFixed(1)}M`;
-        if (v >= 1e3) return `${(v / 1e3).toFixed(0)}K`;
-        return v.toFixed(0);
-    };
-
     return (
         <>
             <div
                 className="relative w-full"
                 style={{
-                    height: cardView === 'chart' ? '1030px' : cardView === 'histogram' ? '888px' : 'auto',
-                    minHeight: cardView === 'chart' ? '1030px' : cardView === 'histogram' ? '888px' : '435px',
+                    height: cardView === 'chart' ? '960px' : cardView === 'histogram' ? '888px' : 'auto',
+                    minHeight: cardView === 'chart' ? '960px' : cardView === 'histogram' ? '888px' : '0px',
                     transition: 'height 0.4s ease, min-height 0.4s ease'
                 }}
             >
@@ -374,7 +259,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     )}
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-2">
                         <h3 className="text-lg font-bold">{title}</h3>
                         {priceInfo && (
                             <div className="text-right">
@@ -390,7 +275,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     </div>
 
                     {/* CD/MC Signals last 7 days */}
-                    <div className="mb-2 flex items-center gap-4">
+                    <div className="mb-1 flex items-center gap-4">
                         <span className="text-xs text-muted-foreground font-medium shrink-0">idx CD/MC</span>
                         <div className="flex gap-2 items-center flex-wrap">
                             {recentSignals.map((s, i) => (
@@ -412,7 +297,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                     </div>
 
                     {/* 1234 Signals last 7 days */}
-                    <div className="mb-2 flex items-center gap-7">
+                    <div className="mb-1 flex items-center gap-7">
                         <span className="text-xs text-muted-foreground font-medium shrink-0">idx 1234</span>
                         <div className="flex gap-2 items-center flex-wrap">
                             {recent1234Dots.map((s, i) => (
@@ -433,81 +318,39 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         </div>
                     </div>
 
-                    {/* Panel 1: CD/MC (Signal Breadth) */}
-                    <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">CD/MC</div>
-                        <PercentileMeter
-                            percentile={signalStats.cd.percentile}
-                            label="Buy"
-                            value={`${signalStats.cd.today.toFixed(2)} / ${signalStats.cd.avg.toFixed(2)}`}
-                            color="green"
-                        />
-                        <PercentileMeter
-                            percentile={signalStats.mc.percentile}
-                            label="Sell"
-                            value={`${signalStats.mc.today.toFixed(2)} / ${signalStats.mc.avg.toFixed(2)}`}
-                            color="red"
-                        />
-                    </div>
-
-                    {/* Panel 2: CD/MC Score (Score Breadth) */}
-                    <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">CD/MC Score</div>
-                        <PercentileMeter
-                            percentile={scoreStats.cd.percentile}
-                            label="Buy"
-                            value={`${scoreStats.cd.today.toFixed(1)} / ${scoreStats.cd.avg.toFixed(1)}`}
-                            color="green"
-                        />
-                        <PercentileMeter
-                            percentile={scoreStats.mc.percentile}
-                            label="Sell"
-                            value={`${scoreStats.mc.today.toFixed(1)} / ${scoreStats.mc.avg.toFixed(1)}`}
-                            color="red"
-                        />
-                    </div>
-
-                    {/* Panel 3: Market Breadth (% of companies with a CD / MC signal) */}
-                    <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">Market Breadth (% of companies)</div>
-                        <PercentileMeter
-                            percentile={breadthStats.cd.percentile}
-                            label="Buy"
-                            value={`${breadthStats.cd.today.toFixed(2)} / ${breadthStats.cd.avg.toFixed(2)}`}
-                            color="green"
-                        />
-                        <PercentileMeter
-                            percentile={breadthStats.mc.percentile}
-                            label="Sell"
-                            value={`${breadthStats.mc.today.toFixed(2)} / ${breadthStats.mc.avg.toFixed(2)}`}
-                            color="red"
-                        />
-                    </div>
-
-                    {/* Panel 4: Breadth Score (Score x share of companies) + Volume */}
-                    <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">Breadth Score</div>
-                        <PercentileMeter
-                            percentile={breakthroughScoreStats.cd.percentile}
-                            label="Buy"
-                            value={`${breakthroughScoreStats.cd.today.toFixed(1)} / ${breakthroughScoreStats.cd.avg.toFixed(1)}`}
-                            color="green"
-                        />
-                        <PercentileMeter
-                            percentile={breakthroughScoreStats.mc.percentile}
-                            label="Sell"
-                            value={`${breakthroughScoreStats.mc.today.toFixed(1)} / ${breakthroughScoreStats.mc.avg.toFixed(1)}`}
-                            color="red"
-                        />
-                        {volumeStats && (
-                            <PercentileMeter
-                                percentile={volumeStats.percentile}
-                                label="Vol"
-                                value={`${formatVol(volumeStats.today)} / ${formatVol(volumeStats.avg)}`}
-                                color="blue"
+                    {/* Breadth Score gauge (main) with recent history */}
+                    <div className="flex items-center gap-3 mt-1">
+                        <div className="flex-1 min-w-0">
+                            <Gauge
+                                size="lg"
+                                title="Breadth Score"
+                                value={gauges.breadthScore}
                             />
-                        )}
+                        </div>
+                        <div className="w-28 shrink-0 space-y-1.5">
+                            {gauges.history.map(h => {
+                                const zone = h.value != null ? zoneOf(h.value, BALANCE_ZONES) : null;
+                                return (
+                                    <div key={h.label} className="flex items-center justify-between gap-1 border-b border-dashed border-border/60 pb-1">
+                                        <div className="min-w-0">
+                                            <div className="text-[9px] text-muted-foreground leading-tight">{h.label}</div>
+                                            <div className={cn("text-[10px] font-semibold leading-tight truncate", zone ? toneText(zone) : 'text-muted-foreground')}>{zone ? zone.label : '-'}</div>
+                                        </div>
+                                        <span className={cn("text-xs font-bold shrink-0", zone ? toneText(zone) : 'text-muted-foreground')}>{h.value != null ? Math.round(h.value) : '-'}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
+
+                    {/* Smaller gauges: signal count, score, market breadth, volume */}
+                    <div className="grid grid-cols-4 gap-1 mt-2">
+                        <Gauge title="CD/MC" value={gauges.signals} />
+                        <Gauge title="Score" value={gauges.scores} />
+                        <Gauge title="Breadth %" value={gauges.breadth} />
+                        <Gauge title="Volume" value={volumeStats ? volumeStats.percentile : 50} zones={PLAIN_ZONES} />
+                    </div>
+
                     {/* Navigation arrows */}
                     <div className="flex items-center justify-between mt-1" hidden={staticSummary}>
                         <button

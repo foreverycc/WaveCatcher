@@ -38,3 +38,33 @@ export function breadthScore(
         .filter(s => share.has(s.date))
         .map(s => ({ date: s.date, value: weightedScore(s, weights, n) * (share.get(s.date) || 0) }));
 }
+
+/** Value of a daily series on each of `days` (0 where the series has no entry). */
+export function onDays(series: ValuePoint[], days: string[]): number[] {
+    const byDate = new Map(series.map(p => [p.date, p.value]));
+    return days.map(d => byDate.get(d) ?? 0);
+}
+
+/**
+ * CD vs MC balance index (0-100) for each day: the percentile of that day's CD - MC among all days
+ * (ties count half), so 50 is a typical day, near 100 CD dominates as rarely before, near 0 MC does.
+ */
+export function balanceIndex(cd: ValuePoint[], mc: ValuePoint[], days: string[]): number[] {
+    const cdv = onDays(cd, days), mcv = onDays(mc, days);
+    const net = days.map((_, i) => cdv[i] - mcv[i]);
+    const sorted = [...net].sort((a, b) => a - b);
+    const n = sorted.length;
+    const below = (x: number) => { let lo = 0, hi = n; while (lo < hi) { const m = (lo + hi) >> 1; if (sorted[m] < x) lo = m + 1; else hi = m; } return lo; };
+    const atOrBelow = (x: number) => { let lo = 0, hi = n; while (lo < hi) { const m = (lo + hi) >> 1; if (sorted[m] <= x) lo = m + 1; else hi = m; } return lo; };
+    return net.map(x => n === 0 ? 50 : ((below(x) + (atOrBelow(x) - below(x)) * 0.5) / n) * 100);
+}
+
+/** Signal count per stock per day (all intervals). */
+export function signalCountSeries(rows: SignalRow[] = [], n: number): ValuePoint[] {
+    return rows.map(r => ({ date: r.date, value: KEYS.reduce((s, k) => s + (r[`count_${k}`] || 0), 0) / n }));
+}
+
+/** CD / MC Score per day (interval-weighted, per stock). */
+export function scoreSeries(rows: ScoreRow[] = [], weights: Record<string, number> | undefined, n: number): ValuePoint[] {
+    return rows.map(r => ({ date: r.date, value: weightedScore(r, weights, n) }));
+}

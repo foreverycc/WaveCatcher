@@ -602,7 +602,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
             {/* Market Index Summary Cards (click to flip to chart) */}
             <div className={cn(
                 "grid gap-4 w-full",
-                activeIndices.length <= 2 ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1 xl:grid-cols-2 2xl:grid-cols-4"
+                activeIndices.length <= 2 ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
             )}>
                 {activeIndices.map((idx, i) => {
                     const history = historyQueries[i]?.data ?? [];
