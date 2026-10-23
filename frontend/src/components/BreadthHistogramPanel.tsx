@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { breadthShare, breadthScore, type CompanyBreadthPoint, type ValuePoint } from '../utils/marketBreadth';
 import {
     BarChart,
     Bar,
@@ -201,10 +202,8 @@ interface BreadthHistogramPanelProps {
     mcSignalBreadth: { date: string; count_1h: number; count_2h: number; count_3h: number; count_4h: number; count_1d: number }[];
     cdScoreBreadth: { date: string; score_1h: number; score_2h: number; score_3h: number; score_4h: number; score_1d: number; total_score: number }[];
     mcScoreBreadth: { date: string; score_1h: number; score_2h: number; score_3h: number; score_4h: number; score_1d: number; total_score: number }[];
-    cdBreadth: { date: string; count_1h: number; count_2h: number; count_3h: number; count_4h: number; count_1d: number }[];
-    mcBreadth: { date: string; count_1h: number; count_2h: number; count_3h: number; count_4h: number; count_1d: number }[];
-    cdBreakthroughScoreBreadth: { date: string; score_1h: number; score_2h: number; score_3h: number; score_4h: number; score_1d: number; total_score: number }[];
-    mcBreakthroughScoreBreadth: { date: string; score_1h: number; score_2h: number; score_3h: number; score_4h: number; score_1d: number; total_score: number }[];
+    cdCompanyBreadth?: CompanyBreadthPoint[];
+    mcCompanyBreadth?: CompanyBreadthPoint[];
     intervalWeights?: Record<string, number>;
     tickers: string[];
     filteredSpxData: any[];
@@ -219,10 +218,8 @@ export const BreadthHistogramPanel: React.FC<BreadthHistogramPanelProps> = ({
     mcSignalBreadth,
     cdScoreBreadth,
     mcScoreBreadth,
-    cdBreadth,
-    mcBreadth,
-    cdBreakthroughScoreBreadth,
-    mcBreakthroughScoreBreadth,
+    cdCompanyBreadth = [],
+    mcCompanyBreadth = [],
     intervalWeights,
     tickers,
     filteredSpxData,
@@ -263,10 +260,15 @@ export const BreadthHistogramPanel: React.FC<BreadthHistogramPanelProps> = ({
         const mcSignal = countValues(mcSignalBreadth);
         const cdScore = scoreValues(cdScoreBreadth);
         const mcScore = scoreValues(mcScoreBreadth);
-        const cdBt = countValues(cdBreadth);
-        const mcBt = countValues(mcBreadth);
-        const cdBtScore = scoreValues(cdBreakthroughScoreBreadth);
-        const mcBtScore = scoreValues(mcBreakthroughScoreBreadth);
+        // Market breadth (% of companies with a signal) and breadth score (Score x share)
+        const seriesValues = (rows: ValuePoint[], scale = 1) => {
+            const today = rows.find(r => r.date === latestDate);
+            return { values: rows.map(r => r.value * scale), today: today ? today.value * scale : 0 };
+        };
+        const cdBt = seriesValues(breadthShare(cdCompanyBreadth, divisor), 100);
+        const mcBt = seriesValues(breadthShare(mcCompanyBreadth, divisor), 100);
+        const cdBtScore = seriesValues(breadthScore(cdCompanyBreadth, cdScoreBreadth, effectiveWeights, divisor));
+        const mcBtScore = seriesValues(breadthScore(mcCompanyBreadth, mcScoreBreadth, effectiveWeights, divisor));
 
         const pad = (vals: number[]) => {
             const zeroPadding = new Array(Math.max(0, totalDays - vals.length)).fill(0);
@@ -287,20 +289,20 @@ export const BreadthHistogramPanel: React.FC<BreadthHistogramPanelProps> = ({
                 ]
             },
             {
-                section: 'CD/MC Proc', items: [
+                section: 'Market Breadth (% of companies)', items: [
                     { label: 'CD', values: pad(cdBt.values), today: cdBt.today, color: 'green' as const },
                     { label: 'MC', values: pad(mcBt.values), today: mcBt.today, color: 'red' as const },
                 ]
             },
             {
-                section: 'CD/MC Proc Score', items: [
+                section: 'Breadth Score', items: [
                     { label: 'CD', values: pad(cdBtScore.values), today: cdBtScore.today, color: 'green' as const },
                     { label: 'MC', values: pad(mcBtScore.values), today: mcBtScore.today, color: 'red' as const },
                 ]
             },
         ];
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreadth, mcBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, tickers, filteredSpxData, intervalWeights]);
+    }, [cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdCompanyBreadth, mcCompanyBreadth, tickers, filteredSpxData, intervalWeights]);
 
     const histogramHeight = isFullscreen ? 150 : 130;
 

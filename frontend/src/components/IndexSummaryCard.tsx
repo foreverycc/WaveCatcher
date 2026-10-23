@@ -5,7 +5,7 @@ import { analysisApi } from '../services/api';
 import { MarketBreadthChart } from './MarketBreadthChart';
 import { BreadthHistogramPanel } from './BreadthHistogramPanel';
 import { cn } from '../utils/cn';
-import { procBreadth } from '../utils/procBreadth';
+import { breadthShare, breadthScore, companiesFromSignalBreadth, type CompanyBreadthPoint, type ValuePoint } from '../utils/marketBreadth';
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface BreadthDataPoint {
@@ -38,6 +38,8 @@ export interface IndexSummaryCardProps {
     mcScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
     cdBreakthroughScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
     mcBreakthroughScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
+    cdCompanyBreadth?: CompanyBreadthPoint[];
+    mcCompanyBreadth?: CompanyBreadthPoint[];
     intervalWeights?: Record<string, number>;
     minDate: Date;
     maxDate?: Date;
@@ -94,6 +96,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     mcScoreBreadth = [],
     cdBreakthroughScoreBreadth = [],
     mcBreakthroughScoreBreadth = [],
+    cdCompanyBreadth = [],
+    mcCompanyBreadth = [],
     intervalWeights,
     minDate,
     maxDate,
@@ -149,12 +153,11 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     const effectiveCdBtScoreBreadth = useTickerSignals ? (tickerSignals!.cd_breakthrough_score_breadth ?? []) : cdBreakthroughScoreBreadth;
     const effectiveMcBtScoreBreadth = useTickerSignals ? (tickerSignals!.mc_breakthrough_score_breadth ?? []) : mcBreakthroughScoreBreadth;
 
-    // Proc series (index level): previous trading day + today, for signal counts and scores
-    const tradingDates = useMemo(() => (spxData || []).map(d => d.time?.split('T')[0] ?? '').filter(Boolean), [spxData]);
-    const cdProcBreadth = useMemo(() => procBreadth(cdSignalBreadth, tradingDates, 'count'), [cdSignalBreadth, tradingDates]);
-    const mcProcBreadth = useMemo(() => procBreadth(mcSignalBreadth, tradingDates, 'count'), [mcSignalBreadth, tradingDates]);
-    const cdProcScoreBreadth = useMemo(() => procBreadth(cdScoreBreadth, tradingDates, 'score'), [cdScoreBreadth, tradingDates]);
-    const mcProcScoreBreadth = useMemo(() => procBreadth(mcScoreBreadth, tradingDates, 'score'), [mcScoreBreadth, tradingDates]);
+    // Market breadth: companies with a CD / MC signal per day (a single ticker counts 1 on its signal days)
+    const effectiveCdCompanyBreadth = useMemo(() => useTickerSignals ? companiesFromSignalBreadth(effectiveCdSignalBreadth) : cdCompanyBreadth,
+        [useTickerSignals, effectiveCdSignalBreadth, cdCompanyBreadth]);
+    const effectiveMcCompanyBreadth = useMemo(() => useTickerSignals ? companiesFromSignalBreadth(effectiveMcSignalBreadth) : mcCompanyBreadth,
+        [useTickerSignals, effectiveMcSignalBreadth, mcCompanyBreadth]);
 
     // --- Filter data by date range ---
     const minDateStr = useMemo(() => format(minDate, 'yyyy-MM-dd'), [minDate]);
@@ -237,36 +240,29 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         return ((below + equal * 0.5) / sorted.length) * 100;
     };
 
-    // Breadth stats: today's count + percentile
-    const breadthStats = useMemo(() => {
-        const latestDate = filteredSpxData && filteredSpxData.length > 0
-            ? filteredSpxData[filteredSpxData.length - 1]?.time?.split('T')[0] ?? ''
-            : '';
-        const divisor = tickers.length > 0 ? tickers.length : 1;
+    // Stats of a daily value series over the selected range; days without a value count as 0
+    const valueStats = useCallback((series: ValuePoint[]) => {
         const totalDays = filteredSpxData ? filteredSpxData.length : 0;
+        const latestDate = totalDays > 0 ? filteredSpxData[totalDays - 1]?.time?.split('T')[0] ?? '' : '';
+        const filtered = filterByDateRange(series);
+        if (totalDays === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
+        const today = filtered.find(d => d.date === latestDate)?.value ?? 0;
+        const values = [...filtered.map(d => d.value), ...new Array(Math.max(0, totalDays - filtered.length)).fill(0)];
+        const avg = values.reduce((a, b) => a + b, 0) / values.length;
+        const sorted = [...values].sort((a, b) => a - b);
+        const median = sorted.length % 2 === 0
+            ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+            : sorted[Math.floor(sorted.length / 2)];
+        return { today, avg, median, percentile: computePercentile(today, values) };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filteredSpxData, filterByDateRange]);
 
-        const computeStats = (data: BreadthDataPoint[]) => {
-            const filtered = filterByDateRange(data);
-            if (!filtered || filtered.length === 0 || totalDays === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
-            const totalCount = (d: BreadthDataPoint) => ((d.count_1h || 0) + (d.count_2h || 0) + (d.count_3h || 0) + (d.count_4h || 0) + (d.count_1d || 0)) / divisor;
-            const todayEntry = filtered.find(d => d.date === latestDate);
-            const today = todayEntry ? totalCount(todayEntry) : 0;
-            const signalCounts = filtered.map(d => totalCount(d));
-            const zeroPadding = new Array(Math.max(0, totalDays - signalCounts.length)).fill(0);
-            const counts = [...signalCounts, ...zeroPadding];
-            const avg = counts.reduce((a, b) => a + b, 0) / counts.length;
-            const sorted = [...counts].sort((a, b) => a - b);
-            const median = sorted.length % 2 === 0
-                ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
-                : sorted[Math.floor(sorted.length / 2)];
-            const percentile = computePercentile(today, counts);
-            return { today, avg, median, percentile };
-        };
-        return {
-            cd: computeStats(cdProcBreadth),
-            mc: computeStats(mcProcBreadth)
-        };
-    }, [cdProcBreadth, mcProcBreadth, filteredSpxData, tickers, filterByDateRange]);
+    // Market breadth stats: % of the list's companies with a signal that day
+    const breadthStats = useMemo(() => {
+        const n = tickers.length > 0 ? tickers.length : 1;
+        const pct = (rows: CompanyBreadthPoint[]) => breadthShare(rows, n).map(r => ({ date: r.date, value: r.value * 100 }));
+        return { cd: valueStats(pct(cdCompanyBreadth)), mc: valueStats(pct(mcCompanyBreadth)) };
+    }, [cdCompanyBreadth, mcCompanyBreadth, tickers, valueStats]);
 
     // Signal Breadth stats (Today vs Avg + Percentile)
     const signalStats = useMemo(() => {
@@ -329,40 +325,14 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         };
     }, [cdScoreBreadth, mcScoreBreadth, filteredSpxData, tickers, intervalWeights, filterByDateRange]);
 
-    // Breakthrough Score stats (same approach as scoreStats)
+    // Breadth score stats: Score x share of companies with a signal (zero on days without one)
     const breakthroughScoreStats = useMemo(() => {
-        if (!filteredSpxData || filteredSpxData.length === 0) return { cd: { today: 0, avg: 0, median: 0, percentile: 0 }, mc: { today: 0, avg: 0, median: 0, percentile: 0 } };
-        const latestDate = filteredSpxData[filteredSpxData.length - 1]?.time?.split('T')[0] ?? '';
-        const effectiveWeights = intervalWeights || { '1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32 };
-        const divisor = tickers.length > 0 ? tickers.length : 1;
-        const totalDays = filteredSpxData.length;
-        const totalScore = (d: any) => {
-            return ((d.score_1h || 0) * effectiveWeights['1h'] + (d.score_2h || 0) * effectiveWeights['2h']
-                + (d.score_3h || 0) * effectiveWeights['3h'] + (d.score_4h || 0) * effectiveWeights['4h']
-                + (d.score_1d || 0) * effectiveWeights['1d']) / divisor;
-        };
-        const computeStats = (data: any[]) => {
-            const filtered = filterByDateRange(data);
-            if (!filtered || filtered.length === 0) return { today: 0, avg: 0, median: 0, percentile: 0 };
-            const todayEntry = filtered.find(d => d.date === latestDate);
-            const today = todayEntry ? totalScore(todayEntry) : 0;
-            // Pad with zeros for days not in the sparse BT score data
-            const signalScores = filtered.map(d => totalScore(d));
-            const zeroPadding = new Array(Math.max(0, totalDays - signalScores.length)).fill(0);
-            const scores = [...signalScores, ...zeroPadding];
-            const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-            const sorted = [...scores].sort((a, b) => a - b);
-            const median = sorted.length % 2 === 0
-                ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
-                : sorted[Math.floor(sorted.length / 2)];
-            const percentile = computePercentile(today, scores);
-            return { today, avg, median, percentile };
-        };
+        const n = tickers.length > 0 ? tickers.length : 1;
         return {
-            cd: computeStats(cdProcScoreBreadth),
-            mc: computeStats(mcProcScoreBreadth)
+            cd: valueStats(breadthScore(cdCompanyBreadth, cdScoreBreadth, intervalWeights, n)),
+            mc: valueStats(breadthScore(mcCompanyBreadth, mcScoreBreadth, intervalWeights, n)),
         };
-    }, [cdProcScoreBreadth, mcProcScoreBreadth, filteredSpxData, tickers, intervalWeights, filterByDateRange]);
+    }, [cdCompanyBreadth, mcCompanyBreadth, cdScoreBreadth, mcScoreBreadth, intervalWeights, tickers, valueStats]);
 
     // Volume: today vs 1yr average + percentile
     const volumeStats = useMemo(() => {
@@ -390,8 +360,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             <div
                 className="relative w-full"
                 style={{
-                    height: cardView === 'chart' ? '1108px' : cardView === 'histogram' ? '888px' : 'auto',
-                    minHeight: cardView === 'chart' ? '1108px' : cardView === 'histogram' ? '888px' : '435px',
+                    height: cardView === 'chart' ? '1030px' : cardView === 'histogram' ? '888px' : 'auto',
+                    minHeight: cardView === 'chart' ? '1030px' : cardView === 'histogram' ? '888px' : '435px',
                     transition: 'height 0.4s ease, min-height 0.4s ease'
                 }}
             >
@@ -497,9 +467,9 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         />
                     </div>
 
-                    {/* Panel 3: CD/MC Proc (previous + current day signal counts) */}
+                    {/* Panel 3: Market Breadth (% of companies with a CD / MC signal) */}
                     <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">CD/MC Proc</div>
+                        <div className="text-xs text-muted-foreground font-medium">Market Breadth (% of companies)</div>
                         <PercentileMeter
                             percentile={breadthStats.cd.percentile}
                             label="Buy"
@@ -514,9 +484,9 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         />
                     </div>
 
-                    {/* Panel 4: CD/MC Proc Score (previous + current day) + Volume */}
+                    {/* Panel 4: Breadth Score (Score x share of companies) + Volume */}
                     <div className="space-y-1 pb-1">
-                        <div className="text-xs text-muted-foreground font-medium">CD/MC Proc Score</div>
+                        <div className="text-xs text-muted-foreground font-medium">Breadth Score</div>
                         <PercentileMeter
                             percentile={breakthroughScoreStats.cd.percentile}
                             label="Buy"
@@ -570,10 +540,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             mcSignalBreadth={filterByDateRange(mcSignalBreadth)}
                             cdScoreBreadth={filterByDateRange(cdScoreBreadth)}
                             mcScoreBreadth={filterByDateRange(mcScoreBreadth)}
-                            cdBreadth={filterByDateRange(cdProcBreadth)}
-                            mcBreadth={filterByDateRange(mcProcBreadth)}
-                            cdBreakthroughScoreBreadth={filterByDateRange(cdProcScoreBreadth)}
-                            mcBreakthroughScoreBreadth={filterByDateRange(mcProcScoreBreadth)}
+                            cdCompanyBreadth={filterByDateRange(cdCompanyBreadth)}
+                            mcCompanyBreadth={filterByDateRange(mcCompanyBreadth)}
                             intervalWeights={intervalWeights}
                             tickers={tickers}
                             filteredSpxData={filteredSpxData}
@@ -624,6 +592,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                     mcScoreBreadth={effectiveMcScoreBreadth}
                                     cdBreakthroughScoreBreadth={effectiveCdBtScoreBreadth}
                                     mcBreakthroughScoreBreadth={effectiveMcBtScoreBreadth}
+                                    cdCompanyBreadth={effectiveCdCompanyBreadth}
+                                    mcCompanyBreadth={effectiveMcCompanyBreadth}
                                     intervalWeights={intervalWeights}
                                     minDate={minDate}
                                     maxDate={maxDate}
@@ -676,6 +646,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             mcScoreBreadth={effectiveMcScoreBreadth}
                             cdBreakthroughScoreBreadth={effectiveCdBtScoreBreadth}
                             mcBreakthroughScoreBreadth={effectiveMcBtScoreBreadth}
+                            cdCompanyBreadth={effectiveCdCompanyBreadth}
+                            mcCompanyBreadth={effectiveMcCompanyBreadth}
                             intervalWeights={intervalWeights}
                             minDate={minDate}
                             maxDate={maxDate}
@@ -702,10 +674,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         mcSignalBreadth={filterByDateRange(mcSignalBreadth)}
                         cdScoreBreadth={filterByDateRange(cdScoreBreadth)}
                         mcScoreBreadth={filterByDateRange(mcScoreBreadth)}
-                        cdBreadth={filterByDateRange(cdProcBreadth)}
-                        mcBreadth={filterByDateRange(mcProcBreadth)}
-                        cdBreakthroughScoreBreadth={filterByDateRange(cdProcScoreBreadth)}
-                        mcBreakthroughScoreBreadth={filterByDateRange(mcProcScoreBreadth)}
+                        cdCompanyBreadth={filterByDateRange(cdCompanyBreadth)}
+                        mcCompanyBreadth={filterByDateRange(mcCompanyBreadth)}
                         intervalWeights={intervalWeights}
                         tickers={tickers}
                         filteredSpxData={filteredSpxData}

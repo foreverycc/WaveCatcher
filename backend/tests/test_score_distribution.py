@@ -39,3 +39,16 @@ def test_process_ticker_fills_histogram_with_all_firings():
     process_ticker_1234('T', {'1d': df}, side='cd', score_hist=hist)
     raw = compute_signals(df, 'cd')
     assert sum(hist['1d']) == int(raw['raw'].sum())
+
+
+def test_company_breadth_counts_distinct_tickers_per_day():
+    from app.logic.stock_analyzer import aggregate_company_breadth
+    rows = [
+        {'ticker': 'A', 'interval': '1h', 'signal_date': '2026-10-01 10:30:00'},
+        {'ticker': 'A', 'interval': '1d', 'signal_date': '2026-10-01 00:00:00'},
+        {'ticker': 'B', 'interval': '4h', 'signal_date': '2026-10-01 13:30:00'},
+        {'ticker': 'C', 'interval': '1d', 'signal_date': '2026-10-02 00:00:00'},
+    ]
+    assert aggregate_company_breadth(rows) == [{'date': '2026-10-01', 'count': 2}, {'date': '2026-10-02', 'count': 1}]
+    assert aggregate_company_breadth(rows, ticker_list=['B', 'C']) == [{'date': '2026-10-01', 'count': 1}, {'date': '2026-10-02', 'count': 1}]
+    assert aggregate_company_breadth([]) == []

@@ -423,6 +423,19 @@ async def get_market_breadth_by_stock_list(
             ).first()
             mc_breakthrough_score_breadth = mc_bts_result.data if mc_bts_result and mc_bts_result.data else []
     
+    # Companies with a CD / MC signal per day (market breadth)
+    company_breadth = {}
+    for side in ('cd', 'mc'):
+        for rid, ticker_key in run_ticker_pairs:
+            row = db.query(AnalysisResult).filter(
+                AnalysisResult.run_id == rid,
+                AnalysisResult.result_type == f"{side}_company_breadth",
+                AnalysisResult.ticker == ticker_key
+            ).first()
+            if row and row.data:
+                company_breadth[side] = row.data
+                break
+
     # Fetch data quality warnings for this run
     data_quality = {}
     for rid, ticker_key in run_ticker_pairs:
@@ -443,6 +456,8 @@ async def get_market_breadth_by_stock_list(
         "mc_score_breadth": mc_score_breadth,
         "cd_breakthrough_score_breadth": cd_breakthrough_score_breadth,
         "mc_breakthrough_score_breadth": mc_breakthrough_score_breadth,
+        "cd_company_breadth": company_breadth.get('cd', []),
+        "mc_company_breadth": company_breadth.get('mc', []),
         "data_quality": data_quality,
         "run_id": run_id
     }

@@ -33,8 +33,7 @@ export function IndexSummaryFigures({ expanded = false, anchorPrefix = "sector",
                 title={props.title}
                 cdSignalBreadth={filter(props.cdSignalBreadth)} mcSignalBreadth={filter(props.mcSignalBreadth)}
                 cdScoreBreadth={filter(props.cdScoreBreadth)} mcScoreBreadth={filter(props.mcScoreBreadth)}
-                cdBreadth={filter(props.cdBreadth)} mcBreadth={filter(props.mcBreadth)}
-                cdBreakthroughScoreBreadth={filter(props.cdBreakthroughScoreBreadth)} mcBreakthroughScoreBreadth={filter(props.mcBreakthroughScoreBreadth)}
+                cdCompanyBreadth={filter(props.cdCompanyBreadth)} mcCompanyBreadth={filter(props.mcCompanyBreadth)}
                 intervalWeights={props.intervalWeights} tickers={props.tickers ?? []}
                 filteredSpxData={props.spxData.filter(row => row.time.slice(0, 10) >= start && row.time.slice(0, 10) <= end)}
                 onNavigateRight={() => {}} isFullscreen

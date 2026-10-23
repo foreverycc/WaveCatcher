@@ -253,6 +253,23 @@ def process_ticker_all(ticker, end_date=None):
         print(f"Error processing {ticker}: {e}")
         return ticker, None, None, [], [], None
 
+def aggregate_company_breadth(raw_details, ticker_list=None):
+    """Number of distinct tickers with a signal on each day (any interval).
+    Returns list of {date, count}."""
+    if not raw_details:
+        return []
+    df = pd.DataFrame(raw_details)
+    if df.empty or 'signal_date' not in df.columns or 'ticker' not in df.columns:
+        return []
+    if ticker_list is not None:
+        df = df[df['ticker'].isin(set(ticker_list))]
+        if df.empty:
+            return []
+    dates = pd.to_datetime(df['signal_date']).dt.strftime('%Y-%m-%d')
+    counts = df.assign(date=dates).groupby('date')['ticker'].nunique()
+    return [{'date': d, 'count': int(c)} for d, c in counts.sort_index().items()]
+
+
 def save_eval_results(run_id, eval_results, side, all_ticker_data):
     """
     Save CD ('cd') or MC ('mc') evaluation tables: detailed rows, returns distribution,
@@ -619,6 +636,10 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
         if mc_signal_by_interval:
             save_analysis_result(run_id, "ALL", "ALL", 'mc_signal_breadth_by_interval', mc_signal_by_interval)
 
+        # Companies with a CD / MC signal per day (market breadth)
+        save_analysis_result(run_id, "ALL", "ALL", 'cd_company_breadth', aggregate_company_breadth(cd_results_1234))
+        save_analysis_result(run_id, "ALL", "ALL", 'mc_company_breadth', aggregate_company_breadth(mc_results_1234))
+
         # Aggregate CD/MC indicator scores by interval (from ALL raw details)
         cd_score_by_interval = aggregate_scores_by_interval(cd_results_1234, 'CD scores')
         if cd_score_by_interval:
@@ -934,6 +955,12 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                 save_analysis_result(run_id, stock_list_name, "ALL", 'mc_signal_breadth_by_interval', mc_sig_by_intv)
                 logger.info(f"Saved MC signal breadth by interval for {idx_key}: {len(mc_sig_by_intv)} days")
             
+            # Companies with a CD / MC signal per day for this index (market breadth)
+            save_analysis_result(run_id, stock_list_name, "ALL", 'cd_company_breadth',
+                                 aggregate_company_breadth(cd_results_1234, ticker_list=idx_tickers))
+            save_analysis_result(run_id, stock_list_name, "ALL", 'mc_company_breadth',
+                                 aggregate_company_breadth(mc_results_1234, ticker_list=idx_tickers))
+
             # CD score breadth by interval for this index
             cd_score_by_intv = aggregate_scores_by_interval(cd_results_1234, f'CD scores {idx_key}', ticker_list=idx_tickers)
             if cd_score_by_intv:
