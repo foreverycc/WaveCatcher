@@ -116,9 +116,17 @@ const SCORE_WEIGHTS: Record<string, number> = {
     '1d': 32,
 };
 
-// Searchable ticker selector dropdown
 const HiddenTooltip = () => null;
 
+// With tooltips off, the price lane still shows the hovered date (synced across lanes)
+const DateOnlyTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    if (!d?.date) return null;
+    return <div className="bg-background/90 border border-border px-1.5 py-0.5 rounded shadow text-[11px] font-medium">{d.date}</div>;
+};
+
+// Searchable ticker selector dropdown
 const TickerSelector = ({ tickers, selectedTicker, onSelect, indexLabel }: {
     tickers: string[],
     selectedTicker: string,
@@ -373,14 +381,9 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     const effectiveWeights = intervalWeights || SCORE_WEIGHTS;
     // --- Zoom State & Logic (Adapted from CandleChart) ---
     const [zoomState, setZoomState] = useState<{ start: number, end: number } | null>(null);
-    // Hover tooltips are off by default (they get crowded); the crosshair still shows. Remembered per browser.
-    const [showTooltips, setShowTooltips] = useState<boolean>(() => {
-        try { return localStorage.getItem('breadthShowTooltips') === '1'; } catch { return false; }
-    });
-    const toggleTooltips = () => setShowTooltips(v => {
-        try { localStorage.setItem('breadthShowTooltips', v ? '0' : '1'); } catch { /* ignore */ }
-        return !v;
-    });
+    // Hover info boxes are off by default (they get crowded): only the date shows; the toggle turns them on
+    const [showTooltips, setShowTooltips] = useState(false);
+    const toggleTooltips = () => setShowTooltips(v => !v);
     const [selection, setSelection] = useState<{ start: number, end: number } | null>(null);
     const isSelectingRef = useRef(false);
 
@@ -859,7 +862,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 width={38}
                                 tick={{ fontSize: 10 }}
                             />
-                            <Tooltip content={showTooltips ? <PriceTooltip /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <PriceTooltip /> : DateOnlyTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Bar
                                 dataKey={d => [d.low, d.high]}
                                 shape={<CandleShape />}
