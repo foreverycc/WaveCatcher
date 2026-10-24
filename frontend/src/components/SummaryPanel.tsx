@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { analysisApi, stocksApi, reportsApi, type ScoringConfig } from '../services/api';
 import { IndexSummaryFigures } from './IndexSummaryFigures';
+import { MarketHeatmap, type HeatmapGroup } from './MarketHeatmap';
 import { RunReportButton } from './RunReportButton';
 import { cn } from '../utils/cn';
 import { parseISO, format } from 'date-fns';
@@ -552,6 +553,27 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
     }, [breadthQueries]);
 
     const [warningsDismissed, setWarningsDismissed] = useState(false);
+
+    // Market heatmap on top; an index's gauge card opens only after clicking its heatmap block
+    const [expandedIndices, setExpandedIndices] = useState<string[]>([]);
+    const toggleIndex = (key: string) =>
+        setExpandedIndices(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+    const heatmapGroups: HeatmapGroup[] = activeIndices.map((idx, i) => {
+        const breadth = breadthQueries[i]?.data;
+        const figure = savedFigures?.figures.find(f => f.title === idx.key);
+        return {
+            key: idx.key,
+            symbol: idx.symbol,
+            tickers: (figure?.tickers ?? idx.tickers) || [],
+            weights: weightQueries[i]?.data,
+            cdCompanyBreadth: breadth?.cd_company_breadth ?? [],
+            mcCompanyBreadth: breadth?.mc_company_breadth ?? [],
+            tradingDays: (historyQueries[i]?.data ?? []).map((d: any) => String(d.time ?? '').split('T')[0]).filter(Boolean),
+        };
+    });
+    const openIndices = activeIndices
+        .map((idx, i) => ({ idx, i }))
+        .filter(({ idx }) => expandedIndices.includes(idx.key));
     const [warningsExpanded, setWarningsExpanded] = useState(false);
 
     return (
@@ -608,12 +630,21 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                 </div>
             )}
 
-            {/* Market Index Summary Cards (click to flip to chart) */}
+            <MarketHeatmap
+                groups={heatmapGroups}
+                intervalWeights={scoringConfig?.interval_weights ?? { '1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32 }}
+                maxDate={breadthDateRange.end}
+                expanded={expandedIndices}
+                onToggle={toggleIndex}
+            />
+
+            {/* Gauge cards of the indices opened in the heatmap (click a card to flip to chart) */}
+            {openIndices.length > 0 && (
             <div className={cn(
                 "grid gap-4 w-full",
-                activeIndices.length <= 2 ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
+                openIndices.length <= 2 ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
             )}>
-                {activeIndices.map((idx, i) => {
+                {openIndices.map(({ idx, i }) => {
                     const history = historyQueries[i]?.data ?? [];
                     const breadth = breadthQueries[i]?.data;
                     const signals = signalQueries[i]?.data;
@@ -644,6 +675,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                     );
                 })}
             </div>
+            )}
 
             <div className="border-t border-border pt-6"></div>
 

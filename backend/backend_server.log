@@ -28289,3 +28289,45 @@
 2026-10-24 12:44:47,640 - app.api.endpoints.analysis - INFO - [HQ] IWM/3h: cd_sig=14, cd_1234=4, mc_sig=25, mc_1234=2
 2026-10-24 12:44:47,668 - app.api.endpoints.analysis - INFO - [HQ] IWM/4h: cd_sig=8, cd_1234=3, mc_sig=27, mc_1234=5
 2026-10-24 12:44:47,691 - app.api.endpoints.analysis - INFO - [HQ] IWM/1d: cd_sig=1, cd_1234=0, mc_sig=14, mc_1234=2
+2026-10-24 12:50:23,927 - app.api.endpoints.analysis - INFO - [HQ] SOXX/1h: cd_sig=32, cd_1234=3, mc_sig=52, mc_1234=10
+2026-10-24 12:50:24,049 - app.api.endpoints.analysis - INFO - [HQ] SOXX/2h: cd_sig=16, cd_1234=2, mc_sig=38, mc_1234=3
+2026-10-24 12:50:24,091 - app.api.endpoints.analysis - INFO - [HQ] SOXX/3h: cd_sig=10, cd_1234=4, mc_sig=35, mc_1234=3
+2026-10-24 12:50:24,119 - app.api.endpoints.analysis - INFO - [HQ] SOXX/4h: cd_sig=3, cd_1234=2, mc_sig=22, mc_1234=4
+2026-10-24 12:50:24,141 - app.api.endpoints.analysis - INFO - [HQ] SOXX/1d: cd_sig=1, cd_1234=1, mc_sig=9, mc_1234=3
+2026-10-24 13:06:45,697 - app.api.endpoints.analysis - ERROR - Error computing indicators for BTC-USD: Cannot infer dst time from 2024-11-03 01:00:00, try using the 'ambiguous' argument
+2026-10-24 13:06:46,991 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=54
+2026-10-24 13:06:47,009 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: ['2026-09-02', '2026-03-04']
+2026-10-24 13:06:47,025 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-06-03', '2026-05-15', '2026-05-12', '2026-05-11', '2026-05-08', '2026-05-07', '2026-05-04', '2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27']
+2026-10-24 13:06:47,029 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=55
+2026-10-24 13:06:47,030 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2026-10-02', '2026-09-25', '2026-03-31', '2025-01-13', '2025-01-03']
+2026-10-24 13:06:47,031 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-07-01', '2026-06-25', '2026-06-05', '2026-06-03', '2026-05-15', '2026-05-07', '2026-05-01', '2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-11-27']
+2026-10-24 13:06:47,032 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=51
+2026-10-24 13:06:47,034 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2026-09-17', '2025-04-01']
+2026-10-24 13:06:47,035 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-10-08', '2026-08-14', '2026-06-03', '2026-05-05', '2026-04-28', '2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05']
+2026-10-24 13:06:47,037 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=55
+2026-10-24 13:06:47,038 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2026-09-17', '2026-09-03', '2026-03-23', '2025-04-02', '2025-03-12', '2024-11-29']
+2026-10-24 13:06:47,039 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-10-06', '2026-06-23', '2026-06-17', '2026-05-29', '2026-05-07', '2026-04-23', '2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05']
+2026-10-24 13:06:47,041 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=NASA, run_id=52
+2026-10-24 13:06:47,044 - app.api.endpoints.analysis - INFO - ticker=NASA CD 1234 dates: ['2026-09-16', '2026-07-30', '2026-07-23', '2026-07-21', '2026-06-26', '2026-06-18']
+2026-10-24 13:06:47,046 - app.api.endpoints.analysis - INFO - ticker=NASA MC 1234 dates: []
+2026-10-24 13:06:47,047 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=XBI, run_id=49
+2026-10-24 13:06:47,048 - app.api.endpoints.analysis - INFO - ticker=XBI CD 1234 dates: []
+2026-10-24 13:06:47,048 - app.api.endpoints.analysis - INFO - ticker=XBI MC 1234 dates: []
+2026-10-24 13:06:47,063 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=BTC-USD, run_id=52
+2026-10-24 13:06:47,065 - app.api.endpoints.analysis - INFO - ticker=BTC-USD CD 1234 dates: ['2026-10-18', '2026-10-17', '2026-10-15', '2026-06-29', '2026-06-27', '2026-06-26', '2026-02-25', '2026-02-23', '2026-02-20', '2025-11-08', '2025-11-07', '2025-06-06', '2025-03-14', '2025-03-12', '2025-02-19', '2025-01-14', '2024-12-31']
+2026-10-24 13:06:47,066 - app.api.endpoints.analysis - INFO - ticker=BTC-USD MC 1234 dates: ['2026-09-04', '2026-07-16', '2026-05-07', '2026-04-24', '2026-04-23', '2026-04-17', '2026-03-18', '2026-03-16', '2025-09-19', '2025-05-23', '2025-05-11', '2025-05-03', '2024-12-08', '2024-11-25', '2024-11-23']
+2026-10-24 13:06:47,068 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=DRAM, run_id=52
+2026-10-24 13:06:47,070 - app.api.endpoints.analysis - INFO - ticker=DRAM CD 1234 dates: ['2026-07-17', '2026-07-15']
+2026-10-24 13:06:47,071 - app.api.endpoints.analysis - INFO - ticker=DRAM MC 1234 dates: ['2026-05-29']
+2026-10-24 13:06:47,072 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=KWEB, run_id=52
+2026-10-24 13:06:47,073 - app.api.endpoints.analysis - INFO - ticker=KWEB CD 1234 dates: ['2026-10-05', '2026-09-03', '2026-08-27', '2026-06-11', '2026-06-09', '2026-05-29', '2026-03-31', '2026-03-25', '2026-02-20', '2025-12-18', '2025-12-12', '2025-12-10', '2025-04-03', '2025-04-01', '2025-01-08', '2025-01-03', '2024-12-31', '2024-11-26']
+2026-10-24 13:06:47,075 - app.api.endpoints.analysis - INFO - ticker=KWEB MC 1234 dates: ['2026-05-14', '2025-10-07', '2025-10-06', '2025-10-03', '2025-08-14', '2025-05-15', '2025-03-20', '2025-03-10', '2025-02-24', '2025-02-12']
+2026-10-24 13:06:47,076 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QTUP, run_id=52
+2026-10-24 13:06:47,077 - app.api.endpoints.analysis - INFO - ticker=QTUP CD 1234 dates: ['2026-09-16']
+2026-10-24 13:06:47,100 - app.api.endpoints.analysis - INFO - ticker=QTUP MC 1234 dates: []
+2026-10-24 13:06:47,104 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IGV, run_id=52
+2026-10-24 13:06:47,105 - app.api.endpoints.analysis - INFO - ticker=IGV CD 1234 dates: ['2026-06-26', '2026-06-25', '2026-04-13', '2026-02-24', '2025-11-14', '2025-08-15', '2025-03-07', '2025-03-04', '2025-01-03']
+2026-10-24 13:06:47,107 - app.api.endpoints.analysis - INFO - ticker=IGV MC 1234 dates: ['2026-10-12', '2026-09-01', '2026-08-14', '2026-05-26', '2026-05-21', '2026-05-12', '2026-05-11', '2025-07-30', '2025-07-22', '2025-06-17', '2025-06-16', '2025-06-13', '2025-06-12', '2025-06-11', '2025-06-05', '2025-05-15', '2025-02-19', '2025-02-14', '2025-02-11', '2025-02-07', '2025-01-29', '2024-12-09', '2024-12-06', '2024-12-05', '2024-11-26', '2024-11-25']
+2026-10-24 13:06:47,108 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=LITE, run_id=52
+2026-10-24 13:06:47,109 - app.api.endpoints.analysis - INFO - ticker=LITE CD 1234 dates: ['2026-10-23', '2026-06-01', '2025-02-20', '2025-01-14']
+2026-10-24 13:06:47,111 - app.api.endpoints.analysis - INFO - ticker=LITE MC 1234 dates: ['2026-09-10', '2026-08-13', '2026-05-14', '2026-05-12', '2026-05-06', '2026-03-03', '2026-02-26', '2026-01-08', '2025-12-29', '2025-11-20', '2025-10-03', '2025-07-31', '2025-06-16', '2025-06-13', '2025-06-10', '2025-06-06', '2024-12-05', '2024-11-25']
