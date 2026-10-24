@@ -14947,3 +14947,50 @@
 2026-10-23 20:54:35,392 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/3h: cd_sig=2, cd_1234=0, mc_sig=38, mc_1234=1
 2026-10-23 20:54:35,423 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/4h: cd_sig=2, cd_1234=2, mc_sig=31, mc_1234=3
 2026-10-23 20:54:35,449 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/1d: cd_sig=0, cd_1234=0, mc_sig=25, mc_1234=5
+2026-10-24 07:26:09,728 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=45
+2026-10-24 07:26:09,876 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2026-09-17', '2025-04-01']
+2026-10-24 07:26:09,916 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-10-08', '2026-08-14', '2026-06-03', '2026-05-05', '2026-04-28', '2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05']
+2026-10-24 07:26:09,919 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=45
+2026-10-24 07:26:09,925 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: ['2026-09-02', '2026-03-04']
+2026-10-24 07:26:09,936 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-06-03', '2026-05-15', '2026-05-12', '2026-05-11', '2026-05-08', '2026-05-07', '2026-05-04', '2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27']
+2026-10-24 07:26:09,946 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=45
+2026-10-24 07:26:09,953 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2026-10-02', '2026-09-25', '2026-03-31', '2025-01-13', '2025-01-03']
+2026-10-24 07:26:09,962 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-07-01', '2026-06-25', '2026-06-05', '2026-06-03', '2026-05-15', '2026-05-07', '2026-05-01', '2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-11-27']
+2026-10-24 07:26:10,052 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/1h: cd_sig=18, cd_1234=2, mc_sig=75, mc_1234=13
+2026-10-24 07:26:10,128 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/2h: cd_sig=7, cd_1234=0, mc_sig=50, mc_1234=5
+2026-10-24 07:26:10,174 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/3h: cd_sig=2, cd_1234=0, mc_sig=38, mc_1234=1
+2026-10-24 07:26:10,208 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/4h: cd_sig=2, cd_1234=2, mc_sig=31, mc_1234=3
+2026-10-24 07:26:10,231 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/1d: cd_sig=0, cd_1234=0, mc_sig=25, mc_1234=5
+2026-10-24 07:26:34,306 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=45
+2026-10-24 07:26:34,312 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: ['2026-09-02', '2026-03-04']
+2026-10-24 07:26:34,316 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-06-03', '2026-05-15', '2026-05-12', '2026-05-11', '2026-05-08', '2026-05-07', '2026-05-04', '2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27']
+2026-10-24 07:26:34,318 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=45
+2026-10-24 07:26:34,323 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2026-10-02', '2026-09-25', '2026-03-31', '2025-01-13', '2025-01-03']
+2026-10-24 07:26:34,328 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-07-01', '2026-06-25', '2026-06-05', '2026-06-03', '2026-05-15', '2026-05-07', '2026-05-01', '2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-11-27']
+2026-10-24 07:26:34,328 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=45
+2026-10-24 07:26:34,332 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2026-09-17', '2025-04-01']
+2026-10-24 07:26:34,336 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-10-08', '2026-08-14', '2026-06-03', '2026-05-05', '2026-04-28', '2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05']
+2026-10-24 07:26:42,341 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/1h: cd_sig=18, cd_1234=2, mc_sig=75, mc_1234=13
+2026-10-24 07:26:42,405 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/2h: cd_sig=7, cd_1234=0, mc_sig=50, mc_1234=5
+2026-10-24 07:26:42,443 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/3h: cd_sig=2, cd_1234=0, mc_sig=38, mc_1234=1
+2026-10-24 07:26:42,471 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/4h: cd_sig=2, cd_1234=2, mc_sig=31, mc_1234=3
+2026-10-24 07:26:42,495 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/1d: cd_sig=0, cd_1234=0, mc_sig=25, mc_1234=5
+2026-10-24 07:29:45,101 - app.api.endpoints.analysis - INFO - [HQ] QQQ/1h: cd_sig=23, cd_1234=5, mc_sig=62, mc_1234=7
+2026-10-24 07:29:45,292 - app.api.endpoints.analysis - INFO - [HQ] QQQ/2h: cd_sig=12, cd_1234=5, mc_sig=40, mc_1234=2
+2026-10-24 07:29:45,336 - app.api.endpoints.analysis - INFO - [HQ] QQQ/3h: cd_sig=9, cd_1234=3, mc_sig=36, mc_1234=1
+2026-10-24 07:29:45,366 - app.api.endpoints.analysis - INFO - [HQ] QQQ/4h: cd_sig=2, cd_1234=1, mc_sig=21, mc_1234=3
+2026-10-24 07:29:45,388 - app.api.endpoints.analysis - INFO - [HQ] QQQ/1d: cd_sig=1, cd_1234=0, mc_sig=13, mc_1234=4
+2026-10-24 07:34:11,397 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^SPX, run_id=45
+2026-10-24 07:34:11,402 - app.api.endpoints.analysis - INFO - ticker=^SPX CD 1234 dates: ['2026-09-02', '2026-03-04']
+2026-10-24 07:34:11,409 - app.api.endpoints.analysis - INFO - ticker=^SPX MC 1234 dates: ['2026-06-03', '2026-05-15', '2026-05-12', '2026-05-11', '2026-05-08', '2026-05-07', '2026-05-04', '2026-01-30', '2026-01-29', '2026-01-13', '2026-01-07', '2025-12-29', '2025-12-12', '2025-10-09', '2025-10-06', '2025-10-03', '2025-08-29', '2025-07-24', '2025-07-21', '2025-06-13', '2025-06-11', '2025-06-09', '2025-06-05', '2024-12-05', '2024-11-27']
+2026-10-24 07:34:11,410 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=^DJI, run_id=45
+2026-10-24 07:34:11,415 - app.api.endpoints.analysis - INFO - ticker=^DJI CD 1234 dates: ['2026-10-02', '2026-09-25', '2026-03-31', '2025-01-13', '2025-01-03']
+2026-10-24 07:34:11,420 - app.api.endpoints.analysis - INFO - ticker=^DJI MC 1234 dates: ['2026-07-01', '2026-06-25', '2026-06-05', '2026-06-03', '2026-05-15', '2026-05-07', '2026-05-01', '2026-01-13', '2026-01-12', '2026-01-09', '2025-12-29', '2025-11-13', '2025-10-07', '2025-09-12', '2025-07-28', '2025-07-24', '2025-05-20', '2024-12-05', '2024-11-27']
+2026-10-24 07:34:11,421 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=QQQ, run_id=45
+2026-10-24 07:34:11,425 - app.api.endpoints.analysis - INFO - ticker=QQQ CD 1234 dates: ['2026-09-17', '2025-04-01']
+2026-10-24 07:34:11,429 - app.api.endpoints.analysis - INFO - ticker=QQQ MC 1234 dates: ['2026-10-08', '2026-08-14', '2026-06-03', '2026-05-05', '2026-04-28', '2026-01-14', '2026-01-08', '2025-10-10', '2025-10-09', '2025-10-06', '2025-10-03', '2025-09-12', '2025-09-11', '2025-07-31', '2025-07-28', '2025-07-25', '2025-07-24', '2025-07-18', '2025-07-07', '2025-06-11', '2025-06-05', '2025-02-12', '2024-12-17', '2024-12-12', '2024-12-09', '2024-12-05']
+2026-10-24 07:34:18,896 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/1h: cd_sig=18, cd_1234=2, mc_sig=75, mc_1234=13
+2026-10-24 07:34:18,950 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/2h: cd_sig=7, cd_1234=0, mc_sig=50, mc_1234=5
+2026-10-24 07:34:18,985 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/3h: cd_sig=2, cd_1234=0, mc_sig=38, mc_1234=1
+2026-10-24 07:34:19,014 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/4h: cd_sig=2, cd_1234=2, mc_sig=31, mc_1234=3
+2026-10-24 07:34:19,035 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/1d: cd_sig=0, cd_1234=0, mc_sig=25, mc_1234=5

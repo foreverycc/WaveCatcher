@@ -117,6 +117,8 @@ const SCORE_WEIGHTS: Record<string, number> = {
 };
 
 // Searchable ticker selector dropdown
+const HiddenTooltip = () => null;
+
 const TickerSelector = ({ tickers, selectedTicker, onSelect, indexLabel }: {
     tickers: string[],
     selectedTicker: string,
@@ -371,6 +373,14 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     const effectiveWeights = intervalWeights || SCORE_WEIGHTS;
     // --- Zoom State & Logic (Adapted from CandleChart) ---
     const [zoomState, setZoomState] = useState<{ start: number, end: number } | null>(null);
+    // Hover tooltips are off by default (they get crowded); the crosshair still shows. Remembered per browser.
+    const [showTooltips, setShowTooltips] = useState<boolean>(() => {
+        try { return localStorage.getItem('breadthShowTooltips') === '1'; } catch { return false; }
+    });
+    const toggleTooltips = () => setShowTooltips(v => {
+        try { localStorage.setItem('breadthShowTooltips', v ? '0' : '1'); } catch { /* ignore */ }
+        return !v;
+    });
     const [selection, setSelection] = useState<{ start: number, end: number } | null>(null);
     const isSelectingRef = useRef(false);
 
@@ -814,6 +824,13 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                         />
                     )}
                     <button
+                        onClick={toggleTooltips}
+                        className={`px-2 py-1 text-xs font-medium rounded-md border shrink-0 ${showTooltips ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:bg-muted'}`}
+                        title="Show the hover info boxes"
+                    >
+                        Tooltips {showTooltips ? 'On' : 'Off'}
+                    </button>
+                    <button
                         onClick={() => setZoomState(null)}
                         className="px-2 py-1 text-xs font-medium rounded-md border border-border text-muted-foreground hover:bg-muted shrink-0"
                     >
@@ -843,7 +860,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 width={38}
                                 tick={{ fontSize: 10 }}
                             />
-                            <Tooltip content={<PriceTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <PriceTooltip /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Bar
                                 dataKey={d => [d.low, d.high]}
                                 shape={<CandleShape />}
@@ -963,7 +980,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<VolumeTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <VolumeTooltip /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Bar dataKey="spxVolume" opacity={0.6} name="Volume">
                                 {visibleData.map((entry, index) => (
                                     <Cell
@@ -998,7 +1015,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<CombinedSignalTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <CombinedSignalTooltip /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.6} />
                             {INTERVALS.map(intv => (
                                 <Bar
@@ -1041,7 +1058,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<CombinedScoreTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <CombinedScoreTooltip /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.6} />
                             <Bar dataKey="cdNewScore" stackId="score_stack" fill="#22c55e" name="CD Score" isAnimationActive={false} />
                             <Bar dataKey="mcNewScoreNeg" stackId="score_stack" fill="#ef4444" name="MC Score" isAnimationActive={false} />
@@ -1068,7 +1085,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<MarketBreadthTooltip kind="count" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <MarketBreadthTooltip kind="count" /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.6} />
                             <Bar dataKey="cdCompanies" stackId="mb" fill="#22c55e" name="CD companies" isAnimationActive={false} />
                             <Bar dataKey="mcCompaniesNeg" stackId="mb" fill="#ef4444" name="MC companies" isAnimationActive={false} />
@@ -1095,7 +1112,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<MarketBreadthTooltip kind="score" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <MarketBreadthTooltip kind="score" /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.6} />
                             <Bar dataKey="cdBreadthScore" stackId="bs" fill="#22c55e" name="CD breadth score" isAnimationActive={false} />
                             <Bar dataKey="mcBreadthScore" stackId="bs" fill="#ef4444" name="MC breadth score" isAnimationActive={false} />
@@ -1127,7 +1144,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<MarketBreadthTooltip kind="weighted" />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <MarketBreadthTooltip kind="weighted" /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.6} />
                             <Bar dataKey="cdWBreadthScore" stackId="wbs" fill="#22c55e" name="CD weighted breadth score" isAnimationActive={false} />
                             <Bar dataKey="mcWBreadthScore" stackId="wbs" fill="#ef4444" name="MC weighted breadth score" isAnimationActive={false} />
@@ -1156,7 +1173,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<FundamentalsTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <FundamentalsTooltip /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <YAxis
                                 yAxisId="margin"
                                 orientation="right"
@@ -1193,7 +1210,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={<FundamentalsTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <FundamentalsTooltip /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Line type="stepAfter" dataKey={selectedTicker ? 'fin_eps' : 'fin_eps_up'} stroke="#a78bfa" dot={false} strokeWidth={1.5} isAnimationActive={false} connectNulls />
                             <ReferenceBlock />
                         </ComposedChart>
