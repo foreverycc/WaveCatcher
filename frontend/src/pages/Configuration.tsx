@@ -16,6 +16,11 @@ export const Configuration: React.FC = () => {
     const [badTickers, setBadTickers] = useState<string[]>([]);
     const [validationMessage, setValidationMessage] = useState('');
     const [isValidating, setIsValidating] = useState(false);
+    // Per-ticker weights (e.g. market cap) for the weighted breadth score
+    const [showWeights, setShowWeights] = useState(false);
+    const [weightsText, setWeightsText] = useState('');
+    const [weightsMsg, setWeightsMsg] = useState('');
+    const [weightsBusy, setWeightsBusy] = useState(false);
     const [cleanupTables, setCleanupTables] = useState<string[]>(['analysis_runs', 'analysis_results', 'price_history', 'option_chains']);
     const [isCleaningDb, setIsCleaningDb] = useState(false);
 
@@ -131,6 +136,77 @@ export const Configuration: React.FC = () => {
         },
         onError: (error) => alert(`Error deleting index: ${error}`)
     });
+
+    const listTickersOf = (content: string) =>
+        content.split('\n').map(l => l.trim().toUpperCase()).filter(Boolean);
+
+    const weightsToText = (weights: Record<string, number>) =>
+        listTickersOf(fileContent)
+            .map(t => weights[t] !== undefined ? `${t} ${Math.round(weights[t] * 1000) / 1000}` : `${t} `)
+            .join('\n');
+
+    const { data: savedWeights } = useQuery({
+        queryKey: ['stockWeights', selectedFile],
+        queryFn: () => stocksApi.getWeights(selectedFile!),
+        enabled: !!selectedFile && showWeights
+    });
+
+    useEffect(() => {
+        if (showWeights && savedWeights) {
+            setWeightsText(weightsToText(savedWeights));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [savedWeights, showWeights, selectedFile]);
+
+    useEffect(() => { setShowWeights(false); setWeightsMsg(''); }, [selectedFile]);
+
+    const parseWeights = (text: string) => {
+        const out: Record<string, number> = {};
+        for (const line of text.split('\n')) {
+            const [t, v] = line.trim().split(/[\s,]+/);
+            const num = Number(v);
+            if (t && v !== undefined && v !== '' && Number.isFinite(num) && num >= 0) out[t.toUpperCase()] = num;
+        }
+        return out;
+    };
+
+    const parsedWeights = parseWeights(weightsText);
+    const weightTotal = Object.values(parsedWeights).reduce((a, b) => a + b, 0);
+
+    const handleSaveWeights = async () => {
+        if (!selectedFile) return;
+        setWeightsBusy(true);
+        setWeightsMsg('');
+        try {
+            const saved = await stocksApi.saveWeights(selectedFile, parsedWeights);
+            queryClient.setQueryData(['stockWeights', selectedFile], saved);
+            queryClient.invalidateQueries({ queryKey: ['stockWeights'] });
+            setWeightsMsg(`Saved weights for ${Object.keys(saved).length} tickers.`);
+        } catch (err) {
+            setWeightsMsg(`Save failed: ${err}`);
+        } finally {
+            setWeightsBusy(false);
+        }
+    };
+
+    const handleFillMarketCap = async () => {
+        if (!selectedFile) return;
+        setWeightsBusy(true);
+        setWeightsMsg('Fetching market caps from Yahoo Finance...');
+        try {
+            const res = await stocksApi.fillWeightsByMarketCap(selectedFile);
+            queryClient.setQueryData(['stockWeights', selectedFile], res.weights);
+            queryClient.invalidateQueries({ queryKey: ['stockWeights'] });
+            setWeightsText(weightsToText(res.weights));
+            setWeightsMsg(res.missing.length > 0
+                ? `Saved market caps for ${Object.keys(res.weights).length} tickers; no market cap for ${res.missing.length}: ${res.missing.join(', ')} (weight 0 unless you set one)`
+                : `Saved market caps for all ${Object.keys(res.weights).length} tickers.`);
+        } catch (err) {
+            setWeightsMsg(`Market cap fetch failed: ${err}`);
+        } finally {
+            setWeightsBusy(false);
+        }
+    };
 
     const handleSave = () => {
         if (selectedFile) {
@@ -522,7 +598,18 @@ export const Configuration: React.FC = () => {
                         <div className="flex flex-col h-full">
                             <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
                                 <h3 className="font-semibold">Editing: {selectedFile}</h3>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 items-center">
+                                    <div className="flex rounded-md border border-input overflow-hidden text-xs">
+                                        <button
+                                            onClick={() => setShowWeights(false)}
+                                            className={cn("px-3 py-1.5", !showWeights ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
+                                        >Tickers</button>
+                                        <button
+                                            onClick={() => setShowWeights(true)}
+                                            className={cn("px-3 py-1.5", showWeights ? "bg-primary text-primary-foreground" : "hover:bg-muted")}
+                                            title="Per-ticker weights used by the Weighted Breadth Score"
+                                        >Weights</button>
+                                    </div>
                                     <button
                                         onClick={handleDelete}
                                         className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
@@ -532,6 +619,49 @@ export const Configuration: React.FC = () => {
                                     </button>
                                 </div>
                             </div>
+                            {showWeights ? (
+                                <>
+                                    <div className="px-4 py-2 text-xs text-muted-foreground border-b border-border">
+                                        One line per ticker: <span className="font-mono">TICKER weight</span>. Any scale works (e.g. market cap); the Weighted Breadth Score uses each ticker's share of the list total. Tickers without a weight count as 0.
+                                    </div>
+                                    <textarea
+                                        value={weightsText}
+                                        onChange={(e) => { setWeightsText(e.target.value); setWeightsMsg(''); }}
+                                        className="flex-1 w-full p-4 bg-background focus:outline-none font-mono text-sm resize-none"
+                                        placeholder={'AAPL 3450000000000\nMSFT 3100000000000'}
+                                    />
+                                    {weightsMsg && (
+                                        <div className="px-4 py-2 text-sm border-t border-border text-muted-foreground">{weightsMsg}</div>
+                                    )}
+                                    <div className="p-4 border-t border-border bg-muted/30 flex justify-between items-center">
+                                        <div className="text-xs text-muted-foreground">
+                                            {Object.keys(parsedWeights).length} / {listTickersOf(fileContent).length} tickers weighted
+                                            {weightTotal > 0 && (() => {
+                                                const top = Object.entries(parsedWeights).sort((x, y) => y[1] - x[1]).slice(0, 3);
+                                                return <> · top: {top.map(([t, v]) => `${t} ${(v / weightTotal * 100).toFixed(1)}%`).join(', ')}</>;
+                                            })()}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={handleFillMarketCap}
+                                                disabled={weightsBusy}
+                                                className="px-4 py-2 rounded-md border border-input hover:bg-muted transition-colors flex items-center gap-2 text-sm"
+                                            >
+                                                {weightsBusy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                                                Fill by Market Cap
+                                            </button>
+                                            <button
+                                                onClick={handleSaveWeights}
+                                                disabled={weightsBusy}
+                                                className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-2"
+                                            >
+                                                <Save className="w-4 h-4" />
+                                                Save Weights
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (<>
                             <div className="p-0 flex-1 flex flex-col min-h-0">
                                 <textarea
                                     value={fileContent}
@@ -616,6 +746,7 @@ export const Configuration: React.FC = () => {
                                     </button>
                                 </div>
                             </div>
+                            </>)}
                         </div>
                     ) : (
                         <div className="flex-1 flex items-center justify-center text-muted-foreground">

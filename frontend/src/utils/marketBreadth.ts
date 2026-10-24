@@ -1,7 +1,7 @@
 // Market breadth: how many companies had a CD / MC signal each day, and the breadth score
 // (that day's CD / MC Score times the share of companies with a signal).
 
-export interface CompanyBreadthPoint { date: string; count: number }
+export interface CompanyBreadthPoint { date: string; count: number; tickers?: string[] }
 export interface ValuePoint { date: string; value: number }
 
 type ScoreRow = { date: string; score_1h?: number; score_2h?: number; score_3h?: number; score_4h?: number; score_1d?: number };
@@ -67,4 +67,17 @@ export function signalCountSeries(rows: SignalRow[] = [], n: number): ValuePoint
 /** CD / MC Score per day (interval-weighted, per stock). */
 export function scoreSeries(rows: ScoreRow[] = [], weights: Record<string, number> | undefined, n: number): ValuePoint[] {
     return rows.map(r => ({ date: r.date, value: weightedScore(r, weights, n) }));
+}
+
+/**
+ * Weighted share of the stock list with a signal each day (0-1): the summed weight of the tickers
+ * with a signal over the summed weight of the list. Tickers without a weight count as 0.
+ */
+export function weightedShare(companies: CompanyBreadthPoint[] = [], weights: Record<string, number>, listTickers: string[]): ValuePoint[] {
+    const total = listTickers.reduce((s, t) => s + (weights[t.toUpperCase()] || 0), 0);
+    if (total <= 0) return [];
+    return companies.map(c => ({
+        date: c.date,
+        value: (c.tickers || []).reduce((s, t) => s + (weights[t.toUpperCase()] || 0), 0) / total,
+    }));
 }

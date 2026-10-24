@@ -49,6 +49,31 @@ def test_company_breadth_counts_distinct_tickers_per_day():
         {'ticker': 'B', 'interval': '4h', 'signal_date': '2026-10-01 13:30:00'},
         {'ticker': 'C', 'interval': '1d', 'signal_date': '2026-10-02 00:00:00'},
     ]
-    assert aggregate_company_breadth(rows) == [{'date': '2026-10-01', 'count': 2}, {'date': '2026-10-02', 'count': 1}]
-    assert aggregate_company_breadth(rows, ticker_list=['B', 'C']) == [{'date': '2026-10-01', 'count': 1}, {'date': '2026-10-02', 'count': 1}]
+    assert aggregate_company_breadth(rows) == [{'date': '2026-10-01', 'count': 2, 'tickers': ['A', 'B']},
+                                               {'date': '2026-10-02', 'count': 1, 'tickers': ['C']}]
+    assert aggregate_company_breadth(rows, ticker_list=['B', 'C']) == [{'date': '2026-10-01', 'count': 1, 'tickers': ['B']},
+                                                                       {'date': '2026-10-02', 'count': 1, 'tickers': ['C']}]
     assert aggregate_company_breadth([]) == []
+
+
+def test_stock_weights_roundtrip(tmp_path, monkeypatch):
+    from app.services import stock_weights as W
+    monkeypatch.setattr(W, 'DATA_DIR', str(tmp_path))
+    assert W.load_weights('stocks_x.tab') == {}
+    saved = W.save_weights('stocks_x.tab', {'aapl': 3.0, 'MSFT': 2, ' ': 1, 'BAD': -1})
+    assert saved == {'AAPL': 3.0, 'MSFT': 2.0}
+    assert W.load_weights('stocks_x.tab') == saved
+    monkeypatch.setattr(W, '_market_cap', lambda t: {'AAPL': 10.0}.get(t))
+    assert W.fetch_market_caps(['AAPL', 'ZZZ']) == ({'AAPL': 10.0}, ['ZZZ'])
+
+
+def test_refresh_market_cap_weights_keeps_old_for_missing(tmp_path, monkeypatch):
+    from app.services import stock_weights as sw
+    monkeypatch.setattr(sw, 'DATA_DIR', str(tmp_path))
+    lst = tmp_path / 'demo.tab'
+    lst.write_text('AAA\nBBB\nCCC\n')
+    sw.save_weights(str(lst), {'BBB': 5, 'CCC': 7})
+    monkeypatch.setattr(sw, 'fetch_market_caps', lambda t, workers=8: ({'AAA': 100.0, 'CCC': 9.0}, ['BBB']))
+    out = sw.refresh_market_cap_weights(str(lst))
+    assert out == {'AAA': 100.0, 'BBB': 5.0, 'CCC': 9.0}
+    assert sw.load_weights(str(lst)) == out

@@ -35,6 +35,7 @@ from app.logic.get_resonance_signal_MC import (
 from app.logic.get_best_CD_interval import evaluate_interval
 from app.logic.fundamentals import refresh_quarterly
 from app.logic.score_distribution import aggregate_score_histograms
+from app.services.stock_weights import refresh_market_cap_weights
 from app.logic.get_best_MC_interval import evaluate_interval as evaluate_mc_interval
 from multiprocessing import Pool, cpu_count
 import functools
@@ -254,8 +255,8 @@ def process_ticker_all(ticker, end_date=None):
         return ticker, None, None, [], [], None
 
 def aggregate_company_breadth(raw_details, ticker_list=None):
-    """Number of distinct tickers with a signal on each day (any interval).
-    Returns list of {date, count}."""
+    """Distinct tickers with a signal on each day (any interval).
+    Returns list of {date, count, tickers}."""
     if not raw_details:
         return []
     df = pd.DataFrame(raw_details)
@@ -266,8 +267,8 @@ def aggregate_company_breadth(raw_details, ticker_list=None):
         if df.empty:
             return []
     dates = pd.to_datetime(df['signal_date']).dt.strftime('%Y-%m-%d')
-    counts = df.assign(date=dates).groupby('date')['ticker'].nunique()
-    return [{'date': d, 'count': int(c)} for d, c in counts.sort_index().items()]
+    per_day = df.assign(date=dates).groupby('date')['ticker'].unique()
+    return [{'date': d, 'count': len(t), 'tickers': sorted(t.tolist())} for d, t in per_day.sort_index().items()]
 
 
 def save_eval_results(run_id, eval_results, side, all_ticker_data):
@@ -387,6 +388,9 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
             raw_tickers = [line.strip() for line in f if line.strip()]
             # Deduplicate while preserving order
             tickers = list(dict.fromkeys(raw_tickers))
+
+        # Keep the list's market-cap weights (weighted breadth score) current on every run
+        refresh_market_cap_weights(file_path, tickers)
         
         # Prepend Index tickers so they are included in 1234 analysis
         index_tickers = ["^SPX", "^DJI", "QQQ", "IWM"]
@@ -706,6 +710,7 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
         # 1. Collect all unique tickers from all indices
         all_tickers = set()
         index_ticker_map = {}  # Maps index key -> list of tickers
+        refreshed_lists = set()  # stock lists whose market-cap weights were refreshed this run
         
         for idx_info in index_info_list:
             try:
@@ -717,6 +722,9 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                     # Also add the index symbol itself
                     all_tickers.add(idx_info['symbol'])
                     logger.info(f"Loaded {len(tickers)} tickers for {idx_info['key']}")
+                    if idx_info['stock_list_path'] not in refreshed_lists:
+                        refreshed_lists.add(idx_info['stock_list_path'])
+                        refresh_market_cap_weights(idx_info['stock_list_path'], tickers)
             except FileNotFoundError:
                 logger.warning(f"Stock list not found: {idx_info['stock_list_path']}")
                 index_ticker_map[idx_info['key']] = []

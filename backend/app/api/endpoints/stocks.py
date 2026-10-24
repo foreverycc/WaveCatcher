@@ -1,12 +1,13 @@
 import os
 from fastapi import APIRouter, HTTPException, Body, Depends
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import distinct
 
 from app.db.database import SessionLocal
 from app.db.models import PriceBar
+from app.services.stock_weights import load_weights, save_weights, fetch_market_caps
 
 router = APIRouter()
 
@@ -74,6 +75,39 @@ async def get_stock_list_content(filename: str):
             return {"content": f.read()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class StockWeightsUpdate(BaseModel):
+    weights: Dict[str, float]
+
+
+def _list_tickers(filename):
+    file_path = os.path.join(DATA_DIR, filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    with open(file_path) as f:
+        return list(dict.fromkeys(line.strip().upper() for line in f if line.strip()))
+
+
+@router.get("/{filename}/weights")
+async def get_stock_weights(filename: str):
+    """Per-ticker weights of a stock list (empty when none are set)."""
+    _list_tickers(filename)
+    return {"weights": load_weights(filename)}
+
+
+@router.put("/{filename}/weights")
+async def update_stock_weights(filename: str, update: StockWeightsUpdate):
+    _list_tickers(filename)
+    return {"weights": save_weights(filename, update.weights)}
+
+
+@router.post("/{filename}/weights/market_cap")
+def fill_weights_from_market_cap(filename: str):
+    """Set every ticker's weight to its current market cap from yfinance."""
+    tickers = _list_tickers(filename)
+    caps, missing = fetch_market_caps(tickers)
+    return {"weights": save_weights(filename, caps), "missing": missing}
+
 
 @router.post("/")
 async def create_stock_list(stock_list: StockListCreate):

@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery, useQueries } from '@tanstack/react-query';
-import { analysisApi, reportsApi, type ScoringConfig } from '../services/api';
+import { analysisApi, stocksApi, reportsApi, type ScoringConfig } from '../services/api';
 import { IndexSummaryFigures } from './IndexSummaryFigures';
 import { RunReportButton } from './RunReportButton';
 import { cn } from '../utils/cn';
@@ -282,6 +282,15 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
         queries: activeIndices.map(idx => ({
             queryKey: ['marketBreadth', idx.stock_list],
             queryFn: () => analysisApi.getMarketBreadth(idx.stock_list),
+            staleTime: 1000 * 60 * 5,
+        }))
+    });
+
+    // Per-ticker weights of each index's stock list (for the weighted breadth score)
+    const weightQueries = useQueries({
+        queries: activeIndices.map(idx => ({
+            queryKey: ['stockWeights', idx.stock_list],
+            queryFn: () => stocksApi.getWeights(idx.stock_list),
             staleTime: 1000 * 60 * 5,
         }))
     });
@@ -623,6 +632,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             mcBreakthroughScoreBreadth={breadth?.mc_breakthrough_score_breadth ?? []}
                             cdCompanyBreadth={breadth?.cd_company_breadth ?? []}
                             mcCompanyBreadth={breadth?.mc_company_breadth ?? []}
+                            tickerWeights={weightQueries[i]?.data}
                             intervalWeights={scoringConfig?.interval_weights}
                             minDate={breadthMinDate}
                             maxDate={breadthMaxDate}

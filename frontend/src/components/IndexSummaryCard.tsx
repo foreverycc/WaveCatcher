@@ -41,6 +41,7 @@ export interface IndexSummaryCardProps {
     mcBreakthroughScoreBreadth?: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[];
     cdCompanyBreadth?: CompanyBreadthPoint[];
     mcCompanyBreadth?: CompanyBreadthPoint[];
+    tickerWeights?: Record<string, number>;
     intervalWeights?: Record<string, number>;
     minDate: Date;
     maxDate?: Date;
@@ -62,6 +63,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     mcBreakthroughScoreBreadth = [],
     cdCompanyBreadth = [],
     mcCompanyBreadth = [],
+    tickerWeights,
     intervalWeights,
     minDate,
     maxDate,
@@ -245,8 +247,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             <div
                 className="relative w-full"
                 style={{
-                    height: cardView === 'chart' ? '960px' : cardView === 'histogram' ? '888px' : 'auto',
-                    minHeight: cardView === 'chart' ? '960px' : cardView === 'histogram' ? '888px' : '0px',
+                    height: cardView === 'chart' ? '1035px' : cardView === 'histogram' ? '888px' : 'auto',
+                    minHeight: cardView === 'chart' ? '1035px' : cardView === 'histogram' ? '888px' : '0px',
                     transition: 'height 0.4s ease, min-height 0.4s ease'
                 }}
             >
@@ -437,6 +439,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                     mcBreakthroughScoreBreadth={effectiveMcBtScoreBreadth}
                                     cdCompanyBreadth={effectiveCdCompanyBreadth}
                                     mcCompanyBreadth={effectiveMcCompanyBreadth}
+                                    tickerWeights={useTickerSignals ? undefined : tickerWeights}
                                     intervalWeights={intervalWeights}
                                     minDate={minDate}
                                     maxDate={maxDate}
@@ -491,6 +494,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             mcBreakthroughScoreBreadth={effectiveMcBtScoreBreadth}
                             cdCompanyBreadth={effectiveCdCompanyBreadth}
                             mcCompanyBreadth={effectiveMcCompanyBreadth}
+                            tickerWeights={useTickerSignals ? undefined : tickerWeights}
                             intervalWeights={intervalWeights}
                             minDate={minDate}
                             maxDate={maxDate}

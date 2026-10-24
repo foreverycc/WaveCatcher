@@ -155,6 +155,18 @@ export const stocksApi = {
         const response = await api.delete(`/stocks/${filename}`);
         return response.data;
     },
+    getWeights: async (filename: string) => {
+        const response = await api.get<{ weights: Record<string, number> }>(`/stocks/${filename}/weights`);
+        return response.data.weights;
+    },
+    saveWeights: async (filename: string, weights: Record<string, number>) => {
+        const response = await api.put<{ weights: Record<string, number> }>(`/stocks/${filename}/weights`, { weights });
+        return response.data.weights;
+    },
+    fillWeightsByMarketCap: async (filename: string) => {
+        const response = await api.post<{ weights: Record<string, number>, missing: string[] }>(`/stocks/${filename}/weights/market_cap`);
+        return response.data;
+    },
     validateTickers: async (tickers: string[]) => {
         const response = await api.post<{ bad_tickers: string[], good_tickers: string[] }>(
             '/stocks/validate', { tickers }
@@ -219,8 +231,8 @@ export const analysisApi = {
             mc_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
             cd_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
             mc_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
-            cd_company_breadth?: { date: string, count: number }[],
-            mc_company_breadth?: { date: string, count: number }[],
+            cd_company_breadth?: { date: string, count: number, tickers?: string[] }[],
+            mc_company_breadth?: { date: string, count: number, tickers?: string[] }[],
         }>(`/analysis/ticker_signals/${ticker}`);
         return response.data;
     },
@@ -245,8 +257,8 @@ export const analysisApi = {
             mc_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
             cd_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
             mc_breakthrough_score_breadth: { date: string, score_1h: number, score_2h: number, score_3h: number, score_4h: number, score_1d: number, total_score: number }[],
-            cd_company_breadth?: { date: string, count: number }[],
-            mc_company_breadth?: { date: string, count: number }[],
+            cd_company_breadth?: { date: string, count: number, tickers?: string[] }[],
+            mc_company_breadth?: { date: string, count: number, tickers?: string[] }[],
             data_quality: { warnings: string[], failed_tickers: string[], total_tickers: number, successful_tickers: number } | null,
             run_id: number | null
         }>(`/analysis/market_breadth/${encodeURIComponent(stockList)}`);
