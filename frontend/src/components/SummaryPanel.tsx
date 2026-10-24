@@ -3,7 +3,7 @@ import { useQuery, useQueries } from '@tanstack/react-query';
 import { analysisApi, stocksApi, reportsApi, type ScoringConfig } from '../services/api';
 import { IndexSummaryFigures } from './IndexSummaryFigures';
 import { MarketHeatmap, type HeatmapGroup } from './MarketHeatmap';
-import { MarketTrendGrid, MARKET_ROW } from './MarketTrendGrid';
+import { MarketTrendGrid, MARKET_ROW, type Metric } from './MarketTrendGrid';
 import { RunReportButton } from './RunReportButton';
 import { cn } from '../utils/cn';
 import { parseISO, format } from 'date-fns';
@@ -558,6 +558,12 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
     // Market trend on top -> click an index to open its stock heatmap -> click a heatmap block for its gauges
     const [heatmapIndices, setHeatmapIndices] = useState<string[]>([]);
     const [heatmapDate, setHeatmapDate] = useState<string | null>(null); // null = latest day
+    // Breadth Score by default; Weighted can be shown with it or alone (at least one stays on)
+    const [trendMetrics, setTrendMetrics] = useState<Metric[]>(['breadth']);
+    const toggleTrendMetric = (m: Metric) => setTrendMetrics(prev => {
+        const next = prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m];
+        return next.length ? (['breadth', 'weighted'] as Metric[]).filter(k => next.includes(k)) : prev;
+    });
     const toggleHeatmap = (key: string) => {
         setHeatmapDate(null);
         setHeatmapIndices(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
@@ -659,6 +665,8 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                 onSelectAll={toggleAllHeatmaps}
                 onPickDay={pickHeatmapDay}
                 pickedDate={heatmapDate}
+                metrics={trendMetrics}
+                onToggleMetric={toggleTrendMetric}
             />
 
             {shownHeatmapGroups.length > 0 && (
@@ -667,6 +675,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                     intervalWeights={intervalWeightsOrDefault}
                     maxDate={breadthDateRange.end}
                     date={heatmapDate}
+                    metrics={['breadth', 'weighted']}
                     onClearDate={() => setHeatmapDate(null)}
                     expanded={expandedIndices}
                     onToggle={toggleIndex}

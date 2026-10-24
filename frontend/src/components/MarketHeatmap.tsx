@@ -30,6 +30,9 @@ interface Props {
     onClearDate?: () => void;
     expanded: string[];
     onToggle: (key: string) => void;
+    /** from Market Trend: 'breadth' sizes stocks equally and heads each block with its Breadth Score,
+     *  'weighted' sizes by market cap and heads with the cap-weighted score */
+    metrics?: ('breadth' | 'weighted')[];
 }
 
 const WINDOWS = [
@@ -113,7 +116,7 @@ const fmtCap = (v?: number) => v == null ? '–' : v >= 1e12 ? `$${(v / 1e12).to
 const BLOCK_W = 1000; // layout units; tiles are positioned in % of the block
 const BLOCK_H = 620;
 
-export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDate, date, onClearDate, expanded, onToggle }) => {
+export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDate, date, onClearDate, expanded, onToggle, metrics = ['weighted'] }) => {
     const [windowDays, setWindowDays] = useState(1);
     const [hover, setHover] = useState<{ item: Item; group: string; x: number; y: number } | null>(null);
 
@@ -150,22 +153,42 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
             const { m: cd, byTicker: cdIv } = sum(g.cdCompanyBreadth);
             const { m: mc, byTicker: mcIv } = sum(g.mcCompanyBreadth);
             const hasWeights = !!g.weights && Object.keys(g.weights).length > 0;
+            const byCap = metrics.includes('weighted') && hasWeights;
             const items: Item[] = Array.from(new Set(g.tickers.map(t => t.toUpperCase())))
                 .map(t => {
                     const cap = g.weights?.[t];
                     return {
-                        ticker: t, cap, size: hasWeights ? (cap || 0) : 1, cd: cd.get(t) || 0, mc: mc.get(t) || 0,
+                        ticker: t, cap, size: byCap ? (cap || 0) : 1, cd: cd.get(t) || 0, mc: mc.get(t) || 0,
                         value: (cd.get(t) || 0) - (mc.get(t) || 0), cdIntervals: cdIv.get(t) || {}, mcIntervals: mcIv.get(t) || {},
                     };
                 })
                 .filter(it => it.size > 0)
                 .sort((a, b) => b.size - a.size);
-            const total = items.reduce((s, it) => s + it.size, 0);
-            const net = total > 0 ? items.reduce((s, it) => s + it.value * it.size, 0) / total : 0;
+            // Weighted: cap-weighted net score; Breadth: daily CD Score x CD share - MC Score x MC share, summed over the window
+            const capOf = (it: Item) => hasWeights ? (it.cap || 0) : 1;
+            const capTotal = items.reduce((s, it) => s + capOf(it), 0);
+            const weighted = capTotal > 0 ? items.reduce((s, it) => s + it.value * capOf(it), 0) / capTotal : 0;
+            const listSet = new Set(items.map(it => it.ticker));
+            const n = listSet.size || 1;
+            const dailySide = (rows: CompanyBreadthPoint[]) => {
+                let total = 0;
+                rows.forEach(c => {
+                    if (!inWindow.has(c.date)) return;
+                    let sum = 0, cnt = 0;
+                    (c.tickers || []).forEach(t => {
+                        if (!listSet.has(t)) return;
+                        cnt += 1;
+                        Object.entries(c.scores?.[t] || {}).forEach(([k, v]) => { sum += v * (intervalWeights[k] ?? 0); });
+                    });
+                    total += (sum / n) * (cnt / n);
+                });
+                return total;
+            };
+            const breadth = dailySide(g.cdCompanyBreadth) - dailySide(g.mcCompanyBreadth);
             const hasScores = [...g.cdCompanyBreadth, ...g.mcCompanyBreadth].some(c => c.scores);
-            return { group: g, items, net, hasScores, hasWeights, lastDay: days[days.length - 1], rects: squarify(items, BLOCK_W, BLOCK_H) };
+            return { group: g, items, weighted, breadth, byCap, hasScores, hasWeights, lastDay: days[days.length - 1], rects: squarify(items, BLOCK_W, BLOCK_H) };
         });
-    }, [groups, intervalWeights, maxDate, date, windowDays]);
+    }, [groups, intervalWeights, maxDate, date, windowDays, metrics]);
 
     // One color scale for all blocks: 90th percentile of |net score| among stocks with a signal
     const scale = useMemo(() => {
@@ -191,7 +214,7 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
                         )}
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                        Size = market cap · Color = CD score − MC score per stock · Click an index to open its gauges
+                        Size = {metrics.includes('weighted') ? 'market cap' : 'equal (Breadth Score)'} · Color = CD score − MC score per stock · Click an index to open its gauges
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -231,8 +254,17 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
                                 <span className="font-semibold tracking-wide">
                                     {b.group.key} <span className="text-white/50 font-normal">{b.group.symbol} · {b.items.length} stocks</span>
                                 </span>
-                                <span className="font-semibold px-1.5 rounded" style={{ background: colorFor(b.net, scale) }}>
-                                    {b.net >= 0 ? '+' : ''}{b.net.toFixed(1)}
+                                <span className="flex items-center gap-2 font-semibold">
+                                    {metrics.includes('breadth') && (
+                                        <span title="Breadth Score (CD Score × CD share − MC Score × MC share)" style={{ color: b.breadth > 0 ? '#4ade80' : b.breadth < 0 ? '#f87171' : undefined }}>
+                                            <span className="text-white/50 font-normal mr-1">B</span>{b.breadth >= 0 ? '+' : ''}{b.breadth.toFixed(2)}
+                                        </span>
+                                    )}
+                                    {metrics.includes('weighted') && (
+                                        <span title="Market-cap weighted score" style={{ color: b.weighted > 0 ? '#4ade80' : b.weighted < 0 ? '#f87171' : undefined }}>
+                                            <span className="text-white/50 font-normal mr-1">W</span>{b.weighted >= 0 ? '+' : ''}{b.weighted.toFixed(1)}
+                                        </span>
+                                    )}
                                 </span>
                             </div>
                             <div className="relative w-full bg-[#262931]" style={{ aspectRatio: `${BLOCK_W} / ${BLOCK_H}`, containerType: 'inline-size' }}>
@@ -271,7 +303,7 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
                                         </div>
                                     );
                                 })}
-                                {!b.hasWeights && (
+                                {metrics.includes('weighted') && !b.hasWeights && (
                                     <span className="absolute bottom-1 right-1 text-[9px] text-white/60 pointer-events-none">equal size (no market caps yet)</span>
                                 )}
                             </div>

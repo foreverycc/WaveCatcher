@@ -24,6 +24,9 @@ interface Props {
     onPickDay: (key: string, date: string) => void;
     /** day shown in the stock heatmap (highlighted column); null = latest */
     pickedDate?: string | null;
+    /** which scores to show (also drives the stock heatmap); at least one */
+    metrics: Metric[];
+    onToggleMetric: (m: Metric) => void;
 }
 
 const SPANS = [{ label: '20D', days: 20 }, { label: '60D', days: 60 }, { label: '120D', days: 120 }, { label: '1Y', days: 252 }];
@@ -42,7 +45,7 @@ const PCT_BANDS: { max: number; color: string; label: string; legend: string }[]
     { max: 100, color: '#4dff7c', label: 'Extreme CD (top 1%)', legend: '≥99' },
 ];
 
-type Metric = 'breadth' | 'weighted';
+export type Metric = 'breadth' | 'weighted';
 const METRICS: { key: Metric; label: string; desc: string }[] = [
     { key: 'breadth', label: 'Breadth Score', desc: 'CD Score × share of companies with CD − MC Score × share with MC' },
     { key: 'weighted', label: 'Weighted', desc: 'Σ (CD − MC score) × market-cap share per stock' },
@@ -90,13 +93,9 @@ function rowSeries(metric: Metric, tickers: string[], weights: Record<string, nu
     });
 }
 
-export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minDate, maxDate, selected, onToggle, onSelectAll, onPickDay, pickedDate }) => {
+export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minDate, maxDate, selected, onToggle, onSelectAll, onPickDay, pickedDate, metrics, onToggleMetric }) => {
     const [span, setSpan] = useState(60);
-    const [metric, setMetric] = useState<Metric>(() => {
-        try { return localStorage.getItem('marketTrendMetric') === 'weighted' ? 'weighted' : 'breadth'; } catch { return 'breadth'; }
-    });
-    const chooseMetric = (m: Metric) => { setMetric(m); try { localStorage.setItem('marketTrendMetric', m); } catch { /* ignore */ } };
-    const [hover, setHover] = useState<{ row: string; date: string; value: number; raw: number; x: number; y: number } | null>(null);
+    const [hover, setHover] = useState<{ row: string; metric: string; date: string; value: number; raw: number; x: number; y: number } | null>(null);
 
     const { days, rows } = useMemo(() => {
         const allDays = new Set<string>();
@@ -111,8 +110,8 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
         const shownAt = days.map(d => calcDays.indexOf(d));
         const refAt = refDays.map(d => calcDays.indexOf(d));
         // midrank percentile (0-100) of each shown day's value among the reference days (ties count half)
-        const toRow = (r: { key: string; label: string; sub: string; values: number[] }) => {
-            const ref = refAt.map(i => r.values[i]).sort((a, b) => a - b);
+        const toStrip = (metric: Metric, values: number[]) => {
+            const ref = refAt.map(i => values[i]).sort((a, b) => a - b);
             const n = ref.length;
             const pctOf = (x: number) => {
                 if (n === 0) return 50;
@@ -120,8 +119,8 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
                 for (const v of ref) { if (v < x) below++; else if (v === x) equal++; }
                 return ((below + equal * 0.5) / n) * 100;
             };
-            const raw = shownAt.map(i => r.values[i]);
-            return { key: r.key, label: r.label, sub: r.sub, raw, values: raw.map(pctOf) };
+            const raw = shownAt.map(i => values[i]);
+            return { metric, raw, values: raw.map(pctOf) };
         };
 
         // One score table per side for all rows: a stock's score is the same whichever index it is in
@@ -130,7 +129,10 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
 
         const perGroup = groups.map(g => {
             const tickers = Array.from(new Set(g.tickers.map(t => t.toUpperCase())));
-            return { key: g.key, label: g.key, sub: g.symbol, tickers, values: rowSeries(metric, tickers, g.weights, cd, mc, calcDays) };
+            return {
+                key: g.key, label: g.key, sub: g.symbol, tickers,
+                strips: metrics.map(m => toStrip(m, rowSeries(m, tickers, g.weights, cd, mc, calcDays))),
+            };
         });
 
         // Market row: every stock of all rows once, with the largest market cap seen for it
@@ -144,10 +146,10 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
         const allHaveWeights = groups.every(g => g.weights && Object.keys(g.weights).length > 0);
         const market = {
             key: MARKET_ROW, label: 'Market', sub: `${mTickers.size} stocks`,
-            values: rowSeries(metric, Array.from(mTickers), allHaveWeights ? mWeights : undefined, cd, mc, calcDays),
+            strips: metrics.map(m => toStrip(m, rowSeries(m, Array.from(mTickers), allHaveWeights ? mWeights : undefined, cd, mc, calcDays))),
         };
-        return { days, rows: [toRow(market), ...perGroup.map(toRow)] };
-    }, [groups, intervalWeights, minDate, maxDate, span, metric]);
+        return { days, rows: [market, ...perGroup] };
+    }, [groups, intervalWeights, minDate, maxDate, span, metrics]);
 
     // color: percentile 50 = neutral grey, 100 = full green (CD), 0 = full red (MC)
     const band = (p: number) => PCT_BANDS.find(b => p <= b.max) ?? PCT_BANDS[PCT_BANDS.length - 1];
@@ -167,14 +169,14 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
                 <div>
                     <h3 className="text-base font-semibold">Market Trend</h3>
                     <p className="text-xs text-muted-foreground">
-                        <span title={METRICS.find(m => m.key === metric)!.desc}>{metric === 'breadth' ? 'Breadth Score' : 'Market-cap weighted score'} per day</span> as a percentile of the Date Filters range (like the gauges) · click a name for the latest stock heatmap, a day for that day's
+                        <span>{metrics.length > 1 ? 'Breadth Score (B) and Weighted (W)' : metrics[0] === 'breadth' ? 'Breadth Score' : 'Market-cap weighted score'}</span>: daily percentile of the Date Filters range · click a name or a day for the stock heatmap
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="flex rounded-md border border-input overflow-hidden text-xs">
                         {METRICS.map(m => (
-                            <button key={m.key} onClick={() => chooseMetric(m.key)} title={m.desc}
-                                className={cn("px-2.5 py-1", metric === m.key ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>{m.label}</button>
+                            <button key={m.key} onClick={() => onToggleMetric(m.key)} title={`${m.desc} (click to show / hide)`}
+                                className={cn("px-2.5 py-1", metrics.includes(m.key) ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>{m.label}</button>
                         ))}
                     </div>
                     <div className="flex rounded-md border border-input overflow-hidden text-xs">
@@ -205,8 +207,9 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
                 {rows.map(r => {
                     const isMarket = r.key === MARKET_ROW;
                     const open = isMarket ? selected.length === groups.length : selected.includes(r.key);
-                    const last = r.values[r.values.length - 1] ?? 50;
-                    const a5 = avg(r.values, 5);
+                    const both = r.strips.length > 1;
+                    const stripH = isMarket ? (both ? "h-6" : "h-9") : (both ? "h-[18px]" : "h-6");
+                    const tag = (m: Metric) => m === 'breadth' ? 'B' : 'W';
                     return (
                         <React.Fragment key={r.key}>
                             <button
@@ -217,24 +220,39 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
                                 <span className={cn(isMarket ? "text-sm" : "font-medium")}>{r.label}</span>
                                 <span className="block text-[10px] text-muted-foreground">{r.sub}</span>
                             </button>
-                            <div
-                                className={cn("flex cursor-pointer rounded-sm overflow-hidden", isMarket ? "h-9" : "h-6", open && "ring-2 ring-primary")}
-                                onMouseLeave={() => setHover(null)}
-                            >
-                                {r.values.map((v, i) => (
-                                    <div key={days[i]} className="flex-1 min-w-0 hover:brightness-125"
-                                        style={{
-                                            background: pctColor(v),
-                                            // white top tick marks the extreme 1% days
-                                            boxShadow: days[i] === pickedDate ? 'inset 0 0 0 2px #fff, inset 0 0 0 3px #000'
-                                                : isExtreme(v) ? 'inset 0 3px 0 #fff, inset -0.5px 0 0 rgba(0,0,0,0.25)' : 'inset -0.5px 0 0 rgba(0,0,0,0.25)',
-                                        }}
-                                        onClick={() => onPickDay(r.key, days[i])}
-                                        onMouseMove={e => setHover({ row: r.label, date: days[i], value: v, raw: r.raw[i], x: e.clientX, y: e.clientY })} />
+                            <div className={cn("flex flex-col gap-px rounded-sm", open && "ring-2 ring-primary")}>
+                                {r.strips.map(st => (
+                                    <div key={st.metric} className="flex items-stretch">
+                                        {both && <span className="w-3.5 shrink-0 text-[9px] text-muted-foreground flex items-center" title={METRICS.find(m => m.key === st.metric)!.label}>{tag(st.metric)}</span>}
+                                        <div className={cn("flex flex-1 cursor-pointer overflow-hidden", stripH)} onMouseLeave={() => setHover(null)}>
+                                            {st.values.map((v, i) => (
+                                                <div key={days[i]} className="flex-1 min-w-0 hover:brightness-125"
+                                                    style={{
+                                                        background: pctColor(v),
+                                                        // white top tick marks the extreme 1% days
+                                                        boxShadow: days[i] === pickedDate ? 'inset 0 0 0 2px #fff, inset 0 0 0 3px #000'
+                                                            : isExtreme(v) ? 'inset 0 3px 0 #fff, inset -0.5px 0 0 rgba(0,0,0,0.25)' : 'inset -0.5px 0 0 rgba(0,0,0,0.25)',
+                                                    }}
+                                                    onClick={() => onPickDay(r.key, days[i])}
+                                                    onMouseMove={e => setHover({ row: r.label, metric: METRICS.find(m => m.key === st.metric)!.label, date: days[i], value: v, raw: st.raw[i], x: e.clientX, y: e.clientY })} />
+                                            ))}
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
-                            <span className="text-xs font-semibold text-right tabular-nums" style={{ color: last >= 90 ? '#16a34a' : last <= 10 ? '#dc2626' : undefined }}>{fmtPct(last)}</span>
-                            <span className="text-xs text-right tabular-nums" style={{ color: a5 >= 90 ? '#16a34a' : a5 <= 10 ? '#dc2626' : undefined }}>{fmtPct(a5)}</span>
+                            {(['last', 'a5'] as const).map(col => (
+                                <div key={col} className="flex flex-col gap-px">
+                                    {r.strips.map(st => {
+                                        const v = col === 'last' ? (st.values[st.values.length - 1] ?? 50) : avg(st.values, 5);
+                                        return (
+                                            <span key={st.metric} className={cn("text-xs text-right tabular-nums flex items-center justify-end", stripH, col === 'last' && "font-semibold")}
+                                                style={{ color: v >= 90 ? '#16a34a' : v <= 10 ? '#dc2626' : undefined }}>
+                                                {both && <span className="text-[9px] text-muted-foreground font-normal mr-1">{tag(st.metric)}</span>}{fmtPct(v)}
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            ))}
                         </React.Fragment>
                     );
                 })}
@@ -243,7 +261,7 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
             {hover && (
                 <div className="fixed z-[200] pointer-events-none bg-background border border-border rounded shadow-lg px-2 py-1 text-xs"
                     style={{ left: hover.x + 14, top: hover.y + 14 }}>
-                    <span className="font-semibold">{hover.row}</span> <span className="text-muted-foreground">{hover.date}</span>
+                    <span className="font-semibold">{hover.row}</span> <span className="text-muted-foreground">{hover.metric} · {hover.date}</span>
                     <span className="ml-2 font-semibold" style={{ color: hover.value >= 90 ? '#16a34a' : hover.value <= 10 ? '#dc2626' : undefined }}>{fmtPct(hover.value)} · {zoneOf(hover.value)}</span>
                     <span className="ml-2 text-muted-foreground">(score {fmt(hover.raw)})</span>
                 </div>
