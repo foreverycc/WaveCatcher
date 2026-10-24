@@ -28276,3 +28276,16 @@
 2026-10-24 12:41:50,802 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=SOXX, run_id=55
 2026-10-24 12:41:50,802 - app.api.endpoints.analysis - INFO - ticker=SOXX CD 1234 dates: ['2026-09-17', '2026-09-03', '2026-03-23', '2025-04-02', '2025-03-12', '2024-11-29']
 2026-10-24 12:41:50,803 - app.api.endpoints.analysis - INFO - ticker=SOXX MC 1234 dates: ['2026-10-06', '2026-06-23', '2026-06-17', '2026-05-29', '2026-05-07', '2026-04-23', '2026-01-23', '2026-01-16', '2026-01-15', '2025-10-21', '2025-07-11', '2025-07-10', '2025-06-30', '2025-06-27', '2025-06-12', '2025-06-09', '2025-05-08', '2025-05-05']
+2026-10-24 12:44:05,784 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/1h: cd_sig=18, cd_1234=2, mc_sig=75, mc_1234=13
+2026-10-24 12:44:05,840 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/2h: cd_sig=7, cd_1234=0, mc_sig=50, mc_1234=5
+2026-10-24 12:44:05,885 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/3h: cd_sig=2, cd_1234=0, mc_sig=38, mc_1234=1
+2026-10-24 12:44:05,917 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/4h: cd_sig=2, cd_1234=2, mc_sig=31, mc_1234=3
+2026-10-24 12:44:05,941 - app.api.endpoints.analysis - INFO - [HQ] ^SPX/1d: cd_sig=0, cd_1234=0, mc_sig=25, mc_1234=5
+2026-10-24 12:44:16,431 - app.api.endpoints.analysis - INFO - Fetching signals_1234 for ticker=IWM, run_id=54
+2026-10-24 12:44:16,449 - app.api.endpoints.analysis - INFO - ticker=IWM CD 1234 dates: ['2026-10-20', '2026-10-01', '2026-09-25', '2026-09-17', '2026-09-14', '2026-07-24', '2026-07-21', '2026-03-23', '2025-01-14', '2025-01-13']
+2026-10-24 12:44:16,466 - app.api.endpoints.analysis - INFO - ticker=IWM MC 1234 dates: ['2026-08-17', '2026-07-01', '2026-06-26', '2026-06-24', '2026-06-17', '2026-05-08', '2026-05-07', '2026-05-04', '2026-01-23', '2025-12-12', '2025-10-16', '2025-10-09', '2025-09-12', '2025-09-09', '2025-07-24', '2025-07-11', '2024-11-26']
+2026-10-24 12:44:47,549 - app.api.endpoints.analysis - INFO - [HQ] IWM/1h: cd_sig=44, cd_1234=13, mc_sig=45, mc_1234=3
+2026-10-24 12:44:47,604 - app.api.endpoints.analysis - INFO - [HQ] IWM/2h: cd_sig=26, cd_1234=3, mc_sig=33, mc_1234=6
+2026-10-24 12:44:47,640 - app.api.endpoints.analysis - INFO - [HQ] IWM/3h: cd_sig=14, cd_1234=4, mc_sig=25, mc_1234=2
+2026-10-24 12:44:47,668 - app.api.endpoints.analysis - INFO - [HQ] IWM/4h: cd_sig=8, cd_1234=3, mc_sig=27, mc_1234=5
+2026-10-24 12:44:47,691 - app.api.endpoints.analysis - INFO - [HQ] IWM/1d: cd_sig=1, cd_1234=0, mc_sig=14, mc_1234=2

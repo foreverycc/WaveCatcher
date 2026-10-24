@@ -15,7 +15,7 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import type { QuarterlyFundamentals } from '../services/api';
-import { weightedShare, capWeightedScore, type CompanyBreadthPoint } from '../utils/marketBreadth';
+import { capWeightedScore, type CompanyBreadthPoint } from '../utils/marketBreadth';
 
 interface BreadthDataPoint {
     date: string;
@@ -328,12 +328,9 @@ const MarketBreadthTooltip = ({ active, payload, kind }: any) => {
     return (
         <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
             <div className="grid grid-cols-2 gap-x-4">
-                {kind === 'weighted2' ? <>
-                    <span className="text-muted-foreground">CD:</span><span className="text-right text-green-400">{(d.cdWBreadthScore2 || 0).toFixed(2)}</span>
-                    <span className="text-muted-foreground">MC:</span><span className="text-right text-red-400">{(d.mcWBreadthScore2 || 0).toFixed(2)}</span>
-                </> : kind === 'weighted' ? <>
-                    <span className="text-muted-foreground">CD:</span><span className="text-right text-green-400">{(d.cdWBreadthScore || 0).toFixed(2)}{pct(d.cdWShare)}</span>
-                    <span className="text-muted-foreground">MC:</span><span className="text-right text-red-400">{(d.mcWBreadthScore || 0).toFixed(2)}{pct(d.mcWShare)}</span>
+                {kind === 'weighted' ? <>
+                    <span className="text-muted-foreground">CD:</span><span className="text-right text-green-400">{(d.cdWBreadthScore || 0).toFixed(2)}</span>
+                    <span className="text-muted-foreground">MC:</span><span className="text-right text-red-400">{(d.mcWBreadthScore || 0).toFixed(2)}</span>
                 </> : kind === 'count' ? <>
                     <span className="text-muted-foreground">CD companies:</span><span className="text-right text-green-400">{d.cdCompanies || 0}{pct(d.cdShare)}</span>
                     <span className="text-muted-foreground">MC companies:</span><span className="text-right text-red-400">{d.mcCompanies || 0}{pct(d.mcShare)}</span>
@@ -601,9 +598,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         // of companies with a signal, CD positive and MC negative
         const useWeights = !selectedTicker && !!tickerWeights && Object.keys(tickerWeights).length > 0;
         const listTickers = tickers || [];
-        const cdWShare = new Map(useWeights ? weightedShare(cdCompanyBreadth, tickerWeights!, listTickers).map(p => [p.date, p.value]) : []);
-        const mcWShare = new Map(useWeights ? weightedShare(mcCompanyBreadth, tickerWeights!, listTickers).map(p => [p.date, p.value]) : []);
-        // Weighted Breadth Score 2: weight each ticker's score by its market-cap share before summing
+        // Weighted Breadth Score: weight each ticker's score by its market-cap share before summing
         const capW = useWeights ? tickerWeights : undefined;
         const cdCapScore = capWeightedScore(cdCompanyBreadth, capW, listTickers, effectiveWeights);
         const mcCapScore = capWeightedScore(mcCompanyBreadth, capW, listTickers, effectiveWeights);
@@ -618,13 +613,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             d.cdBreadthScore = (d.cdNewScore || 0) * d.cdShare;
             d.mcBreadthScore = -(d.mcNewScore || 0) * d.mcShare;
             d.netBreadthScore = d.cdBreadthScore + d.mcBreadthScore;
-            // Weighted: share of the list's weight (e.g. market cap) with a signal; a single ticker counts fully
-            d.cdWShare = useWeights ? (cdWShare.get(d.date) || 0) : d.cdShare;
-            d.mcWShare = useWeights ? (mcWShare.get(d.date) || 0) : d.mcShare;
-            d.cdWBreadthScore = (d.cdNewScore || 0) * d.cdWShare;
-            d.mcWBreadthScore = -(d.mcNewScore || 0) * d.mcWShare;
-            d.cdWBreadthScore2 = selectedTicker ? (d.cdNewScore || 0) : (cdCapScore.get(d.date) || 0);
-            d.mcWBreadthScore2 = -(selectedTicker ? (d.mcNewScore || 0) : (mcCapScore.get(d.date) || 0));
+            d.cdWBreadthScore = selectedTicker ? (d.cdNewScore || 0) : (cdCapScore.get(d.date) || 0);
+            d.mcWBreadthScore = -(selectedTicker ? (d.mcNewScore || 0) : (mcCapScore.get(d.date) || 0));
             // Combined CD (up) / MC (down) tracks
             INTERVAL_KEYS.forEach(k => { d[`mc_neg_${k}`] = -(d[`mc_${k}`] || 0); });
             d.mcNewScoreNeg = -(d.mcNewScore || 0);
@@ -818,7 +808,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
 
     return (
-        <div className="flex flex-col h-[1050px] border rounded-lg bg-card p-4">
+        <div className="flex flex-col h-[975px] border rounded-lg bg-card p-4">
             <div className="flex justify-between items-center mb-2 gap-2">
                 <h3 className="text-lg font-semibold text-foreground shrink-0">
                     {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}
@@ -1130,14 +1120,19 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     </ResponsiveContainer>
                 </div>
 
-                {/* 10b. Weighted Breadth Score: like Breadth Score, with the share of companies weighted (e.g. by market cap) */}
-                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative" style={{ zIndex: 25 }}>
+                {/* 10b. Weighted Breadth Score: sum over tickers of (interval-weighted score x market-cap share) */}
+                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative" style={{ zIndex: 24 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium z-10">
-                        Weighted Breadth Score <span className="text-muted-foreground font-normal">(Score × weighted share, <span className="text-[#22c55e]">CD</span> + / <span className="text-[#ef4444]">MC</span> −)</span>
+                        Weighted Breadth Score <span className="text-muted-foreground font-normal">(Σ score × market-cap share, <span className="text-[#22c55e]">CD</span> + / <span className="text-[#ef4444]">MC</span> −)</span>
                     </span>
-                    {!selectedTicker && !(tickerWeights && Object.keys(tickerWeights).length > 0) && (
+                    {!selectedTicker && !(cdCompanyBreadth.some(c => c.scores) || mcCompanyBreadth.some(c => c.scores)) && (
                         <span className="absolute top-3 right-2 text-[10px] text-muted-foreground z-10 pointer-events-none">
-                            No weights yet: Run Analysis fetches market caps automatically; showing unweighted
+                            Needs a new Run Analysis (per-stock scores not saved yet)
+                        </span>
+                    )}
+                    {!selectedTicker && (cdCompanyBreadth.some(c => c.scores) || mcCompanyBreadth.some(c => c.scores)) && !(tickerWeights && Object.keys(tickerWeights).length > 0) && (
+                        <span className="absolute top-3 right-2 text-[10px] text-muted-foreground z-10 pointer-events-none">
+                            No market caps yet: every stock weighted equally
                         </span>
                     )}
                     <ResponsiveContainer width="100%" height="100%">
@@ -1157,38 +1152,6 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                             <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.6} />
                             <Bar dataKey="cdWBreadthScore" stackId="wbs" fill="#22c55e" name="CD weighted breadth score" isAnimationActive={false} />
                             <Bar dataKey="mcWBreadthScore" stackId="wbs" fill="#ef4444" name="MC weighted breadth score" isAnimationActive={false} />
-                            <ReferenceBlock />
-                        </ComposedChart>
-                    </ResponsiveContainer>
-                </div>
-
-                {/* 10c. Weighted Breadth Score 2: sum over tickers of (interval-weighted score x market-cap share) */}
-                <div className="flex-[0.5] min-h-0 border-b border-border/50 relative" style={{ zIndex: 24 }}>
-                    <span className="absolute top-3 left-2 text-[10px] font-medium z-10">
-                        Weighted Breadth Score 2 <span className="text-muted-foreground font-normal">(Σ score × market-cap share, <span className="text-[#22c55e]">CD</span> + / <span className="text-[#ef4444]">MC</span> −)</span>
-                    </span>
-                    {!selectedTicker && !(cdCompanyBreadth.some(c => c.scores) || mcCompanyBreadth.some(c => c.scores)) && (
-                        <span className="absolute top-3 right-2 text-[10px] text-muted-foreground z-10 pointer-events-none">
-                            Needs a new Run Analysis (per-stock scores not saved yet)
-                        </span>
-                    )}
-                    <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }} stackOffset="sign">
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
-                            {commonXAxis(true)}
-                            <YAxis
-                                orientation="left"
-                                mirror={true}
-                                domain={['auto', 'auto']}
-                                tickFormatter={(val) => val === 0 ? '0' : Number.isInteger(val) ? val : val.toFixed(2)}
-                                width={38}
-                                tick={{ fontSize: 10 }}
-                                tickCount={3}
-                            />
-                            <Tooltip content={showTooltips ? <MarketBreadthTooltip kind="weighted2" /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
-                            <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.6} />
-                            <Bar dataKey="cdWBreadthScore2" stackId="wbs2" fill="#22c55e" name="CD weighted breadth score 2" isAnimationActive={false} />
-                            <Bar dataKey="mcWBreadthScore2" stackId="wbs2" fill="#ef4444" name="MC weighted breadth score 2" isAnimationActive={false} />
                             <ReferenceBlock />
                         </ComposedChart>
                     </ResponsiveContainer>
