@@ -3,6 +3,7 @@ import { useQuery, useQueries } from '@tanstack/react-query';
 import { analysisApi, stocksApi, reportsApi, type ScoringConfig } from '../services/api';
 import { IndexSummaryFigures } from './IndexSummaryFigures';
 import { MarketHeatmap, type HeatmapGroup } from './MarketHeatmap';
+import { MarketTrendGrid, MARKET_ROW } from './MarketTrendGrid';
 import { RunReportButton } from './RunReportButton';
 import { cn } from '../utils/cn';
 import { parseISO, format } from 'date-fns';
@@ -554,7 +555,23 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
 
     const [warningsDismissed, setWarningsDismissed] = useState(false);
 
-    // Market heatmap on top; an index's gauge card opens only after clicking its heatmap block
+    // Market trend on top -> click an index to open its stock heatmap -> click a heatmap block for its gauges
+    const [heatmapIndices, setHeatmapIndices] = useState<string[]>([]);
+    const [heatmapDate, setHeatmapDate] = useState<string | null>(null); // null = latest day
+    const toggleHeatmap = (key: string) => {
+        setHeatmapDate(null);
+        setHeatmapIndices(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+    };
+    const toggleAllHeatmaps = () => {
+        setHeatmapDate(null);
+        setHeatmapIndices(prev => prev.length === activeIndices.length ? [] : activeIndices.map(idx => idx.key));
+    };
+    const pickHeatmapDay = (key: string, date: string) => {
+        setHeatmapDate(date);
+        setHeatmapIndices(prev => key === MARKET_ROW
+            ? activeIndices.map(idx => idx.key)
+            : prev.includes(key) ? prev : [...prev, key]);
+    };
     const [expandedIndices, setExpandedIndices] = useState<string[]>([]);
     const toggleIndex = (key: string) =>
         setExpandedIndices(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
@@ -573,7 +590,9 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
     });
     const openIndices = activeIndices
         .map((idx, i) => ({ idx, i }))
-        .filter(({ idx }) => expandedIndices.includes(idx.key));
+        .filter(({ idx }) => expandedIndices.includes(idx.key) && heatmapIndices.includes(idx.key));
+    const shownHeatmapGroups = heatmapGroups.filter(g => heatmapIndices.includes(g.key));
+    const intervalWeightsOrDefault = scoringConfig?.interval_weights ?? { '1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32 };
     const [warningsExpanded, setWarningsExpanded] = useState(false);
 
     return (
@@ -630,13 +649,29 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                 </div>
             )}
 
-            <MarketHeatmap
+            <MarketTrendGrid
                 groups={heatmapGroups}
-                intervalWeights={scoringConfig?.interval_weights ?? { '1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32 }}
+                intervalWeights={intervalWeightsOrDefault}
+                minDate={breadthDateRange.start}
                 maxDate={breadthDateRange.end}
-                expanded={expandedIndices}
-                onToggle={toggleIndex}
+                selected={heatmapIndices}
+                onToggle={toggleHeatmap}
+                onSelectAll={toggleAllHeatmaps}
+                onPickDay={pickHeatmapDay}
+                pickedDate={heatmapDate}
             />
+
+            {shownHeatmapGroups.length > 0 && (
+                <MarketHeatmap
+                    groups={shownHeatmapGroups}
+                    intervalWeights={intervalWeightsOrDefault}
+                    maxDate={breadthDateRange.end}
+                    date={heatmapDate}
+                    onClearDate={() => setHeatmapDate(null)}
+                    expanded={expandedIndices}
+                    onToggle={toggleIndex}
+                />
+            )}
 
             {/* Gauge cards of the indices opened in the heatmap (click a card to flip to chart) */}
             {openIndices.length > 0 && (

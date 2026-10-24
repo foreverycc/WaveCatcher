@@ -25,6 +25,9 @@ interface Props {
     intervalWeights: Record<string, number>;
     /** last day to include (YYYY-MM-DD), from the date filter */
     maxDate?: string;
+    /** show this day instead of the latest one (YYYY-MM-DD) */
+    date?: string | null;
+    onClearDate?: () => void;
     expanded: string[];
     onToggle: (key: string) => void;
 }
@@ -44,7 +47,7 @@ function hexToRgb(h: string) {
     return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-function colorFor(v: number, scale: number) {
+export function colorFor(v: number, scale: number) {
     const t = Math.max(-1, Math.min(1, scale > 0 ? v / scale : 0));
     const stops = t >= 0 ? POS : NEG;
     const x = Math.abs(t) * (stops.length - 1);
@@ -56,7 +59,13 @@ function colorFor(v: number, scale: number) {
 }
 
 interface Rect { x: number; y: number; w: number; h: number }
-interface Item { ticker: string; size: number; value: number; cd: number; mc: number; cap?: number }
+type IntervalScores = Record<string, number>; // interval -> interval-weighted score in the window
+interface Item {
+    ticker: string; size: number; value: number; cd: number; mc: number; cap?: number;
+    cdIntervals: IntervalScores; mcIntervals: IntervalScores;
+}
+const INTERVAL_ORDER = ['1h', '2h', '3h', '4h', '1d'];
+const intervalList = (m: IntervalScores) => INTERVAL_ORDER.filter(k => k in m);
 
 /** Squarified treemap layout (Bruls et al.) of items sorted by size, in a w x h box. */
 function squarify<T extends { size: number }>(items: T[], w: number, h: number): (T & Rect)[] {
@@ -104,12 +113,12 @@ const fmtCap = (v?: number) => v == null ? '–' : v >= 1e12 ? `$${(v / 1e12).to
 const BLOCK_W = 1000; // layout units; tiles are positioned in % of the block
 const BLOCK_H = 620;
 
-export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDate, expanded, onToggle }) => {
+export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDate, date, onClearDate, expanded, onToggle }) => {
     const [windowDays, setWindowDays] = useState(1);
     const [hover, setHover] = useState<{ item: Item; group: string; x: number; y: number } | null>(null);
 
     const blocks = useMemo(() => {
-        const maxStr = maxDate;
+        const maxStr = date || maxDate;
         return groups.map(g => {
             // window = last N trading days up to the filter end date
             let days = g.tradingDays.filter(d => !maxStr || d <= maxStr);
@@ -118,33 +127,45 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
                     .filter(d => !maxStr || d <= maxStr).sort();
             }
             const inWindow = new Set(days.slice(-windowDays));
+            // per ticker: total interval-weighted score and the score of each interval that fired
             const sum = (rows: CompanyBreadthPoint[]) => {
                 const m = new Map<string, number>();
+                const byTicker = new Map<string, IntervalScores>();
                 rows.forEach(c => {
                     if (!inWindow.has(c.date) || !c.scores) return;
                     Object.entries(c.scores).forEach(([t, byIntv]) => {
                         let s = 0;
-                        Object.entries(byIntv).forEach(([k, v]) => { s += v * (intervalWeights[k] ?? 0); });
+                        const iv = byTicker.get(t) || {};
+                        Object.entries(byIntv).forEach(([k, v]) => {
+                            const ws = v * (intervalWeights[k] ?? 0);
+                            s += ws;
+                            iv[k] = (iv[k] || 0) + ws;
+                        });
+                        byTicker.set(t, iv);
                         m.set(t, (m.get(t) || 0) + s);
                     });
                 });
-                return m;
+                return { m, byTicker };
             };
-            const cd = sum(g.cdCompanyBreadth), mc = sum(g.mcCompanyBreadth);
+            const { m: cd, byTicker: cdIv } = sum(g.cdCompanyBreadth);
+            const { m: mc, byTicker: mcIv } = sum(g.mcCompanyBreadth);
             const hasWeights = !!g.weights && Object.keys(g.weights).length > 0;
             const items: Item[] = Array.from(new Set(g.tickers.map(t => t.toUpperCase())))
                 .map(t => {
                     const cap = g.weights?.[t];
-                    return { ticker: t, cap, size: hasWeights ? (cap || 0) : 1, cd: cd.get(t) || 0, mc: mc.get(t) || 0, value: (cd.get(t) || 0) - (mc.get(t) || 0) };
+                    return {
+                        ticker: t, cap, size: hasWeights ? (cap || 0) : 1, cd: cd.get(t) || 0, mc: mc.get(t) || 0,
+                        value: (cd.get(t) || 0) - (mc.get(t) || 0), cdIntervals: cdIv.get(t) || {}, mcIntervals: mcIv.get(t) || {},
+                    };
                 })
                 .filter(it => it.size > 0)
                 .sort((a, b) => b.size - a.size);
             const total = items.reduce((s, it) => s + it.size, 0);
             const net = total > 0 ? items.reduce((s, it) => s + it.value * it.size, 0) / total : 0;
             const hasScores = [...g.cdCompanyBreadth, ...g.mcCompanyBreadth].some(c => c.scores);
-            return { group: g, items, net, hasScores, hasWeights, rects: squarify(items, BLOCK_W, BLOCK_H) };
+            return { group: g, items, net, hasScores, hasWeights, lastDay: days[days.length - 1], rects: squarify(items, BLOCK_W, BLOCK_H) };
         });
-    }, [groups, intervalWeights, maxDate, windowDays]);
+    }, [groups, intervalWeights, maxDate, date, windowDays]);
 
     // One color scale for all blocks: 90th percentile of |net score| among stocks with a signal
     const scale = useMemo(() => {
@@ -153,13 +174,22 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
     }, [blocks]);
 
     if (groups.length === 0) return null;
+    const shownDay = blocks.map(b => b.lastDay).filter(Boolean).sort().pop();
     const missingScores = blocks.some(b => !b.hasScores);
 
     return (
         <div className="rounded-lg border bg-card p-3 relative">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <div>
-                    <h3 className="text-base font-semibold">Market Heatmap</h3>
+                    <h3 className="text-base font-semibold flex items-center gap-2">
+                        Market Heatmap
+                        <span className="text-xs font-normal text-muted-foreground">
+                            {windowDays > 1 ? `${windowDays} trading days to ` : ''}{shownDay ?? '–'}{!date && ' (latest)'}
+                        </span>
+                        {date && onClearDate && (
+                            <button onClick={onClearDate} className="text-[11px] font-normal px-1.5 py-0.5 rounded border border-input hover:bg-muted">Latest</button>
+                        )}
+                    </h3>
                     <p className="text-xs text-muted-foreground">
                         Size = market cap · Color = CD score − MC score per stock · Click an index to open its gauges
                     </p>
@@ -187,7 +217,7 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
                 <p className="text-xs text-amber-600 mb-2">Some indices have no per-stock scores yet; run the analysis again to color them.</p>
             )}
 
-            <div className={cn("grid gap-2", groups.length === 1 ? "grid-cols-1" : groups.length === 2 ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3")}>
+            <div className="grid gap-2 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
                 {blocks.map(b => {
                     const open = expanded.includes(b.group.key);
                     return (
@@ -231,6 +261,13 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
                                                     {r.value === 0 ? '0' : `${r.value > 0 ? '+' : ''}${r.value.toFixed(0)}`}
                                                 </span>
                                             )}
+                                            {fontCqw >= 2.4 && (intervalList(r.cdIntervals).length > 0 || intervalList(r.mcIntervals).length > 0) && (
+                                                <span className="opacity-90 whitespace-nowrap" style={{ fontSize: `clamp(7px, ${fontCqw * 0.42}cqw, 13px)` }}>
+                                                    {intervalList(r.cdIntervals).length > 0 && <>CD {intervalList(r.cdIntervals).join(' ')}</>}
+                                                    {intervalList(r.cdIntervals).length > 0 && intervalList(r.mcIntervals).length > 0 && ' · '}
+                                                    {intervalList(r.mcIntervals).length > 0 && <>MC {intervalList(r.mcIntervals).join(' ')}</>}
+                                                </span>
+                                            )}
                                         </div>
                                     );
                                 })}
@@ -255,6 +292,23 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
                         <span className="text-muted-foreground">MC score</span><span className="text-right text-red-500">{hover.item.mc.toFixed(1)}</span>
                         <span className="text-muted-foreground font-semibold">Net</span><span className="text-right font-semibold">{hover.item.value.toFixed(1)}</span>
                     </div>
+                    {(['cd', 'mc'] as const).map(side => {
+                        const iv = side === 'cd' ? hover.item.cdIntervals : hover.item.mcIntervals;
+                        const list = intervalList(iv);
+                        if (list.length === 0) return null;
+                        return (
+                            <div key={side} className="mt-1.5">
+                                <div className={cn("font-semibold", side === 'cd' ? "text-green-500" : "text-red-500")}>{side.toUpperCase()} intervals</div>
+                                <div className="grid grid-cols-2 gap-x-3">
+                                    {list.map(k => (
+                                        <React.Fragment key={k}>
+                                            <span className="text-muted-foreground">{k}</span><span className="text-right">{iv[k].toFixed(1)}</span>
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
