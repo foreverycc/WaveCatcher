@@ -298,8 +298,8 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
     // 3. 1234 signals for each index
     const signalQueries = useQueries({
         queries: activeIndices.map(idx => ({
-            queryKey: ['signals1234', idx.symbol],
-            queryFn: () => analysisApi.getSignals1234(idx.symbol),
+            queryKey: ['signals1234', idx.symbol, idx.stock_list],
+            queryFn: () => analysisApi.getSignals1234(idx.symbol, idx.stock_list),
             staleTime: 1000 * 60 * 60,
         }))
     });

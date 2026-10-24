@@ -1,3 +1,4 @@
+import pytest
 """Score distribution: per-ticker histograms of every indicator firing and their total over a run."""
 import os
 import sys
@@ -87,6 +88,34 @@ def test_refresh_market_cap_weights_keeps_old_for_missing(tmp_path, monkeypatch)
     lst.write_text('AAA\nBBB\nCCC\n')
     sw.save_weights(str(lst), {'BBB': 5, 'CCC': 7})
     monkeypatch.setattr(sw, 'fetch_market_caps', lambda t, workers=8: ({'AAA': 100.0, 'CCC': 9.0}, ['BBB']))
-    out = sw.refresh_market_cap_weights(str(lst))
+    assert sw.refresh_market_cap_weights(str(lst)) == {"BBB": 5.0, "CCC": 7.0}  # fresh: no refetch
+    out = sw.refresh_market_cap_weights(str(lst), max_age=0)
     assert out == {'AAA': 100.0, 'BBB': 5.0, 'CCC': 9.0}
     assert sw.load_weights(str(lst)) == out
+
+
+def test_rate_limit_retry(tmp_path, monkeypatch):
+    from app.logic import data_loader as dl
+    monkeypatch.setattr(dl, 'RATE_LIMIT_BACKOFF', [0, 0])
+    monkeypatch.setattr(dl, '_COOLDOWN_FILE', str(tmp_path / 'cooldown'))
+    calls = []
+
+    def flaky():
+        calls.append(1)
+        if len(calls) < 3:
+            raise Exception("Too Many Requests. Rate limited. Try after a while.")
+        return 'ok'
+    assert dl.call_with_rate_limit_retry(flaky) == 'ok' and len(calls) == 3
+
+    def always_limited():
+        raise Exception("Too Many Requests")
+    with pytest.raises(Exception):
+        dl.call_with_rate_limit_retry(always_limited)
+
+    def other_error():
+        calls.append(1)
+        raise ValueError("boom")
+    calls.clear()
+    with pytest.raises(ValueError):
+        dl.call_with_rate_limit_retry(other_error)
+    assert len(calls) == 1

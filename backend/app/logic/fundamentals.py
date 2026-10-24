@@ -14,6 +14,7 @@ import pandas as pd
 import yfinance as yf
 
 from app.db.database import SessionLocal
+from app.logic.data_loader import call_with_rate_limit_retry
 from app.db.models import QuarterlyFinancial
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ def _has_statements(ticker):
 
 def fetch_quarterly(ticker):
     """{period_end: {revenue, gross_profit, net_income, eps}} from yfinance (empty when unavailable)."""
-    stmt = yf.Ticker(ticker).quarterly_income_stmt
+    stmt = call_with_rate_limit_retry(lambda: yf.Ticker(ticker).quarterly_income_stmt, label=f'{ticker} financials')
     if stmt is None or stmt.empty:
         return {}
     out = {}

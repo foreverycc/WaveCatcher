@@ -216,8 +216,9 @@ export const analysisApi = {
         return response.data;
     },
 
-    getSignals1234: async (ticker: string) => {
-        const response = await api.get<{ cd_dates: string[], mc_dates: string[] }>(`/analysis/signals_1234/${ticker}`);
+    getSignals1234: async (ticker: string, stockList?: string) => {
+        const response = await api.get<{ cd_dates: string[], mc_dates: string[] }>(`/analysis/signals_1234/${ticker}`,
+            stockList ? { params: { stock_list: stockList } } : undefined);
         return response.data;
     },
 

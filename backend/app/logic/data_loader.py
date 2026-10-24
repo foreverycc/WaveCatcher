@@ -2,9 +2,62 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 import logging
+import os
+import random
+import tempfile
+import time
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
+
+# Yahoo rate limiting ("Too Many Requests") on big stock lists: back off and retry. The cool-down is
+# shared through a temp file so all worker processes pause together instead of hammering Yahoo.
+RATE_LIMIT_BACKOFF = [15, 30, 60, 90, 120]  # seconds before each retry
+_COOLDOWN_FILE = os.path.join(tempfile.gettempdir(), 'wavecatcher_yahoo_cooldown')
+
+
+def is_rate_limit_error(e):
+    msg = str(e).lower()
+    return type(e).__name__ == 'YFRateLimitError' or 'too many requests' in msg or 'rate limit' in msg
+
+
+def _wait_for_cooldown():
+    try:
+        with open(_COOLDOWN_FILE) as f:
+            until = float(f.read().strip() or 0)
+    except (OSError, ValueError):
+        return
+    wait = until - time.time()
+    if wait > 0:
+        time.sleep(min(wait, 180))
+
+
+def _start_cooldown(seconds):
+    try:
+        until = time.time() + seconds
+        try:
+            with open(_COOLDOWN_FILE) as f:
+                until = max(until, float(f.read().strip() or 0))
+        except (OSError, ValueError):
+            pass
+        with open(_COOLDOWN_FILE, 'w') as f:
+            f.write(str(until))
+    except OSError:
+        pass
+
+
+def call_with_rate_limit_retry(fn, *args, label='', **kwargs):
+    """fn(*args, **kwargs), retried with growing pauses while Yahoo answers "Too Many Requests"."""
+    for attempt in range(len(RATE_LIMIT_BACKOFF) + 1):
+        _wait_for_cooldown()
+        try:
+            return fn(*args, **kwargs)
+        except Exception as e:
+            if not is_rate_limit_error(e) or attempt == len(RATE_LIMIT_BACKOFF):
+                raise
+            pause = RATE_LIMIT_BACKOFF[attempt] * random.uniform(1.0, 1.3)
+            print(f"Yahoo rate limit{f' ({label})' if label else ''}; retry {attempt + 1}/{len(RATE_LIMIT_BACKOFF)} in {pause:.0f}s")
+            _start_cooldown(pause)
 
 MARKET_TZ = 'America/New_York'
 MARKET_CLOSE = pd.Timedelta(hours=16)
@@ -99,7 +152,7 @@ def download_stock_data(ticker, end_date=None):
     
     try:
         # Get 1-hour data for medium timeframes
-        data_ticker['1h'] = stock.history(interval='60m', period='2y')
+        data_ticker['1h'] = call_with_rate_limit_retry(stock.history, interval='60m', period='2y', label=f'{ticker} 1h')
         if not data_ticker['1h'].empty:
             print(f"Downloaded 1h data for {ticker}")
         else:
@@ -110,7 +163,7 @@ def download_stock_data(ticker, end_date=None):
     
     try:
         # Get daily data for long timeframes
-        data_ticker['1d'] = stock.history(interval='1d', period='2y')
+        data_ticker['1d'] = call_with_rate_limit_retry(stock.history, interval='1d', period='2y', label=f'{ticker} 1d')
         if not data_ticker['1d'].empty:
             print(f"Downloaded 1d data for {ticker}")
         else:

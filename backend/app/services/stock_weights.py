@@ -7,7 +7,11 @@ import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 
+import time
+
 import yfinance as yf
+
+from app.logic.data_loader import call_with_rate_limit_retry, is_rate_limit_error
 
 logger = logging.getLogger(__name__)
 
@@ -38,23 +42,29 @@ def save_weights(list_file, weights):
     return clean
 
 
+def _market_cap_once(ticker):
+    t = yf.Ticker(ticker)
+    try:
+        cap = t.fast_info['marketCap']
+    except Exception as e:
+        if is_rate_limit_error(e):
+            raise
+        cap = None
+    if not cap:
+        cap = (t.info or {}).get('marketCap')
+    return cap
+
+
 def _market_cap(ticker):
     try:
-        t = yf.Ticker(ticker)
-        cap = None
-        try:
-            cap = t.fast_info.get('market_cap') if hasattr(t.fast_info, 'get') else t.fast_info.market_cap
-        except Exception:
-            cap = None
-        if not cap:
-            cap = (t.info or {}).get('marketCap')
+        cap = call_with_rate_limit_retry(_market_cap_once, ticker, label=f'{ticker} market cap')
         return float(cap) if cap and cap > 0 else None
     except Exception as e:
         logger.warning(f"Market cap lookup failed for {ticker}: {e}")
         return None
 
 
-def fetch_market_caps(tickers, workers=8):
+def fetch_market_caps(tickers, workers=4):
     """{ticker: market cap} for the tickers yfinance knows, and the list of tickers it could not size."""
     with ThreadPoolExecutor(max_workers=workers) as pool:
         caps = dict(zip(tickers, pool.map(_market_cap, tickers)))
@@ -62,8 +72,12 @@ def fetch_market_caps(tickers, workers=8):
     return found, [t for t in tickers if t not in found]
 
 
-def refresh_market_cap_weights(list_file, tickers=None):
-    """Re-fetch market caps for a stock list and save them as its weights.
+MARKET_CAP_MAX_AGE = 12 * 3600  # seconds; market caps move slowly, so refresh at most twice a day
+
+
+def refresh_market_cap_weights(list_file, tickers=None, max_age=MARKET_CAP_MAX_AGE):
+    """Re-fetch market caps for a stock list and save them as its weights, unless they were
+    refreshed within the last max_age seconds.
     Tickers whose market cap can't be fetched keep their previous weight. Never raises."""
     try:
         if tickers is None:
@@ -72,8 +86,12 @@ def refresh_market_cap_weights(list_file, tickers=None):
         tickers = list(dict.fromkeys(t.upper() for t in tickers))
         if not tickers:
             return {}
-        found, missing = fetch_market_caps(tickers, workers=16)
         old = load_weights(list_file)
+        path = weights_path(list_file)
+        if max_age and os.path.exists(path) and time.time() - os.path.getmtime(path) < max_age:
+            return old
+        found, missing = fetch_market_caps(tickers)
+
         merged = {t: found.get(t, old.get(t)) for t in tickers if t in found or t in old}
         saved = save_weights(list_file, merged)
         logger.info(f"Updated market-cap weights for {os.path.basename(list_file)}: "
