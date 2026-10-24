@@ -266,9 +266,21 @@ def aggregate_company_breadth(raw_details, ticker_list=None):
         df = df[df['ticker'].isin(set(ticker_list))]
         if df.empty:
             return []
-    dates = pd.to_datetime(df['signal_date']).dt.strftime('%Y-%m-%d')
-    per_day = df.assign(date=dates).groupby('date')['ticker'].unique()
-    return [{'date': d, 'count': len(t), 'tickers': sorted(t.tolist())} for d, t in per_day.sort_index().items()]
+    df = df.assign(date=pd.to_datetime(df['signal_date']).dt.strftime('%Y-%m-%d'))
+    per_day = df.groupby('date')['ticker'].unique()
+    # Per-ticker indicator score sums by interval, for the cap-weighted score (Weighted Breadth Score 2)
+    scores = {}
+    if 'interval' in df.columns and 'indicator_score' in df.columns:
+        sdf = df.dropna(subset=['indicator_score'])
+        for (d, t, intv), v in sdf.groupby(['date', 'ticker', 'interval'])['indicator_score'].sum().items():
+            scores.setdefault(d, {}).setdefault(t, {})[intv] = round(float(v), 4)
+    out = []
+    for d, t in per_day.sort_index().items():
+        entry = {'date': d, 'count': len(t), 'tickers': sorted(t.tolist())}
+        if scores:
+            entry['scores'] = scores.get(d, {})
+        out.append(entry)
+    return out
 
 
 def save_eval_results(run_id, eval_results, side, all_ticker_data):

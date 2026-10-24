@@ -56,6 +56,19 @@ def test_company_breadth_counts_distinct_tickers_per_day():
     assert aggregate_company_breadth([]) == []
 
 
+def test_company_breadth_keeps_per_ticker_interval_scores():
+    from app.logic.stock_analyzer import aggregate_company_breadth
+    rows = [
+        {'ticker': 'A', 'interval': '1h', 'signal_date': '2026-10-01 10:30:00', 'indicator_score': 30},
+        {'ticker': 'A', 'interval': '1h', 'signal_date': '2026-10-01 14:30:00', 'indicator_score': 10},
+        {'ticker': 'A', 'interval': '1d', 'signal_date': '2026-10-01 00:00:00', 'indicator_score': 50},
+        {'ticker': 'B', 'interval': '4h', 'signal_date': '2026-10-01 13:30:00', 'indicator_score': None},
+    ]
+    out = aggregate_company_breadth(rows)
+    assert out == [{'date': '2026-10-01', 'count': 2, 'tickers': ['A', 'B'],
+                    'scores': {'A': {'1h': 40.0, '1d': 50.0}}}]
+
+
 def test_stock_weights_roundtrip(tmp_path, monkeypatch):
     from app.services import stock_weights as W
     monkeypatch.setattr(W, 'DATA_DIR', str(tmp_path))

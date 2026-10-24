@@ -1,7 +1,13 @@
 // Market breadth: how many companies had a CD / MC signal each day, and the breadth score
 // (that day's CD / MC Score times the share of companies with a signal).
 
-export interface CompanyBreadthPoint { date: string; count: number; tickers?: string[] }
+export interface CompanyBreadthPoint {
+    date: string;
+    count: number;
+    tickers?: string[];
+    /** per ticker: indicator score sum by interval ('1h', ..., '1d') that day */
+    scores?: Record<string, Record<string, number>>;
+}
 export interface ValuePoint { date: string; value: number }
 
 type ScoreRow = { date: string; score_1h?: number; score_2h?: number; score_3h?: number; score_4h?: number; score_1d?: number };
@@ -80,4 +86,34 @@ export function weightedShare(companies: CompanyBreadthPoint[] = [], weights: Re
         date: c.date,
         value: (c.tickers || []).reduce((s, t) => s + (weights[t.toUpperCase()] || 0), 0) / total,
     }));
+}
+
+/**
+ * Cap-weighted score per day: each ticker's interval-weighted score times its share of the
+ * list's total weight, summed over tickers (Weighted Breadth Score 2). Tickers without a signal add 0.
+ * Without weights every ticker of the list counts equally (= the plain average score).
+ */
+export function capWeightedScore(
+    companies: CompanyBreadthPoint[] = [],
+    weights: Record<string, number> | undefined,
+    listTickers: string[],
+    intervalWeights: Record<string, number>,
+): Map<string, number> {
+    const w = (t: string) => weights ? (weights[t.toUpperCase()] || 0) : 1;
+    const total = listTickers.reduce((s, t) => s + w(t), 0);
+    const out = new Map<string, number>();
+    if (total <= 0) return out;
+    for (const c of companies) {
+        if (!c.scores) continue;
+        let v = 0;
+        for (const [t, byIntv] of Object.entries(c.scores)) {
+            const tw = w(t);
+            if (!tw) continue;
+            let s = 0;
+            for (const [intv, score] of Object.entries(byIntv)) s += score * (intervalWeights[intv] ?? 0);
+            v += s * tw / total;
+        }
+        out.set(c.date, v);
+    }
+    return out;
 }
