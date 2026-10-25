@@ -462,6 +462,9 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     // We only need one ref to track mouse movement for all synchronized charts
     // But we need to attach listeners to a wrapper
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const lanesRef = useRef<HTMLDivElement>(null);
+    // scrolling lanes keep their full heights (about 172px per flex unit, as before the scroll area)
+    const lanesHeight = (selectedTicker ? 5.4 : 5.9) * 172;
 
     // Merge data by date
     const mergedData = useMemo(() => {
@@ -820,28 +823,6 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         });
     }, [zoomState]);
 
-    const handleWheel = (e: React.WheelEvent) => {
-        if (visibleData.length === 0) return;
-        const currentStart = zoomState ? zoomState.start : 0;
-        const currentEnd = zoomState ? zoomState.end : mergedData.length - 1;
-        const currentLength = currentEnd - currentStart + 1;
-        const zoomFactor = 0.1;
-        const delta = e.deltaY > 0 ? 1 : -1;
-        const change = Math.max(2, Math.floor(currentLength * zoomFactor));
-
-        let newStart = currentStart;
-        let newEnd = currentEnd;
-
-        if (delta > 0) { // Zoom Out
-            newStart = Math.max(0, currentStart - Math.ceil(change / 2));
-            newEnd = Math.min(mergedData.length - 1, currentEnd + Math.ceil(change / 2));
-        } else { // Zoom In
-            newStart = Math.min(newEnd - 5, currentStart + Math.ceil(change / 2));
-            newEnd = Math.max(newStart + 5, currentEnd - Math.ceil(change / 2));
-        }
-        setZoomState({ start: newStart, end: newEnd });
-    };
-
     // Global listeners
     useEffect(() => {
         if (wrapperRef.current) {
@@ -901,7 +882,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
 
     return (
-        <div className={`flex flex-col ${selectedTicker ? "h-[1300px]" : "h-[1500px]"} border rounded-lg bg-card p-4`}>
+        <div className="flex flex-col h-[1000px] border rounded-lg bg-card p-4">
             <div className="flex justify-between items-center mb-2 gap-2">
                 <h3 className="text-lg font-semibold text-foreground shrink-0">
                     {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}
@@ -934,11 +915,10 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             <div
                 ref={wrapperRef}
                 className="flex-1 flex flex-col min-h-0 select-none pb-2"
-                onWheel={handleWheel}
                 onMouseDown={handleMouseDown}
             >
                 {/* 1. Price History (Candle) */}
-                <div className="flex-[2] min-h-0 border-b border-border/0 relative" style={{ zIndex: 100 }}>
+                <div className="h-[350px] shrink-0 border-b border-border/0 relative" style={{ zIndex: 100 }}>
                     <span className="absolute top-5 left-2 text-[10px] font-medium text-[#8884d8] z-10">Price</span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
@@ -1055,7 +1035,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 </div>
 
                 {/* 2. SPX Volume */}
-                <div className="flex-[0.4] min-h-0 border-b border-border/50 relative" style={{ zIndex: 90 }}>
+                <div className="h-[70px] shrink-0 border-b border-border/50 relative" style={{ zIndex: 90 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#00A5E3] z-10">Vol</span>
                     <span className="absolute bottom-1 left-2 text-[10px] text-muted-foreground z-10">{volumeScale.suffix}</span>
                     <ResponsiveContainer width="100%" height="100%">
@@ -1086,6 +1066,9 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     </ResponsiveContainer>
                 </div>
 
+                {/* Everything from CD / MC down scrolls under the fixed price + volume lanes, at full lane heights */}
+                <div ref={lanesRef} className="flex-1 min-h-0 overflow-y-auto overscroll-contain border-t border-border">
+                <div className="flex flex-col" style={{ height: lanesHeight }}>
                 {/* 3. CD (up) / MC (down) signals by interval (stacked bar) */}
                 <div className="flex-[0.6] min-h-0 border-b border-border/50 relative" style={{ zIndex: 80 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium z-10"><span className="text-[#22c55e]">CD</span> / <span className="text-[#f87171]">MC</span></span>
@@ -1439,6 +1422,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                             <ReferenceBlock />
                         </ComposedChart>
                     </ResponsiveContainer>
+                </div>
+                </div>
                 </div>
             </div>
         </div>

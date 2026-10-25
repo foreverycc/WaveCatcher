@@ -255,7 +255,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         return { today: todayVol, avg, ratio, percentile };
     }, [filteredSpxData]);
 
-    const chartCardHeight = selectedTicker ? '1360px' : '1560px';
+    const chartCardHeight = '1060px';
 
     return (
         <>
