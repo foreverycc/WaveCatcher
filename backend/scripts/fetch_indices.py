@@ -258,6 +258,56 @@ def load_index_whitelist(filename):
         print(f"Warning: could not load index whitelist from {config_path}: {e}")
         return []
 
+# Companies listed with more than one share class: the classes trade almost identically, so keeping
+# both double-counts the company in breadth and market-cap weights. Drop the left one, keep the right one.
+SHARE_CLASS_DUPLICATES = {
+    'GOOG': 'GOOGL',   # Alphabet C / A
+    'FOX': 'FOXA',     # Fox B / A
+    'NWS': 'NWSA',     # News Corp B / A
+    'BRK-A': 'BRK-B',  # Berkshire Hathaway
+    'BF-A': 'BF-B',    # Brown-Forman
+    'LEN-B': 'LEN',    # Lennar
+    'HEI-A': 'HEI',    # HEICO
+    'ZG': 'Z',         # Zillow
+    'UA': 'UAA',       # Under Armour C / A
+    'BATRA': 'BATRK',  # Atlanta Braves Holdings
+    'BELFA': 'BELFB',  # Bel Fuse
+    'CENT': 'CENTA',   # Central Garden & Pet
+    'GLIBA': 'GLIBK',  # GCI Liberty
+    'LILA': 'LILAK',   # Liberty Latin America
+    'RUSHB': 'RUSHA',  # Rush Enterprises
+    'GEF-B': 'GEF',    # Greif
+    'MOG-B': 'MOG-A',  # Moog
+    'BH-A': 'BH',      # Biglari Holdings
+    'CRD-B': 'CRD-A',  # Crawford & Co
+    'KELYB': 'KELYA',  # Kelly Services
+    'LBRDA': 'LBRDK',  # Liberty Broadband
+    'FWONA': 'FWONK',  # Liberty Formula One
+    'QRTEB': 'QRTEA',  # QVC Group
+    'CWEN-A': 'CWEN',  # Clearway Energy
+    'GTN-A': 'GTN',    # Gray Media
+    'AGM-A': 'AGM',    # Farmer Mac
+    'STZ-B': 'STZ',    # Constellation Brands
+    'TAP-A': 'TAP',    # Molson Coors
+    'MKC-V': 'MKC',    # McCormick
+    'BIO-B': 'BIO',    # Bio-Rad
+}
+
+
+def normalize_ticker(t):
+    """Yahoo spelling: upper case, class suffix with '-' (BRK.B / 'GEF B' -> BRK-B / GEF-B)."""
+    return re.sub(r'[.\s]+', '-', str(t).strip().upper())
+
+
+def drop_share_class_duplicates(tickers):
+    """Remove the duplicate share class of a company when the list also holds its main class."""
+    present = set(tickers)
+    dropped = [t for t in tickers if SHARE_CLASS_DUPLICATES.get(t) in present]
+    if dropped:
+        print(f"Dropped duplicate share classes: {', '.join(f'{t} (kept {SHARE_CLASS_DUPLICATES[t]})' for t in dropped)}")
+    return [t for t in tickers if t not in dropped]
+
+
 def save_to_tab(stocks, filename):
     whitelist = load_index_whitelist(filename)
     combined = list(stocks)
@@ -267,8 +317,9 @@ def save_to_tab(stocks, filename):
 
     # Deduplicate and sort
     final_stocks = sorted(list(dict.fromkeys(
-        str(s).strip().upper().replace('.', '-') for s in combined if s and str(s).strip()
+        normalize_ticker(s) for s in combined if s and str(s).strip()
     )))
+    final_stocks = drop_share_class_duplicates(final_stocks)
 
     os.makedirs(DATA_DIR, exist_ok=True)
     filepath = os.path.join(DATA_DIR, filename)
