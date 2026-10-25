@@ -367,6 +367,13 @@ const DmaTooltip = ({ active, payload }: any) => {
     );
 };
 
+// Key Treasury yield levels: 5% is the multi-decade high that pressures stocks, 4.5% the warning zone, 4% the line markets watch
+const YIELD_LEVELS = [
+    { y: 5, color: '#ef4444', opacity: 0.8, width: 1.4, dash: undefined },
+    { y: 4.5, color: '#f59e0b', opacity: 0.6, width: 1, dash: '4 3' },
+    { y: 4, color: '#a3a3a3', opacity: 0.5, width: 1, dash: '2 3' },
+];
+
 const BondYieldTooltip = ({ active, payload }: any) => {
     if (!active || !payload?.length) return null;
     const d = payload[0].payload;
@@ -1314,6 +1321,11 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                             />
                             <Tooltip content={showTooltips ? <BondYieldTooltip /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <ReferenceLine yAxisId="spread" y={0} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.5} strokeDasharray="4 4" />
+                            {/* Key yield levels (shown when they fall inside the visible range) */}
+                            {YIELD_LEVELS.map(l => (
+                                <ReferenceLine key={l.y} yAxisId="yield" y={l.y} stroke={l.color} strokeOpacity={l.opacity} strokeWidth={l.width} strokeDasharray={l.dash}
+                                    label={{ value: `${l.y}%`, position: 'insideLeft', dx: 34, fontSize: 9, fill: l.color }} />
+                            ))}
                             <Area yAxisId="spread" type="monotone" dataKey="yieldSpread" stroke="hsl(var(--foreground))" strokeOpacity={0.4} fill="hsl(var(--foreground))" fillOpacity={0.08} strokeWidth={1} dot={false} isAnimationActive={false} connectNulls />
                             <Line yAxisId="yield" type="monotone" dataKey="y3m" stroke="#60a5fa" strokeWidth={1.2} dot={false} connectNulls isAnimationActive={false} />
                             <Line yAxisId="yield" type="monotone" dataKey="y2y" stroke="#fbbf24" strokeWidth={1.2} dot={false} connectNulls isAnimationActive={false} />
