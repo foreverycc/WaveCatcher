@@ -15,7 +15,7 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import type { QuarterlyFundamentals } from '../services/api';
-import { capWeightedScore, denomAt, listedCount, type CompanyBreadthPoint, type CapHistory, type Denom, type FirstDates } from '../utils/marketBreadth';
+import { capWeightedScore, denomAt, listedCount, type CompanyBreadthPoint, type CapHistory, type Denom, type DmaBreadthPoint, type FirstDates } from '../utils/marketBreadth';
 
 interface BreadthDataPoint {
     date: string;
@@ -98,6 +98,8 @@ interface MarketBreadthChartProps {
     firstDates?: FirstDates;
     /** price history for weights at each day's market cap */
     capHistory?: CapHistory;
+    /** % of stocks above their 20 / 50 / 200-day moving average */
+    dmaBreadth?: DmaBreadthPoint[];
 }
 
 // Colors for each interval in stacked bar charts
@@ -333,6 +335,21 @@ const CombinedScoreTooltip = ({ active, payload }: any) => {
     );
 };
 
+const DmaTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    const fmt = (v: number | null | undefined) => v == null ? '–' : `${v.toFixed(1)}%`;
+    return (
+        <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
+            <div className="grid grid-cols-2 gap-x-4">
+                <span className="text-muted-foreground">Above 20DMA:</span><span className="text-right text-[#38bdf8]">{fmt(d.dma20)}</span>
+                <span className="text-muted-foreground">Above 50DMA:</span><span className="text-right text-[#f59e0b]">{fmt(d.dma50)}</span>
+                <span className="text-muted-foreground">Above 200DMA:</span><span className="text-right text-[#a78bfa]">{fmt(d.dma200)}</span>
+            </div>
+        </div>
+    );
+};
+
 const MarketBreadthTooltip = ({ active, payload, kind }: any) => {
     if (!active || !payload?.length) return null;
     const d = payload[0].payload;
@@ -381,7 +398,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     mcCompanyBreadth = [],
     tickerWeights,
     firstDates,
-    capHistory
+    capHistory,
+    dmaBreadth = []
 }) => {
     // Effective interval weights: use prop if provided, else fall back to SCORE_WEIGHTS constant
     const effectiveWeights = intervalWeights || SCORE_WEIGHTS;
@@ -613,6 +631,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         const capW = useWeights ? tickerWeights : undefined;
         const cdCapScore = capWeightedScore(cdCompanyBreadth, capW, listTickers, effectiveWeights, firstDates, capHistory);
         const mcCapScore = capWeightedScore(mcCompanyBreadth, capW, listTickers, effectiveWeights, firstDates, capHistory);
+        const dma = new Map(dmaBreadth.map(r => [r.date, r]));
         const cdCompanies = new Map(cdCompanyBreadth.map(c => [c.date, c.count]));
         const mcCompanies = new Map(mcCompanyBreadth.map(c => [c.date, c.count]));
         result.forEach(d => {
@@ -621,6 +640,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             d.mcCompaniesNeg = -d.mcCompanies;
             d.cdShare = d.cdCompanies / div(d.date);
             d.mcShare = d.mcCompanies / div(d.date);
+            const m = dma.get(d.date);
+            d.dma20 = m?.above20 ?? null; d.dma50 = m?.above50 ?? null; d.dma200 = m?.above200 ?? null;
             d.cdBreadthScore = (d.cdNewScore || 0) * d.cdShare;
             d.mcBreadthScore = -(d.mcNewScore || 0) * d.mcShare;
             d.netBreadthScore = d.cdBreadthScore + d.mcBreadthScore;
@@ -641,7 +662,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         }
 
         return result;
-    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, cdCompanyBreadth, mcCompanyBreadth, tickerWeights, firstDates, capHistory, effectiveWeights, minDate, maxDate, selectedTicker, tickers, fundamentals]);
+    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, cdCompanyBreadth, mcCompanyBreadth, tickerWeights, firstDates, capHistory, dmaBreadth, effectiveWeights, minDate, maxDate, selectedTicker, tickers, fundamentals]);
 
     // Visible slice
     const visibleData = useMemo(() => {
@@ -819,7 +840,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
 
     return (
-        <div className="flex flex-col h-[975px] border rounded-lg bg-card p-4">
+        <div className={`flex flex-col ${selectedTicker ? "h-[975px]" : "h-[1050px]"} border rounded-lg bg-card p-4`}>
             <div className="flex justify-between items-center mb-2 gap-2">
                 <h3 className="text-lg font-semibold text-foreground shrink-0">
                     {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}
@@ -1167,6 +1188,41 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                         </ComposedChart>
                     </ResponsiveContainer>
                 </div>
+
+                {/* 10c. % of stocks closing above their 20 / 50 / 200-day moving average (stock lists only) */}
+                {!selectedTicker && <div className="flex-[0.5] min-h-0 border-b border-border/50 relative" style={{ zIndex: 20 }}>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium z-10">
+                        % Above DMA <span className="text-muted-foreground font-normal">(stocks closing above their <span className="text-[#38bdf8]">20</span> / <span className="text-[#f59e0b]">50</span> / <span className="text-[#a78bfa]">200</span>-day average)</span>
+                    </span>
+                    {dmaBreadth.length === 0 && (
+                        <span className="absolute top-3 right-2 text-[10px] text-muted-foreground z-10 pointer-events-none">
+                            No daily price history for this list yet
+                        </span>
+                    )}
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(true)}
+                            <YAxis
+                                orientation="left"
+                                mirror={true}
+                                domain={[0, 100]}
+                                ticks={[20, 50, 80]}
+                                tickFormatter={(val) => `${val}%`}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                            />
+                            <Tooltip content={showTooltips ? <DmaTooltip /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <ReferenceLine y={80} stroke="#22c55e" strokeOpacity={0.35} strokeDasharray="4 4" />
+                            <ReferenceLine y={50} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.4} />
+                            <ReferenceLine y={20} stroke="#ef4444" strokeOpacity={0.35} strokeDasharray="4 4" />
+                            <Line type="monotone" dataKey="dma20" stroke="#38bdf8" strokeWidth={1.2} dot={false} connectNulls isAnimationActive={false} name="% above 20DMA" />
+                            <Line type="monotone" dataKey="dma50" stroke="#f59e0b" strokeWidth={1.2} dot={false} connectNulls isAnimationActive={false} name="% above 50DMA" />
+                            <Line type="monotone" dataKey="dma200" stroke="#a78bfa" strokeWidth={1.4} dot={false} connectNulls isAnimationActive={false} name="% above 200DMA" />
+                            <ReferenceBlock />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>}
 
                 {/* Quarterly fundamentals: revenue / net income / gross margin */}
                 <div className="flex-[0.7] min-h-0 border-b border-border/50 relative" style={{ zIndex: 8 }}>

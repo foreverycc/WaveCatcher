@@ -10,6 +10,13 @@ export interface CompanyBreadthPoint {
 }
 export interface ValuePoint { date: string; value: number }
 
+/** % of stocks closing above their 20 / 50 / 200-day moving average (n = stocks with enough history) */
+export interface DmaBreadthPoint {
+    date: string;
+    above20: number | null; above50: number | null; above200: number | null;
+    n20: number; n50: number; n200: number;
+}
+
 type ScoreRow = { date: string; score_1h?: number; score_2h?: number; score_3h?: number; score_4h?: number; score_1d?: number };
 type SignalRow = { date: string; count_1h?: number; count_2h?: number; count_3h?: number; count_4h?: number; count_1d?: number };
 

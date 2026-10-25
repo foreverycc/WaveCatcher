@@ -5,7 +5,7 @@ import { analysisApi } from '../services/api';
 import { MarketBreadthChart } from './MarketBreadthChart';
 import { BreadthHistogramPanel } from './BreadthHistogramPanel';
 import { cn } from '../utils/cn';
-import { breadthShare, breadthScore, companiesFromSignalBreadth, balanceIndex, signalCountSeries, scoreSeries, listedCount, type CapHistory, type CompanyBreadthPoint, type FirstDates } from '../utils/marketBreadth';
+import { breadthShare, breadthScore, companiesFromSignalBreadth, balanceIndex, signalCountSeries, scoreSeries, listedCount, type CapHistory, type CompanyBreadthPoint, type DmaBreadthPoint, type FirstDates } from '../utils/marketBreadth';
 import { Gauge, PLAIN_ZONES, BALANCE_ZONES, zoneOf, toneText } from './Gauge';
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -51,6 +51,8 @@ export interface IndexSummaryCardProps {
     firstDates?: FirstDates;
     /** price history for weights at each day's market cap */
     capHistory?: CapHistory;
+    /** % of stocks above their 20 / 50 / 200-day moving average */
+    dmaBreadth?: DmaBreadthPoint[];
     indexTicker?: string;
 }
 
@@ -71,6 +73,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     intervalWeights,
     firstDates,
     capHistory,
+    dmaBreadth,
     minDate,
     maxDate,
     signals1234,
@@ -448,6 +451,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                     mcCompanyBreadth={effectiveMcCompanyBreadth}
                                     tickerWeights={useTickerSignals ? undefined : tickerWeights}
                                     capHistory={useTickerSignals ? undefined : capHistory}
+                                    dmaBreadth={useTickerSignals ? undefined : dmaBreadth}
                                     intervalWeights={intervalWeights}
                                     minDate={minDate}
                                     maxDate={maxDate}
@@ -505,6 +509,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             mcCompanyBreadth={effectiveMcCompanyBreadth}
                             tickerWeights={useTickerSignals ? undefined : tickerWeights}
                                     capHistory={useTickerSignals ? undefined : capHistory}
+                                    dmaBreadth={useTickerSignals ? undefined : dmaBreadth}
                             intervalWeights={intervalWeights}
                             minDate={minDate}
                             maxDate={maxDate}

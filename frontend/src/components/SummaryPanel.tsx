@@ -733,6 +733,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             tickers={idx.tickers}
                             firstDates={firstDates}
                             capHistory={capHistoryQueries[i]?.data}
+                            dmaBreadth={breadth?.dma_breadth}
                             indexTicker={idx.symbol}
                             {...savedFigures?.figures.find(figure => figure.title === idx.key)}
                         />

@@ -272,6 +272,7 @@ export const analysisApi = {
             cd_company_breadth?: { date: string, count: number, tickers?: string[], scores?: Record<string, Record<string, number>> }[],
             mc_company_breadth?: { date: string, count: number, tickers?: string[], scores?: Record<string, Record<string, number>> }[],
             data_quality: { warnings: string[], failed_tickers: string[], total_tickers: number, successful_tickers: number } | null,
+            dma_breadth?: { date: string, above20: number | null, above50: number | null, above200: number | null, n20: number, n50: number, n200: number }[],
             run_id: number | null
         }>(`/analysis/market_breadth/${encodeURIComponent(stockList)}`);
         return response.data;

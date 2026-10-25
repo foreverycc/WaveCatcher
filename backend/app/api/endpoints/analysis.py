@@ -19,6 +19,7 @@ from app.logic.options import get_option_data
 from app.logic.scoring_config import get_config as get_scoring_config, save_config as save_scoring_config, DEFAULT_CONFIG as SCORING_DEFAULTS
 from app.logic.signals import compute_signals, signal_lookback_days
 from app.logic.fundamentals import ticker_quarterly, aggregate_quarterly, refresh_quarterly
+from app.services.stock_weights import load_dma_breadth
 
 logger = logging.getLogger(__name__)
 
@@ -394,6 +395,8 @@ async def get_market_breadth_by_stock_list(
         "cd_company_breadth": company_breadth.get('cd', []),
         "mc_company_breadth": company_breadth.get('mc', []),
         "data_quality": data_quality,
+        # % of stocks above their 20 / 50 / 200-day moving average, from stored daily prices
+        "dma_breadth": load_dma_breadth(stock_list),
         "run_id": run_id
     }
 

@@ -109,12 +109,26 @@ def cap_history_path(list_file):
     return os.path.join(DATA_DIR, f"{os.path.basename(list_file)}.cap_history.json")
 
 
+def dma_breadth_path(list_file):
+    return os.path.join(DATA_DIR, f"{os.path.basename(list_file)}.dma_breadth.json")
+
+
+DMA_WINDOWS = (20, 50, 200)
+
+
 def build_cap_history(list_file, tickers=None):
-    """Each ticker's daily close relative to its latest close, sampled every CAP_HISTORY_STEP
-    trading days back from the latest day, saved next to the list. Today's market-cap weight
-    times this ratio approximates the market cap on that day (shares outstanding taken as
-    constant). Ratios are integers in 1/10000; null before the ticker had data (e.g. an IPO).
-    Returns {"dates": [...], "ratios": {ticker: [...]}}. Never raises."""
+    """Price-derived stats of a stock list, saved next to it; returns the cap history.
+
+    Cap history: each ticker's daily close relative to its latest close, sampled every
+    CAP_HISTORY_STEP trading days back from the latest day. Today's market-cap weight times
+    this ratio approximates the market cap on that day (shares outstanding taken as constant).
+    Ratios are integers in 1/10000; null before the ticker had data (e.g. an IPO).
+    {"dates": [...], "ratios": {ticker: [...]}}
+
+    DMA breadth: per day, the % of stocks closing above their 20 / 50 / 200-day moving average,
+    among the stocks with enough history for that average.
+    [{"date", "above20", "above50", "above200", "n20", "n50", "n200"}]
+    Never raises."""
     empty = {"dates": [], "ratios": {}}
     try:
         import pandas as pd
@@ -137,6 +151,7 @@ def build_cap_history(list_file, tickers=None):
         df = pd.DataFrame(rows, columns=['ticker', 'ts', 'close']).dropna()
         df['date'] = pd.to_datetime(df['ts']).dt.strftime('%Y-%m-%d')
         closes = df.pivot_table(index='date', columns='ticker', values='close', aggfunc='last').sort_index().ffill()
+
         ratios = closes / closes.iloc[-1]
         dates = list(ratios.index)[::-1][::CAP_HISTORY_STEP][::-1]
         sampled = ratios.loc[dates]
@@ -144,11 +159,45 @@ def build_cap_history(list_file, tickers=None):
             t: [None if pd.isna(v) else int(round(float(v) * 10000)) for v in sampled[t]] for t in sampled.columns}}
         with open(cap_history_path(list_file), 'w') as f:
             json.dump(out, f, separators=(',', ':'))
-        logger.info(f"Saved cap history for {os.path.basename(list_file)}: {len(out['ratios'])} tickers, {len(dates)} samples")
+
+        with open(dma_breadth_path(list_file), 'w') as f:
+            json.dump(dma_breadth_from_closes(closes), f, separators=(',', ':'))
+        logger.info(f"Saved cap history and DMA breadth for {os.path.basename(list_file)}: "
+                    f"{len(out['ratios'])} tickers, {len(dates)} samples")
         return out
     except Exception as e:
         logger.warning(f"Cap history failed for {list_file}: {e}")
         return empty
+
+
+def dma_breadth_from_closes(closes):
+    """closes: date x ticker frame of daily closes (forward-filled). See build_cap_history."""
+    stats = {}
+    for n in DMA_WINDOWS:
+        ma = closes.rolling(n, min_periods=n).mean()
+        valid = ma.notna() & closes.notna()
+        stats[n] = ((closes > ma) & valid).sum(axis=1), valid.sum(axis=1)
+    rows = []
+    for d in closes.index:
+        row = {"date": d}
+        for n in DMA_WINDOWS:
+            above, cnt = int(stats[n][0][d]), int(stats[n][1][d])
+            row[f"above{n}"] = round(above / cnt * 100, 1) if cnt else None
+            row[f"n{n}"] = cnt
+        rows.append(row)
+    return rows
+
+
+def load_dma_breadth(list_file):
+    """Saved DMA breadth of a list (built with the cap history on first use)."""
+    path = dma_breadth_path(list_file)
+    if not os.path.exists(path):
+        build_cap_history(list_file)
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except Exception:
+        return []
 
 
 def load_cap_history(list_file):
