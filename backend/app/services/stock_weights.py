@@ -100,3 +100,64 @@ def refresh_market_cap_weights(list_file, tickers=None, max_age=MARKET_CAP_MAX_A
     except Exception as e:
         logger.warning(f"Market-cap weight refresh failed for {list_file}: {e}")
         return {}
+
+
+CAP_HISTORY_STEP = 5  # trading days between samples (market caps move slowly)
+
+
+def cap_history_path(list_file):
+    return os.path.join(DATA_DIR, f"{os.path.basename(list_file)}.cap_history.json")
+
+
+def build_cap_history(list_file, tickers=None):
+    """Each ticker's daily close relative to its latest close, sampled every CAP_HISTORY_STEP
+    trading days back from the latest day, saved next to the list. Today's market-cap weight
+    times this ratio approximates the market cap on that day (shares outstanding taken as
+    constant). Ratios are integers in 1/10000; null before the ticker had data (e.g. an IPO).
+    Returns {"dates": [...], "ratios": {ticker: [...]}}. Never raises."""
+    empty = {"dates": [], "ratios": {}}
+    try:
+        import pandas as pd
+        from app.db.database import SessionLocal
+        from app.db.models import PriceBar
+        if tickers is None:
+            with open(os.path.join(DATA_DIR, os.path.basename(list_file))) as f:
+                tickers = [l.strip() for l in f if l.strip()]
+        tickers = list(dict.fromkeys(t.upper() for t in tickers if not t.startswith('^')))
+        if not tickers:
+            return empty
+        db = SessionLocal()
+        try:
+            rows = db.query(PriceBar.ticker, PriceBar.timestamp, PriceBar.close).filter(
+                PriceBar.interval == '1d', PriceBar.ticker.in_(tickers)).all()
+        finally:
+            db.close()
+        if not rows:
+            return empty
+        df = pd.DataFrame(rows, columns=['ticker', 'ts', 'close']).dropna()
+        df['date'] = pd.to_datetime(df['ts']).dt.strftime('%Y-%m-%d')
+        closes = df.pivot_table(index='date', columns='ticker', values='close', aggfunc='last').sort_index().ffill()
+        ratios = closes / closes.iloc[-1]
+        dates = list(ratios.index)[::-1][::CAP_HISTORY_STEP][::-1]
+        sampled = ratios.loc[dates]
+        out = {"dates": dates, "ratios": {
+            t: [None if pd.isna(v) else int(round(float(v) * 10000)) for v in sampled[t]] for t in sampled.columns}}
+        with open(cap_history_path(list_file), 'w') as f:
+            json.dump(out, f, separators=(',', ':'))
+        logger.info(f"Saved cap history for {os.path.basename(list_file)}: {len(out['ratios'])} tickers, {len(dates)} samples")
+        return out
+    except Exception as e:
+        logger.warning(f"Cap history failed for {list_file}: {e}")
+        return empty
+
+
+def load_cap_history(list_file):
+    """Saved cap history of a list, built on first use."""
+    path = cap_history_path(list_file)
+    if os.path.exists(path):
+        try:
+            with open(path) as f:
+                return json.load(f)
+        except Exception as e:
+            logger.warning(f"Could not read cap history {path}: {e}")
+    return build_cap_history(list_file)

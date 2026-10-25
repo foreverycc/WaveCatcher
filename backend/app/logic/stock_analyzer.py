@@ -35,7 +35,7 @@ from app.logic.get_resonance_signal_MC import (
 from app.logic.get_best_CD_interval import evaluate_interval
 from app.logic.fundamentals import refresh_quarterly
 from app.logic.score_distribution import aggregate_score_histograms
-from app.services.stock_weights import refresh_market_cap_weights
+from app.services.stock_weights import refresh_market_cap_weights, build_cap_history
 from app.logic.get_best_MC_interval import evaluate_interval as evaluate_mc_interval
 from multiprocessing import Pool, cpu_count
 import functools
@@ -486,6 +486,8 @@ def analyze_stocks(file_path, end_date=None, progress_callback=None):
             if data: all_ticker_data[ticker] = data
 
         logger.info(f"Aggregated {len(cd_eval_results)} CD evaluation results and {len(mc_eval_results)} MC evaluation results")
+        # Prices are stored now: refresh the list's price history for weights at each day's market cap
+        build_cap_history(file_path)
         
         # Note: Index tickers (^SPX, QQQ, IWM) are now processed as part of the regular stock list above.
 
@@ -802,6 +804,9 @@ def analyze_multi_index(index_info_list, end_date=None, progress_callback=None):
                     progress_callback(int((processed_count / total) * 90))
         
         logger.info(f"Processed {len(all_ticker_data)} tickers successfully")
+        # Prices are stored now: refresh each list's price history for weights at each day's market cap
+        for list_path in refreshed_lists:
+            build_cap_history(list_path)
         
         # Helper: aggregate raw signal details by date and interval
         def aggregate_signals_by_interval(raw_details, metric_name, ticker_list=None):

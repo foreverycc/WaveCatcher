@@ -15,7 +15,7 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import type { QuarterlyFundamentals } from '../services/api';
-import { capWeightedScore, type CompanyBreadthPoint } from '../utils/marketBreadth';
+import { capWeightedScore, denomAt, listedCount, type CompanyBreadthPoint, type CapHistory, type Denom, type FirstDates } from '../utils/marketBreadth';
 
 interface BreadthDataPoint {
     date: string;
@@ -94,6 +94,10 @@ interface MarketBreadthChartProps {
     cdCompanyBreadth?: CompanyBreadthPoint[];
     mcCompanyBreadth?: CompanyBreadthPoint[];
     tickerWeights?: Record<string, number>;
+    /** first trading day of recently listed stocks: they only count from then on */
+    firstDates?: FirstDates;
+    /** price history for weights at each day's market cap */
+    capHistory?: CapHistory;
 }
 
 // Colors for each interval in stacked bar charts
@@ -375,7 +379,9 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     fundamentals = [],
     cdCompanyBreadth = [],
     mcCompanyBreadth = [],
-    tickerWeights
+    tickerWeights,
+    firstDates,
+    capHistory
 }) => {
     // Effective interval weights: use prop if provided, else fall back to SCORE_WEIGHTS constant
     const effectiveWeights = intervalWeights || SCORE_WEIGHTS;
@@ -458,7 +464,9 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
         // Only normalize by total stock count when viewing index-level (aggregate) data.
         // For individual ticker views, the scores are already for a single stock.
-        const divisor = !selectedTicker && tickers && tickers.length > 0 ? tickers.length : 1;
+        // Stocks already trading that day: a recent listing does not dilute the days before it
+        const divisorN: Denom = !selectedTicker && tickers && tickers.length > 0 ? listedCount(tickers, firstDates) : 1;
+        const div = (date: string) => denomAt(divisorN, date);
 
         // Process CD Signal Breadth (per-interval) + compute CD Score
         cdSignalBreadth.forEach(b => {
@@ -473,7 +481,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             // CD Score = weighted sum using configurable interval weights
             d.cdScore = (d.cd_1h * effectiveWeights['1h'] + d.cd_2h * effectiveWeights['2h']
                 + d.cd_3h * effectiveWeights['3h'] + d.cd_4h * effectiveWeights['4h']
-                + d.cd_1d * effectiveWeights['1d']) / divisor;
+                + d.cd_1d * effectiveWeights['1d']) / div(dateStr);
         });
 
         // Process MC Signal Breadth (per-interval) + compute MC Score
@@ -489,7 +497,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             // MC Score = weighted sum using configurable interval weights
             d.mcScore = (d.mc_1h * effectiveWeights['1h'] + d.mc_2h * effectiveWeights['2h']
                 + d.mc_3h * effectiveWeights['3h'] + d.mc_4h * effectiveWeights['4h']
-                + d.mc_1d * effectiveWeights['1d']) / divisor;
+                + d.mc_1d * effectiveWeights['1d']) / div(dateStr);
         });
 
         // Process CD Score Breadth (indicator-score weighted) — recompute from per-interval raw sums
@@ -501,7 +509,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 + (b.score_2h || 0) * effectiveWeights['2h']
                 + (b.score_3h || 0) * effectiveWeights['3h']
                 + (b.score_4h || 0) * effectiveWeights['4h']
-                + (b.score_1d || 0) * effectiveWeights['1d']) / divisor;
+                + (b.score_1d || 0) * effectiveWeights['1d']) / div(dateStr);
         });
 
         // Process MC Score Breadth (indicator-score weighted) — recompute from per-interval raw sums
@@ -513,7 +521,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 + (b.score_2h || 0) * effectiveWeights['2h']
                 + (b.score_3h || 0) * effectiveWeights['3h']
                 + (b.score_4h || 0) * effectiveWeights['4h']
-                + (b.score_1d || 0) * effectiveWeights['1d']) / divisor;
+                + (b.score_1d || 0) * effectiveWeights['1d']) / div(dateStr);
         });
 
         // Process CD HQ Score Breadth (indicator-score weighted, HQ only)
@@ -525,7 +533,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 + (b.score_2h || 0) * effectiveWeights['2h']
                 + (b.score_3h || 0) * effectiveWeights['3h']
                 + (b.score_4h || 0) * effectiveWeights['4h']
-                + (b.score_1d || 0) * effectiveWeights['1d']) / divisor;
+                + (b.score_1d || 0) * effectiveWeights['1d']) / div(dateStr);
         });
 
         // Process MC HQ Score Breadth (indicator-score weighted, HQ only)
@@ -537,7 +545,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 + (b.score_2h || 0) * effectiveWeights['2h']
                 + (b.score_3h || 0) * effectiveWeights['3h']
                 + (b.score_4h || 0) * effectiveWeights['4h']
-                + (b.score_1d || 0) * effectiveWeights['1d']) / divisor;
+                + (b.score_1d || 0) * effectiveWeights['1d']) / div(dateStr);
         });
 
         // Derive 1234 markers
@@ -603,16 +611,16 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         const listTickers = tickers || [];
         // Weighted Breadth Score: weight each ticker's score by its market-cap share before summing
         const capW = useWeights ? tickerWeights : undefined;
-        const cdCapScore = capWeightedScore(cdCompanyBreadth, capW, listTickers, effectiveWeights);
-        const mcCapScore = capWeightedScore(mcCompanyBreadth, capW, listTickers, effectiveWeights);
+        const cdCapScore = capWeightedScore(cdCompanyBreadth, capW, listTickers, effectiveWeights, firstDates, capHistory);
+        const mcCapScore = capWeightedScore(mcCompanyBreadth, capW, listTickers, effectiveWeights, firstDates, capHistory);
         const cdCompanies = new Map(cdCompanyBreadth.map(c => [c.date, c.count]));
         const mcCompanies = new Map(mcCompanyBreadth.map(c => [c.date, c.count]));
         result.forEach(d => {
             d.cdCompanies = cdCompanies.get(d.date) || 0;
             d.mcCompanies = mcCompanies.get(d.date) || 0;
             d.mcCompaniesNeg = -d.mcCompanies;
-            d.cdShare = d.cdCompanies / divisor;
-            d.mcShare = d.mcCompanies / divisor;
+            d.cdShare = d.cdCompanies / div(d.date);
+            d.mcShare = d.mcCompanies / div(d.date);
             d.cdBreadthScore = (d.cdNewScore || 0) * d.cdShare;
             d.mcBreadthScore = -(d.mcNewScore || 0) * d.mcShare;
             d.netBreadthScore = d.cdBreadthScore + d.mcBreadthScore;
@@ -633,7 +641,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         }
 
         return result;
-    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, cdCompanyBreadth, mcCompanyBreadth, tickerWeights, effectiveWeights, minDate, maxDate, selectedTicker, tickers, fundamentals]);
+    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, cdCompanyBreadth, mcCompanyBreadth, tickerWeights, firstDates, capHistory, effectiveWeights, minDate, maxDate, selectedTicker, tickers, fundamentals]);
 
     // Visible slice
     const visibleData = useMemo(() => {

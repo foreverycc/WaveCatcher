@@ -38,3 +38,6 @@ backend/data/schedule_state.json
 backend/data/scheduler.lock
 __pycache__/
 frontend/dist-report/
+
+# per-list price history for historical market-cap weights (rebuilt on each run)
+backend/data/*.cap_history.json

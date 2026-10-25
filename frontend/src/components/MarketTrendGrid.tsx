@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { cn } from '../utils/cn';
-import type { CompanyBreadthPoint } from '../utils/marketBreadth';
+import { denomAt, listedCount, listedWeight, weightOnDay, type CapHistory, type CompanyBreadthPoint, type FirstDates } from '../utils/marketBreadth';
 import type { HeatmapGroup } from './MarketHeatmap';
 
 /**
@@ -68,27 +68,34 @@ function addSide(out: SideScores, rows: CompanyBreadthPoint[], iw: Record<string
 }
 
 function rowSeries(metric: Metric, tickers: string[], weights: Record<string, number> | undefined,
-                   cd: SideScores, mc: SideScores, days: string[]) {
-    const n = tickers.length;
-    if (n === 0) return days.map(() => 0);
+                   cd: SideScores, mc: SideScores, days: string[], firstDates?: FirstDates, capHistory?: CapHistory) {
+    if (tickers.length === 0) return days.map(() => 0);
     if (metric === 'breadth') {
-        // same as the Breadth Score lane: average score x share of companies with a signal
-        const side = (day?: Map<string, number>) => {
+        // same as the Breadth Score lane: average score x share of companies with a signal,
+        // over the stocks already trading that day
+        const count = listedCount(tickers, firstDates);
+        const side = (date: string, day?: Map<string, number>) => {
             if (!day) return 0;
+            const n = denomAt(count, date);
             let sum = 0, cnt = 0;
             tickers.forEach(t => { const v = day.get(t); if (v !== undefined) { sum += v; cnt += 1; } });
             return (sum / n) * (cnt / n);
         };
-        return days.map(d => side(cd.get(d)) - side(mc.get(d)));
+        return days.map(d => side(d, cd.get(d)) - side(d, mc.get(d)));
     }
     const hasW = !!weights && Object.keys(weights).length > 0;
-    const w = (t: string) => hasW ? (weights![t] || 0) : 1;
-    const total = tickers.reduce((s, t) => s + w(t), 0);
+    // weights at each day's market cap (today's cap x price then / price now)
+    const w = weightOnDay(hasW ? weights : undefined, capHistory);
+    const totalOn = listedWeight(tickers, w, firstDates);
     return days.map(d => {
+        const total = totalOn(d);
         if (total <= 0) return 0;
         const c = cd.get(d), m = mc.get(d);
         let v = 0;
-        tickers.forEach(t => { v += ((c?.get(t) || 0) - (m?.get(t) || 0)) * w(t); });
+        tickers.forEach(t => {
+            const net = (c?.get(t) || 0) - (m?.get(t) || 0);
+            if (net) v += net * w(t, d);
+        });
         return v / total;
     });
 }
@@ -131,7 +138,7 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
             const tickers = Array.from(new Set(g.tickers.map(t => t.toUpperCase())));
             return {
                 key: g.key, label: g.key, sub: g.symbol, tickers,
-                strips: metrics.map(m => toStrip(m, rowSeries(m, tickers, g.weights, cd, mc, calcDays))),
+                strips: metrics.map(m => toStrip(m, rowSeries(m, tickers, g.weights, cd, mc, calcDays, g.firstDates, g.capHistory))),
             };
         });
 
@@ -144,9 +151,17 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
             if (cap && cap > (mWeights[t] || 0)) mWeights[t] = cap;
         }));
         const allHaveWeights = groups.every(g => g.weights && Object.keys(g.weights).length > 0);
+        // price ratios of every stock, from the lists sampled on the same days
+        const base = groups.find(g => g.capHistory?.dates.length)?.capHistory;
+        const mHistory: CapHistory | undefined = base && {
+            dates: base.dates,
+            ratios: Object.assign({}, ...groups
+                .filter(g => g.capHistory && g.capHistory.dates.join() === base.dates.join())
+                .map(g => g.capHistory!.ratios)),
+        };
         const market = {
             key: MARKET_ROW, label: 'Market', sub: `${mTickers.size} stocks`,
-            strips: metrics.map(m => toStrip(m, rowSeries(m, Array.from(mTickers), allHaveWeights ? mWeights : undefined, cd, mc, calcDays))),
+            strips: metrics.map(m => toStrip(m, rowSeries(m, Array.from(mTickers), allHaveWeights ? mWeights : undefined, cd, mc, calcDays, groups[0]?.firstDates, mHistory))),
         };
         return { days, rows: [market, ...perGroup] };
     }, [groups, intervalWeights, minDate, maxDate, span, metrics]);

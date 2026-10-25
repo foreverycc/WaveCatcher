@@ -297,6 +297,22 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
         }))
     });
 
+    // First trading day of recently listed stocks (they only count in breadth from then on)
+    const { data: firstDates } = useQuery({
+        queryKey: ['tickerFirstDates'],
+        queryFn: () => analysisApi.getTickerFirstDates(),
+        staleTime: 1000 * 60 * 5,
+    });
+
+    // Price history of each list's stocks, for weights at each day's market cap
+    const capHistoryQueries = useQueries({
+        queries: activeIndices.map(idx => ({
+            queryKey: ['capHistory', idx.stock_list],
+            queryFn: () => stocksApi.getCapHistory(idx.stock_list),
+            staleTime: 1000 * 60 * 5,
+        }))
+    });
+
     // 3. 1234 signals for each index
     const signalQueries = useQueries({
         queries: activeIndices.map(idx => ({
@@ -592,6 +608,8 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
             cdCompanyBreadth: breadth?.cd_company_breadth ?? [],
             mcCompanyBreadth: breadth?.mc_company_breadth ?? [],
             tradingDays: (historyQueries[i]?.data ?? []).map((d: any) => String(d.time ?? '').split('T')[0]).filter(Boolean),
+            firstDates,
+            capHistory: capHistoryQueries[i]?.data,
         };
     });
     const openIndices = activeIndices
@@ -713,6 +731,8 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             maxDate={breadthMaxDate}
                             signals1234={signals}
                             tickers={idx.tickers}
+                            firstDates={firstDates}
+                            capHistory={capHistoryQueries[i]?.data}
                             indexTicker={idx.symbol}
                             {...savedFigures?.figures.find(figure => figure.title === idx.key)}
                         />

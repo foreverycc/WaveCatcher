@@ -7,7 +7,7 @@ from sqlalchemy import distinct
 
 from app.db.database import SessionLocal
 from app.db.models import PriceBar
-from app.services.stock_weights import load_weights, save_weights, fetch_market_caps
+from app.services.stock_weights import load_weights, save_weights, fetch_market_caps, load_cap_history
 
 router = APIRouter()
 
@@ -93,6 +93,13 @@ async def get_stock_weights(filename: str):
     """Per-ticker weights of a stock list (empty when none are set)."""
     _list_tickers(filename)
     return {"weights": load_weights(filename)}
+
+
+@router.get("/{filename}/cap_history")
+def get_cap_history(filename: str):
+    """Price ratio history per ticker for weights at each day's market cap (see build_cap_history)."""
+    _list_tickers(filename)
+    return load_cap_history(filename)
 
 
 @router.put("/{filename}/weights")

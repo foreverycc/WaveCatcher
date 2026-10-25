@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { breadthShare, breadthScore, type CompanyBreadthPoint, type ValuePoint } from '../utils/marketBreadth';
+import { breadthShare, breadthScore, denomAt, listedCount, type CompanyBreadthPoint, type FirstDates, type ValuePoint } from '../utils/marketBreadth';
 import {
     BarChart,
     Bar,
@@ -206,6 +206,8 @@ interface BreadthHistogramPanelProps {
     mcCompanyBreadth?: CompanyBreadthPoint[];
     intervalWeights?: Record<string, number>;
     tickers: string[];
+    /** first trading day of recently listed stocks: they only count from then on */
+    firstDates?: FirstDates;
     filteredSpxData: any[];
     onNavigateRight: () => void;
     onMaximize?: () => void;
@@ -222,12 +224,14 @@ export const BreadthHistogramPanel: React.FC<BreadthHistogramPanelProps> = ({
     mcCompanyBreadth = [],
     intervalWeights,
     tickers,
+    firstDates,
     filteredSpxData,
     onNavigateRight,
     onMaximize,
     isFullscreen = false,
 }) => {
-    const divisor = tickers.length > 0 ? tickers.length : 1;
+    // stocks already trading each day (a recent listing does not dilute the days before it)
+    const divisor = listedCount(tickers, firstDates);
     const effectiveWeights = intervalWeights || { '1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32 };
 
     const latestDate = filteredSpxData && filteredSpxData.length > 0
@@ -236,7 +240,7 @@ export const BreadthHistogramPanel: React.FC<BreadthHistogramPanelProps> = ({
     const totalDays = filteredSpxData ? filteredSpxData.length : 0;
 
     const countValues = (data: { count_1h: number; count_2h: number; count_3h: number; count_4h: number; count_1d: number; date: string }[]) => {
-        const totalCount = (d: typeof data[0]) => ((d.count_1h || 0) + (d.count_2h || 0) + (d.count_3h || 0) + (d.count_4h || 0) + (d.count_1d || 0)) / divisor;
+        const totalCount = (d: typeof data[0]) => ((d.count_1h || 0) + (d.count_2h || 0) + (d.count_3h || 0) + (d.count_4h || 0) + (d.count_1d || 0)) / denomAt(divisor, d.date);
         const vals = data.map(d => totalCount(d));
         const todayEntry = data.find(d => d.date === latestDate);
         const today = todayEntry ? totalCount(todayEntry) : 0;
@@ -247,7 +251,7 @@ export const BreadthHistogramPanel: React.FC<BreadthHistogramPanelProps> = ({
         const totalScore = (d: typeof data[0]) => {
             return ((d.score_1h || 0) * effectiveWeights['1h'] + (d.score_2h || 0) * effectiveWeights['2h']
                 + (d.score_3h || 0) * effectiveWeights['3h'] + (d.score_4h || 0) * effectiveWeights['4h']
-                + (d.score_1d || 0) * effectiveWeights['1d']) / divisor;
+                + (d.score_1d || 0) * effectiveWeights['1d']) / denomAt(divisor, d.date);
         };
         const vals = data.map(d => totalScore(d));
         const todayEntry = data.find(d => d.date === latestDate);
@@ -302,7 +306,7 @@ export const BreadthHistogramPanel: React.FC<BreadthHistogramPanelProps> = ({
             },
         ];
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdCompanyBreadth, mcCompanyBreadth, tickers, filteredSpxData, intervalWeights]);
+    }, [cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdCompanyBreadth, mcCompanyBreadth, tickers, firstDates, filteredSpxData, intervalWeights]);
 
     const histogramHeight = isFullscreen ? 150 : 130;
 

@@ -309,6 +309,23 @@ def _latest_run_for_stock_list(db, stock_list):
     return (row[0], row[1]) if row else (None, None)
 
 
+@router.get("/ticker_first_dates")
+async def get_ticker_first_dates(db: Session = Depends(get_db)):
+    """First stored daily bar (YYYY-MM-DD) of every ticker whose history starts later than the
+    earliest one, e.g. a recent IPO. Breadth shares and scores divide by the stocks that were
+    trading on each day, so a stock does not dilute the days before it had data."""
+    from sqlalchemy import func
+    rows = db.query(PriceBar.ticker, func.min(PriceBar.timestamp)).filter(
+        PriceBar.interval == '1d'
+    ).group_by(PriceBar.ticker).all()
+    firsts = {t: pd.Timestamp(ts).strftime('%Y-%m-%d') for t, ts in rows if ts is not None}
+    if not firsts:
+        return {}
+    # a week of slack: tickers whose stored history starts a few days later still count from the start
+    cutoff = (pd.Timestamp(min(firsts.values())) + pd.Timedelta(days=7)).strftime('%Y-%m-%d')
+    return {t: d for t, d in firsts.items() if d > cutoff}
+
+
 @router.get("/market_breadth/{stock_list}")
 async def get_market_breadth_by_stock_list(
     stock_list: str,

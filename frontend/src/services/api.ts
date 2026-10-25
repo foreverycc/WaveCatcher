@@ -159,6 +159,11 @@ export const stocksApi = {
         const response = await api.get<{ weights: Record<string, number> }>(`/stocks/${filename}/weights`);
         return response.data.weights;
     },
+    /** each ticker's close relative to its latest close, sampled every few days (1/10000; null before listing) */
+    getCapHistory: async (filename: string) => {
+        const response = await api.get<{ dates: string[]; ratios: Record<string, (number | null)[]> }>(`/stocks/${filename}/cap_history`);
+        return response.data;
+    },
     saveWeights: async (filename: string, weights: Record<string, number>) => {
         const response = await api.put<{ weights: Record<string, number> }>(`/stocks/${filename}/weights`, { weights });
         return response.data.weights;
@@ -245,6 +250,12 @@ export const analysisApi = {
 
     getFundamentalsAggregate: async (tickers: string[]) => {
         const response = await api.post<QuarterlyFundamentals[]>('/analysis/fundamentals/aggregate', { tickers });
+        return response.data;
+    },
+
+    /** first daily bar (YYYY-MM-DD) of tickers whose history starts late, e.g. recent IPOs */
+    getTickerFirstDates: async () => {
+        const response = await api.get<Record<string, string>>('/analysis/ticker_first_dates');
         return response.data;
     },
 

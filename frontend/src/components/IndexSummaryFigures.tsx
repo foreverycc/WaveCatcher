@@ -34,7 +34,7 @@ export function IndexSummaryFigures({ expanded = false, anchorPrefix = "sector",
                 cdSignalBreadth={filter(props.cdSignalBreadth)} mcSignalBreadth={filter(props.mcSignalBreadth)}
                 cdScoreBreadth={filter(props.cdScoreBreadth)} mcScoreBreadth={filter(props.mcScoreBreadth)}
                 cdCompanyBreadth={filter(props.cdCompanyBreadth)} mcCompanyBreadth={filter(props.mcCompanyBreadth)}
-                intervalWeights={props.intervalWeights} tickers={props.tickers ?? []}
+                intervalWeights={props.intervalWeights} tickers={props.tickers ?? []} firstDates={props.firstDates}
                 filteredSpxData={props.spxData.filter(row => row.time.slice(0, 10) >= start && row.time.slice(0, 10) <= end)}
                 onNavigateRight={() => {}} isFullscreen
             />

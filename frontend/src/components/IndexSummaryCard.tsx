@@ -5,7 +5,7 @@ import { analysisApi } from '../services/api';
 import { MarketBreadthChart } from './MarketBreadthChart';
 import { BreadthHistogramPanel } from './BreadthHistogramPanel';
 import { cn } from '../utils/cn';
-import { breadthShare, breadthScore, companiesFromSignalBreadth, balanceIndex, signalCountSeries, scoreSeries, type CompanyBreadthPoint } from '../utils/marketBreadth';
+import { breadthShare, breadthScore, companiesFromSignalBreadth, balanceIndex, signalCountSeries, scoreSeries, listedCount, type CapHistory, type CompanyBreadthPoint, type FirstDates } from '../utils/marketBreadth';
 import { Gauge, PLAIN_ZONES, BALANCE_ZONES, zoneOf, toneText } from './Gauge';
 import { Maximize2, Minimize2, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -47,6 +47,10 @@ export interface IndexSummaryCardProps {
     maxDate?: Date;
     signals1234?: { cd_dates: string[], mc_dates: string[] };
     tickers?: string[];
+    /** first trading day of recently listed stocks: they only count from then on */
+    firstDates?: FirstDates;
+    /** price history for weights at each day's market cap */
+    capHistory?: CapHistory;
     indexTicker?: string;
 }
 
@@ -65,6 +69,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     mcCompanyBreadth = [],
     tickerWeights,
     intervalWeights,
+    firstDates,
+    capHistory,
     minDate,
     maxDate,
     signals1234,
@@ -209,7 +215,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     // CD vs MC balance gauges (0-100): percentile of today's CD - MC among the days in range
     const gauges = useMemo(() => {
         const days = (filteredSpxData || []).map((d: any) => d.time?.split('T')[0] ?? '').filter(Boolean);
-        const n = tickers.length > 0 ? tickers.length : 1;
+        const n = listedCount(tickers, firstDates);
         const last = (idx: number[]) => idx.length ? idx[idx.length - 1] : 50;
         const pct = (rows: CompanyBreadthPoint[]) => breadthShare(rows, n).map(r => ({ date: r.date, value: r.value * 100 }));
         const bs = balanceIndex(
@@ -227,7 +233,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
             scores: last(balanceIndex(scoreSeries(cdScoreBreadth, intervalWeights, n), scoreSeries(mcScoreBreadth, intervalWeights, n), days)),
             breadth: last(balanceIndex(pct(cdCompanyBreadth), pct(mcCompanyBreadth), days)),
         };
-    }, [filteredSpxData, tickers, cdCompanyBreadth, mcCompanyBreadth, cdScoreBreadth, mcScoreBreadth, cdSignalBreadth, mcSignalBreadth, intervalWeights]);
+    }, [filteredSpxData, tickers, cdCompanyBreadth, mcCompanyBreadth, cdScoreBreadth, mcScoreBreadth, cdSignalBreadth, mcSignalBreadth, intervalWeights, firstDates]);
 
     // Volume: today vs 1yr average + percentile
     const volumeStats = useMemo(() => {
@@ -389,6 +395,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             mcCompanyBreadth={filterByDateRange(mcCompanyBreadth)}
                             intervalWeights={intervalWeights}
                             tickers={tickers}
+                            firstDates={firstDates}
                             filteredSpxData={filteredSpxData}
                             onNavigateRight={() => setCardView('summary')}
                             onMaximize={() => setHistogramFullscreen(true)}
@@ -440,11 +447,13 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                     cdCompanyBreadth={effectiveCdCompanyBreadth}
                                     mcCompanyBreadth={effectiveMcCompanyBreadth}
                                     tickerWeights={useTickerSignals ? undefined : tickerWeights}
+                                    capHistory={useTickerSignals ? undefined : capHistory}
                                     intervalWeights={intervalWeights}
                                     minDate={minDate}
                                     maxDate={maxDate}
                                     signals1234={selectedTicker ? undefined : signals1234}
                                     tickers={tickers}
+                                    firstDates={firstDates}
                                     selectedTicker={selectedTicker}
                                     onTickerChange={setSelectedTicker}
                                     indexTitle={title}
@@ -495,11 +504,13 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             cdCompanyBreadth={effectiveCdCompanyBreadth}
                             mcCompanyBreadth={effectiveMcCompanyBreadth}
                             tickerWeights={useTickerSignals ? undefined : tickerWeights}
+                                    capHistory={useTickerSignals ? undefined : capHistory}
                             intervalWeights={intervalWeights}
                             minDate={minDate}
                             maxDate={maxDate}
                             signals1234={selectedTicker ? undefined : signals1234}
                             tickers={tickers}
+                            firstDates={firstDates}
                             selectedTicker={selectedTicker}
                             onTickerChange={setSelectedTicker}
                             indexTitle={title}
@@ -525,6 +536,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         mcCompanyBreadth={filterByDateRange(mcCompanyBreadth)}
                         intervalWeights={intervalWeights}
                         tickers={tickers}
+                        firstDates={firstDates}
                         filteredSpxData={filteredSpxData}
                         onNavigateRight={() => { setHistogramFullscreen(false); setCardView('summary'); }}
                         onMaximize={() => setHistogramFullscreen(false)}

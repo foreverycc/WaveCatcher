@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { cn } from '../utils/cn';
-import type { CompanyBreadthPoint } from '../utils/marketBreadth';
+import { denomAt, listedCount, listedOn, weightOnDay, type CapHistory, type CompanyBreadthPoint, type FirstDates } from '../utils/marketBreadth';
 
 /**
  * Finviz-style market heatmap. One block per index / sector; inside it every stock is a tile
@@ -18,6 +18,10 @@ export interface HeatmapGroup {
     mcCompanyBreadth: CompanyBreadthPoint[];
     /** trading days of the index (YYYY-MM-DD), used for the lookback window */
     tradingDays: string[];
+    /** first trading day of recently listed stocks: they only count from then on */
+    firstDates?: FirstDates;
+    /** price history for weights at each day's market cap */
+    capHistory?: CapHistory;
 }
 
 interface Props {
@@ -154,9 +158,14 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
             const { m: mc, byTicker: mcIv } = sum(g.mcCompanyBreadth);
             const hasWeights = !!g.weights && Object.keys(g.weights).length > 0;
             const byCap = metrics.includes('weighted') && hasWeights;
+            const lastDay = days[days.length - 1];
+            // market cap on the shown day (today's cap x price then / price now)
+            const capOn = weightOnDay(hasWeights ? g.weights : undefined, g.capHistory);
             const items: Item[] = Array.from(new Set(g.tickers.map(t => t.toUpperCase())))
+                // a stock listed after the shown day is left out of that day's map
+                .filter(t => !lastDay || listedOn(g.firstDates, t, lastDay))
                 .map(t => {
-                    const cap = g.weights?.[t];
+                    const cap = g.weights?.[t] == null ? undefined : lastDay ? capOn(t, lastDay) : g.weights[t];
                     return {
                         ticker: t, cap, size: byCap ? (cap || 0) : 1, cd: cd.get(t) || 0, mc: mc.get(t) || 0,
                         value: (cd.get(t) || 0) - (mc.get(t) || 0), cdIntervals: cdIv.get(t) || {}, mcIntervals: mcIv.get(t) || {},
@@ -169,7 +178,7 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
             const capTotal = items.reduce((s, it) => s + capOf(it), 0);
             const weighted = capTotal > 0 ? items.reduce((s, it) => s + it.value * capOf(it), 0) / capTotal : 0;
             const listSet = new Set(items.map(it => it.ticker));
-            const n = listSet.size || 1;
+            const count = listedCount(Array.from(listSet), g.firstDates);
             const dailySide = (rows: CompanyBreadthPoint[]) => {
                 let total = 0;
                 rows.forEach(c => {
@@ -180,13 +189,14 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
                         cnt += 1;
                         Object.entries(c.scores?.[t] || {}).forEach(([k, v]) => { sum += v * (intervalWeights[k] ?? 0); });
                     });
+                    const n = denomAt(count, c.date);
                     total += (sum / n) * (cnt / n);
                 });
                 return total;
             };
             const breadth = dailySide(g.cdCompanyBreadth) - dailySide(g.mcCompanyBreadth);
             const hasScores = [...g.cdCompanyBreadth, ...g.mcCompanyBreadth].some(c => c.scores);
-            return { group: g, items, weighted, breadth, byCap, hasScores, hasWeights, lastDay: days[days.length - 1], rects: squarify(items, BLOCK_W, BLOCK_H) };
+            return { group: g, items, weighted, breadth, byCap, hasScores, hasWeights, lastDay, rects: squarify(items, BLOCK_W, BLOCK_H) };
         });
     }, [groups, intervalWeights, maxDate, date, windowDays, metrics]);
 
