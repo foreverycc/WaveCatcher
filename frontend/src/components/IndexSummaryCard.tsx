@@ -251,13 +251,16 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         return { today: todayVol, avg, ratio, percentile };
     }, [filteredSpxData]);
 
+    const chartCardHeight = selectedTicker ? '1210px' : '1410px';
+
     return (
         <>
             <div
                 className="relative w-full"
                 style={{
-                    height: cardView === 'chart' ? '1035px' : cardView === 'histogram' ? '888px' : 'auto',
-                    minHeight: cardView === 'chart' ? '1035px' : cardView === 'histogram' ? '888px' : '0px',
+                    // chart view: the Market Breadth chart's height (see MarketBreadthChart) + header
+                    height: cardView === 'chart' ? chartCardHeight : cardView === 'histogram' ? '888px' : 'auto',
+                    minHeight: cardView === 'chart' ? chartCardHeight : cardView === 'histogram' ? '888px' : '0px',
                     transition: 'height 0.4s ease, min-height 0.4s ease'
                 }}
             >
@@ -493,7 +496,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             </button>
                         </div>
                     </div>
-                    <div className="p-1 flex-1 min-h-0 overflow-hidden">
+                    <div className="p-1 flex-1 min-h-0 overflow-y-auto">
                         <MarketBreadthChart
                             title={title}
                             spxData={selectedTicker && stockData ? stockData : spxData}

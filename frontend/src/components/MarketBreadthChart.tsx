@@ -274,19 +274,34 @@ const formatMoney = (v: number | null | undefined) => {
         : a >= 1e6 ? `${sign}$${(a / 1e6).toFixed(1)}M` : `${sign}$${a.toFixed(0)}`;
 };
 
-const FundamentalsTooltip = ({ active, payload }: any) => {
+/** Quarterly fundamentals tooltip; each lane shows only its own figures (the lanes' tooltips appear together) */
+const FundamentalsTooltip = ({ active, payload, part }: any) => {
     if (!active || !payload?.length) return null;
     const d = payload[0].payload;
     if (!d.fin_period) return null;
+    const row = (label: string, value: string, color: string) => (
+        <><span className="text-muted-foreground">{label}:</span><span className={`text-right ${color}`}>{value}</span></>
+    );
     return (
         <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
-            <p className="font-semibold mb-1">Quarter ending {d.fin_period}{d.fin_companies ? ` (${d.fin_companies} companies)` : ''}</p>
+            {part === 'income' && <p className="font-semibold mb-1">Quarter ending {d.fin_period}{d.fin_companies ? ` (${d.fin_companies} companies)` : ''}</p>}
             <div className="grid grid-cols-2 gap-x-4">
-                <span className="text-muted-foreground">Revenue:</span><span className="text-right text-[#60a5fa]">{formatMoney(d.fin_revenue)}</span>
-                <span className="text-muted-foreground">Gross Margin:</span><span className="text-right text-[#fbbf24]">{d.fin_gross_margin != null ? `${d.fin_gross_margin.toFixed(1)}%` : '-'}</span>
-                <span className="text-muted-foreground">Net Income:</span><span className="text-right text-[#34d399]">{formatMoney(d.fin_net)}</span>
-                {d.fin_eps != null && <><span className="text-muted-foreground">EPS:</span><span className="text-right text-[#a78bfa]">{d.fin_eps.toFixed(2)}</span></>}
-                {d.fin_eps_up != null && <><span className="text-muted-foreground">EPS up vs prev Q:</span><span className="text-right text-[#a78bfa]">{d.fin_eps_up.toFixed(0)}%</span></>}
+                {part === 'income' && <>
+                    {row('Revenue', formatMoney(d.fin_revenue), 'text-[#60a5fa]')}
+                    {row('Gross Margin', d.fin_gross_margin != null ? `${d.fin_gross_margin.toFixed(1)}%` : '-', 'text-[#fbbf24]')}
+                    {row('Net Income', formatMoney(d.fin_net), 'text-[#34d399]')}
+                </>}
+                {part === 'cash' && <>
+                    {d.fin_ocf != null && row('Operating Cash Flow', formatMoney(d.fin_ocf), 'text-[#22d3ee]')}
+                    {d.fin_capex != null && row('Capex', formatMoney(d.fin_capex), 'text-[#fb923c]')}
+                    {row('Free Cash Flow', formatMoney(d.fin_fcf), 'text-[#f472b6]')}
+                    {d.fin_fcf_conv != null && row('FCF Conversion', `${d.fin_fcf_conv.toFixed(0)}%`, 'text-foreground')}
+                </>}
+                {part === 'eps' && <>
+                    {d.fin_eps != null && row('EPS', d.fin_eps.toFixed(2), 'text-[#a78bfa]')}
+                    {d.fin_eps_up != null && row('EPS up vs prev Q', `${d.fin_eps_up.toFixed(0)}%`, 'text-[#a78bfa]')}
+                    {d.fin_fcf_pos != null && row('FCF positive', `${d.fin_fcf_pos.toFixed(0)}%`, 'text-[#f472b6]')}
+                </>}
             </div>
         </div>
     );
@@ -618,6 +633,13 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             d.fin_net = q.net_income;
             d.fin_eps = q.eps ?? null;
             d.fin_eps_up = q.eps_up_pct ?? null;
+            d.fin_ocf = q.operating_cash_flow ?? null;
+            d.fin_fcf = q.free_cash_flow ?? null;
+            d.fin_fcf_pos = q.fcf_positive_pct ?? null;
+            d.fin_capex = q.capital_expenditure ?? null;
+            // FCF conversion = free cash flow / net income, only meaningful while net income is positive
+            d.fin_fcf_conv = q.fcf_conversion ?? (q.free_cash_flow != null && q.net_income != null && q.net_income > 0
+                ? (q.free_cash_flow / q.net_income) * 100 : null);
         });
 
         // Filter to generally available days (mostly SPX days) for cleaner chart
@@ -840,7 +862,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
 
     return (
-        <div className={`flex flex-col ${selectedTicker ? "h-[975px]" : "h-[1050px]"} border rounded-lg bg-card p-4`}>
+        <div className={`flex flex-col ${selectedTicker ? "h-[1150px]" : "h-[1350px]"} border rounded-lg bg-card p-4`}>
             <div className="flex justify-between items-center mb-2 gap-2">
                 <h3 className="text-lg font-semibold text-foreground shrink-0">
                     {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}
@@ -1244,7 +1266,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={showTooltips ? <FundamentalsTooltip /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <FundamentalsTooltip part="income" /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <YAxis
                                 yAxisId="margin"
                                 orientation="right"
@@ -1263,10 +1285,51 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     </ResponsiveContainer>
                 </div>
 
+                {/* Quarterly cash flow: operating cash flow, capex, free cash flow; FCF margin / conversion on the right */}
+                <div className="flex-[0.7] min-h-0 border-b border-border/50 relative" style={{ zIndex: 7 }}>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium z-10">
+                        <span className="text-[#22d3ee]">Operating Cash Flow</span> / <span className="text-[#fb923c]">Capex</span> / <span className="text-[#f472b6]">Free Cash Flow</span>
+                        {' · '}<span className="text-foreground">FCF Conversion (FCF ÷ net income, % right, dashed)</span>
+                    </span>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(true)}
+                            <YAxis
+                                yAxisId="money"
+                                orientation="left"
+                                mirror={true}
+                                domain={['auto', 'auto']}
+                                tickFormatter={(val) => formatMoney(val)}
+                                width={50}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={showTooltips ? <FundamentalsTooltip part="cash" /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <YAxis
+                                yAxisId="pct"
+                                orientation="right"
+                                mirror={true}
+                                domain={['auto', 'auto']}
+                                tickFormatter={(val) => `${Number(val).toFixed(0)}%`}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <ReferenceLine yAxisId="money" y={0} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.5} />
+                            <Line yAxisId="money" type="stepAfter" dataKey="fin_ocf" stroke="#22d3ee" dot={false} strokeWidth={1.3} isAnimationActive={false} connectNulls />
+                            <Line yAxisId="money" type="stepAfter" dataKey="fin_capex" stroke="#fb923c" dot={false} strokeWidth={1.3} isAnimationActive={false} connectNulls />
+                            <Line yAxisId="money" type="stepAfter" dataKey="fin_fcf" stroke="#f472b6" dot={false} strokeWidth={1.8} isAnimationActive={false} connectNulls />
+                            <Line yAxisId="pct" type="stepAfter" dataKey="fin_fcf_conv" stroke="hsl(var(--foreground))" strokeOpacity={0.7} dot={false} strokeWidth={1.2} strokeDasharray="4 2" isAnimationActive={false} connectNulls />
+                            <ReferenceBlock yAxisId="money" />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
+
                 {/* Quarterly fundamentals: EPS (stock) or share of companies with rising EPS (stock list) */}
                 <div className="flex-[0.7] min-h-0 relative" style={{ zIndex: 6 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#a78bfa] z-10">
-                        {selectedTicker ? 'EPS (quarterly, diluted)' : 'EPS up vs previous quarter (% of companies)'}
+                        {selectedTicker ? 'EPS (quarterly, diluted)' : <>EPS up vs previous quarter / <span className="text-[#f472b6]">free cash flow positive</span> (% of companies)</>}
                     </span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
@@ -1281,8 +1344,9 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={showTooltips ? <FundamentalsTooltip /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <FundamentalsTooltip part="eps" /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Line type="stepAfter" dataKey={selectedTicker ? 'fin_eps' : 'fin_eps_up'} stroke="#a78bfa" dot={false} strokeWidth={1.5} isAnimationActive={false} connectNulls />
+                            {!selectedTicker && <Line type="stepAfter" dataKey="fin_fcf_pos" stroke="#f472b6" dot={false} strokeWidth={1.5} isAnimationActive={false} connectNulls />}
                             <ReferenceBlock />
                         </ComposedChart>
                     </ResponsiveContainer>

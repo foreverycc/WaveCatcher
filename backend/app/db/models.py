@@ -80,3 +80,17 @@ class QuarterlyFinancial(Base):
     net_income = Column(Float, nullable=True)
     eps = Column(Float, nullable=True)  # diluted EPS
     fetched_at = Column(DateTime, default=datetime.utcnow)
+
+
+class QuarterlyCashFlow(Base):
+    """Quarterly cash flow figures per ticker (from yfinance quarterly_cashflow).
+    A row dated CASHFLOW_NONE_DATE marks a ticker without a cash flow statement, so it is not
+    refetched before the next refresh."""
+    __tablename__ = "quarterly_cashflow"
+
+    ticker = Column(String, primary_key=True, index=True)
+    period_end = Column(Date, primary_key=True)  # fiscal quarter end date
+    operating_cash_flow = Column(Float, nullable=True)
+    free_cash_flow = Column(Float, nullable=True)  # operating cash flow - capital expenditure
+    capital_expenditure = Column(Float, nullable=True)  # negative = cash spent
+    fetched_at = Column(DateTime, default=datetime.utcnow)

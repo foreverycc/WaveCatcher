@@ -71,6 +71,17 @@ export interface QuarterlyFundamentals {
     net_income: number | null;
     eps?: number | null;
     eps_up_pct?: number | null;
+    operating_cash_flow?: number | null;
+    /** operating cash flow - capital expenditure */
+    free_cash_flow?: number | null;
+    /** negative = cash spent */
+    capital_expenditure?: number | null;
+    /** stock list: free cash flow / net income (%) of the companies reporting it */
+    fcf_conversion?: number | null;
+    /** stock list: free cash flow / revenue (%) of the companies reporting it */
+    fcf_margin?: number | null;
+    /** stock list: % of companies with positive free cash flow */
+    fcf_positive_pct?: number | null;
 }
 
 export interface StockList {
