@@ -717,12 +717,9 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                 />
             )}
 
-            {/* Gauge cards of the indices opened in the heatmap (click a card to flip to chart) */}
+            {/* Market Breadth charts of the indices opened in the heatmap (flip to Distributions inside each card) */}
             {openIndices.length > 0 && (
-            <div className={cn(
-                "grid gap-4 w-full",
-                openIndices.length <= 2 ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
-            )}>
+            <div className="grid gap-4 w-full grid-cols-1 xl:grid-cols-2">
                 {openIndices.map(({ idx, i }) => {
                     const history = historyQueries[i]?.data ?? [];
                     const breadth = breadthQueries[i]?.data;
@@ -752,6 +749,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                             capHistory={capHistoryQueries[i]?.data}
                             dmaBreadth={breadth?.dma_breadth}
                             indexTicker={idx.symbol}
+                            focusDate={heatmapDate}
                             {...savedFigures?.figures.find(figure => figure.title === idx.key)}
                         />
                     );

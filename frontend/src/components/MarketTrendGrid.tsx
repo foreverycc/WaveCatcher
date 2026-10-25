@@ -35,7 +35,7 @@ const SPANS = [{ label: '20D', days: 20 }, { label: '60D', days: 60 }, { label: 
 export const MARKET_ROW = '__market__';
 
 // Percentile bands, finest at the tails: the app cares most about the extreme 5% / 1% days
-const PCT_BANDS: { max: number; color: string; label: string; legend: string }[] = [
+export const PCT_BANDS: { max: number; color: string; label: string; legend: string }[] = [
     { max: 1, color: '#ff2b2b', label: 'Extreme MC (bottom 1%)', legend: '≤1' },
     { max: 5, color: '#c93a40', label: 'Strong MC (bottom 5%)', legend: '1–5' },
     { max: 10, color: '#94424b', label: 'MC (bottom 10%)', legend: '5–10' },
@@ -46,6 +46,9 @@ const PCT_BANDS: { max: number; color: string; label: string; legend: string }[]
     { max: 99, color: '#2bb052', label: 'Strong CD (top 5%)', legend: '95–99' },
     { max: 100, color: '#4dff7c', label: 'Extreme CD (top 1%)', legend: '≥99' },
 ];
+
+/** Market Trend color band of a percentile (0 = strongest MC, 100 = strongest CD) */
+export const pctBand = (p: number) => PCT_BANDS.find(b => p <= b.max) ?? PCT_BANDS[PCT_BANDS.length - 1];
 
 export type Metric = 'breadth' | 'weighted';
 const METRICS: { key: Metric; label: string; desc: string }[] = [
@@ -183,7 +186,7 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
     }, [groups, intervalWeights, minDate, maxDate, span, metrics]);
 
     // color: percentile 50 = neutral grey, 100 = full green (CD), 0 = full red (MC)
-    const band = (p: number) => PCT_BANDS.find(b => p <= b.max) ?? PCT_BANDS[PCT_BANDS.length - 1];
+    const band = pctBand;
     const pctColor = (p: number) => band(p).color;
     const zoneOf = (p: number) => band(p).label;
     const isExtreme = (p: number) => p <= 1 || p >= 99;

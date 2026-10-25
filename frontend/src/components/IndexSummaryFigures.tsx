@@ -28,13 +28,14 @@ export function IndexSummaryFigures({ expanded = false, anchorPrefix = "sector",
         </div>
         </ReportFigure>
         <ReportFigure id={`${anchorPrefix}-distribution`} title={`${props.title} — Distribution`}>
-        <div data-figure="distribution" className="report-distribution border rounded-lg bg-card" style={{ height: 850 }}>
+        <div data-figure="distribution" className="report-distribution border rounded-lg bg-card" style={{ height: 1030 }}>
             <BreadthHistogramPanel
                 title={props.title}
                 cdSignalBreadth={filter(props.cdSignalBreadth)} mcSignalBreadth={filter(props.mcSignalBreadth)}
                 cdScoreBreadth={filter(props.cdScoreBreadth)} mcScoreBreadth={filter(props.mcScoreBreadth)}
                 cdCompanyBreadth={filter(props.cdCompanyBreadth)} mcCompanyBreadth={filter(props.mcCompanyBreadth)}
                 intervalWeights={props.intervalWeights} tickers={props.tickers ?? []} firstDates={props.firstDates}
+                tickerWeights={props.tickerWeights} capHistory={props.capHistory}
                 filteredSpxData={props.spxData.filter(row => row.time.slice(0, 10) >= start && row.time.slice(0, 10) <= end)}
                 onNavigateRight={() => {}} isFullscreen
             />

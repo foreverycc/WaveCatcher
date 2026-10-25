@@ -29,6 +29,8 @@ interface SignalBreadthDataPoint {
 
 export interface IndexSummaryCardProps {
     staticSummary?: boolean;
+    /** day picked in Market Trend (YYYY-MM-DD): the Distributions mark it instead of the latest day */
+    focusDate?: string | null;
     title: string;
     spxData: any[];
     cdBreadth: BreadthDataPoint[];
@@ -79,9 +81,11 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     signals1234,
     tickers = [],
     indexTicker,
-    staticSummary = false
+    staticSummary = false,
+    focusDate
 }) => {
-    const [cardView, setCardView] = useState<'summary' | 'histogram' | 'chart'>('summary');
+    // the gauge summary is only drawn in the offline report; the dashboard opens on the Market Breadth chart
+    const [cardView, setCardView] = useState<'summary' | 'histogram' | 'chart'>(staticSummary ? 'summary' : 'chart');
     const [selectedTicker, setSelectedTicker] = useState<string>('');
     const [chartFullscreen, setChartFullscreen] = useState(false);
     const [histogramFullscreen, setHistogramFullscreen] = useState(false);
@@ -259,8 +263,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                 className="relative w-full"
                 style={{
                     // chart view: the Market Breadth chart's height (see MarketBreadthChart) + header
-                    height: cardView === 'chart' ? chartCardHeight : cardView === 'histogram' ? '888px' : 'auto',
-                    minHeight: cardView === 'chart' ? chartCardHeight : cardView === 'histogram' ? '888px' : '0px',
+                    height: cardView === 'chart' ? chartCardHeight : cardView === 'histogram' ? '1060px' : 'auto',
+                    minHeight: cardView === 'chart' ? chartCardHeight : cardView === 'histogram' ? '1060px' : '0px',
                     transition: 'height 0.4s ease, min-height 0.4s ease'
                 }}
             >
@@ -408,7 +412,10 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             tickers={tickers}
                             firstDates={firstDates}
                             filteredSpxData={filteredSpxData}
-                            onNavigateRight={() => setCardView('summary')}
+                        focusDate={focusDate}
+                        tickerWeights={tickerWeights}
+                        capHistory={capHistory}
+                            onNavigateRight={() => setCardView('chart')}
                             onMaximize={() => setHistogramFullscreen(true)}
                         />
                     )}
@@ -435,10 +442,10 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                     <Maximize2 className="w-4 h-4" />
                                 </button>
                                 <button
-                                    onClick={() => setCardView('summary')}
+                                    onClick={() => setCardView('histogram')}
                                     className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                                 >
-                                    ← Back to summary
+                                    ← Distributions
                                 </button>
                             </div>
                         </div>
@@ -494,10 +501,10 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                 <Minimize2 className="w-4 h-4" />
                             </button>
                             <button
-                                onClick={() => { setChartFullscreen(false); setCardView('summary'); }}
+                                onClick={() => { setChartFullscreen(false); setCardView('histogram'); }}
                                 className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                             >
-                                ← Back to summary
+                                ← Distributions
                             </button>
                         </div>
                     </div>
@@ -551,7 +558,10 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         tickers={tickers}
                         firstDates={firstDates}
                         filteredSpxData={filteredSpxData}
-                        onNavigateRight={() => { setHistogramFullscreen(false); setCardView('summary'); }}
+                        focusDate={focusDate}
+                        tickerWeights={tickerWeights}
+                        capHistory={capHistory}
+                        onNavigateRight={() => { setHistogramFullscreen(false); setCardView('chart'); }}
                         onMaximize={() => setHistogramFullscreen(false)}
                         isFullscreen={true}
                     />
