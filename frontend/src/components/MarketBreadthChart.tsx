@@ -11,10 +11,12 @@ import {
     Tooltip,
     ReferenceLine,
     ResponsiveContainer,
-    ReferenceArea
+    ReferenceArea,
+    Area
 } from 'recharts';
 import { format } from 'date-fns';
-import type { QuarterlyFundamentals } from '../services/api';
+import { useQuery } from '@tanstack/react-query';
+import { analysisApi, type QuarterlyFundamentals } from '../services/api';
 import { capWeightedScore, denomAt, listedCount, type CompanyBreadthPoint, type CapHistory, type Denom, type DmaBreadthPoint, type FirstDates } from '../utils/marketBreadth';
 
 interface BreadthDataPoint {
@@ -365,6 +367,23 @@ const DmaTooltip = ({ active, payload }: any) => {
     );
 };
 
+const BondYieldTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    const fmt = (v: number | null | undefined) => v == null ? '–' : `${v.toFixed(2)}%`;
+    const spread = d.yieldSpread == null ? '–' : `${d.yieldSpread >= 0 ? '+' : ''}${d.yieldSpread.toFixed(2)}%`;
+    return (
+        <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
+            <div className="grid grid-cols-2 gap-x-4">
+                <span className="text-muted-foreground">10-year:</span><span className="text-right text-[#f87171]">{fmt(d.y10y)}</span>
+                <span className="text-muted-foreground">2-year:</span><span className="text-right text-[#fbbf24]">{fmt(d.y2y)}</span>
+                <span className="text-muted-foreground">3-month:</span><span className="text-right text-[#60a5fa]">{fmt(d.y3m)}</span>
+                <span className="text-muted-foreground">10y − 2y:</span><span className={`text-right ${d.yieldSpread != null && d.yieldSpread < 0 ? 'text-red-400' : 'text-green-400'}`}>{spread}</span>
+            </div>
+        </div>
+    );
+};
+
 const MarketBreadthTooltip = ({ active, payload, kind }: any) => {
     if (!active || !payload?.length) return null;
     const d = payload[0].payload;
@@ -418,6 +437,12 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 }) => {
     // Effective interval weights: use prop if provided, else fall back to SCORE_WEIGHTS constant
     const effectiveWeights = intervalWeights || SCORE_WEIGHTS;
+    // US Treasury yields, shared by every chart (FRED daily data)
+    const { data: bondYields = [] } = useQuery({
+        queryKey: ['bondYields'],
+        queryFn: analysisApi.getBondYields,
+        staleTime: 1000 * 60 * 60,
+    });
     // --- Zoom State & Logic (Adapted from CandleChart) ---
     const [zoomState, setZoomState] = useState<{ start: number, end: number } | null>(null);
     // Hover info boxes are off by default (they get crowded): only the date shows; the toggle turns them on
@@ -654,6 +679,9 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         const cdCapScore = capWeightedScore(cdCompanyBreadth, capW, listTickers, effectiveWeights, firstDates, capHistory);
         const mcCapScore = capWeightedScore(mcCompanyBreadth, capW, listTickers, effectiveWeights, firstDates, capHistory);
         const dma = new Map(dmaBreadth.map(r => [r.date, r]));
+        // Yields: carry the last published value over days FRED has no row for (holidays, latest day)
+        const yields = [...bondYields].sort((a, b) => a.date.localeCompare(b.date));
+        let yi = -1;
         const cdCompanies = new Map(cdCompanyBreadth.map(c => [c.date, c.count]));
         const mcCompanies = new Map(mcCompanyBreadth.map(c => [c.date, c.count]));
         result.forEach(d => {
@@ -664,6 +692,10 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             d.mcShare = d.mcCompanies / div(d.date);
             const m = dma.get(d.date);
             d.dma20 = m?.above20 ?? null; d.dma50 = m?.above50 ?? null; d.dma200 = m?.above200 ?? null;
+            while (yi + 1 < yields.length && yields[yi + 1].date <= d.date) yi++;
+            const y = yi >= 0 ? yields[yi] : undefined;
+            d.y3m = y?.y3m ?? null; d.y2y = y?.y2y ?? null; d.y10y = y?.y10y ?? null;
+            d.yieldSpread = d.y10y != null && d.y2y != null ? d.y10y - d.y2y : null;
             d.cdBreadthScore = (d.cdNewScore || 0) * d.cdShare;
             d.mcBreadthScore = -(d.mcNewScore || 0) * d.mcShare;
             d.netBreadthScore = d.cdBreadthScore + d.mcBreadthScore;
@@ -684,7 +716,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         }
 
         return result;
-    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, cdCompanyBreadth, mcCompanyBreadth, tickerWeights, firstDates, capHistory, dmaBreadth, effectiveWeights, minDate, maxDate, selectedTicker, tickers, fundamentals]);
+    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, cdCompanyBreadth, mcCompanyBreadth, tickerWeights, firstDates, capHistory, dmaBreadth, bondYields, effectiveWeights, minDate, maxDate, selectedTicker, tickers, fundamentals]);
 
     // Visible slice
     const visibleData = useMemo(() => {
@@ -862,7 +894,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
 
     return (
-        <div className={`flex flex-col ${selectedTicker ? "h-[1150px]" : "h-[1350px]"} border rounded-lg bg-card p-4`}>
+        <div className={`flex flex-col ${selectedTicker ? "h-[1300px]" : "h-[1500px]"} border rounded-lg bg-card p-4`}>
             <div className="flex justify-between items-center mb-2 gap-2">
                 <h3 className="text-lg font-semibold text-foreground shrink-0">
                     {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}
@@ -1245,6 +1277,51 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                         </ComposedChart>
                     </ResponsiveContainer>
                 </div>}
+
+                {/* US Treasury yields: 3-month / 2-year / 10-year (left), 10y − 2y spread (right, shaded) */}
+                <div className="flex-[0.6] min-h-0 border-b border-border/50 relative" style={{ zIndex: 9 }}>
+                    <span className="absolute top-3 left-2 text-[10px] font-medium z-10">
+                        US Treasury Yield <span className="text-muted-foreground font-normal">(<span className="text-[#60a5fa]">3-month</span> / <span className="text-[#fbbf24]">2-year</span> / <span className="text-[#f87171]">10-year</span>, % left · <span className="text-foreground">10y − 2y spread</span>, right, shaded)</span>
+                    </span>
+                    {bondYields.length === 0 && (
+                        <span className="absolute top-3 right-2 text-[10px] text-muted-foreground z-10 pointer-events-none">
+                            Yield data not loaded
+                        </span>
+                    )}
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={1} />
+                            {commonXAxis(true)}
+                            <YAxis
+                                yAxisId="yield"
+                                orientation="left"
+                                mirror={true}
+                                domain={['auto', 'auto']}
+                                tickFormatter={(val) => `${Number(val).toFixed(1)}%`}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <YAxis
+                                yAxisId="spread"
+                                orientation="right"
+                                mirror={true}
+                                domain={['auto', 'auto']}
+                                tickFormatter={(val) => `${Number(val).toFixed(1)}%`}
+                                width={38}
+                                tick={{ fontSize: 10 }}
+                                tickCount={3}
+                            />
+                            <Tooltip content={showTooltips ? <BondYieldTooltip /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <ReferenceLine yAxisId="spread" y={0} stroke="hsl(var(--muted-foreground))" strokeOpacity={0.5} strokeDasharray="4 4" />
+                            <Area yAxisId="spread" type="monotone" dataKey="yieldSpread" stroke="hsl(var(--foreground))" strokeOpacity={0.4} fill="hsl(var(--foreground))" fillOpacity={0.08} strokeWidth={1} dot={false} isAnimationActive={false} connectNulls />
+                            <Line yAxisId="yield" type="monotone" dataKey="y3m" stroke="#60a5fa" strokeWidth={1.2} dot={false} connectNulls isAnimationActive={false} />
+                            <Line yAxisId="yield" type="monotone" dataKey="y2y" stroke="#fbbf24" strokeWidth={1.2} dot={false} connectNulls isAnimationActive={false} />
+                            <Line yAxisId="yield" type="monotone" dataKey="y10y" stroke="#f87171" strokeWidth={1.5} dot={false} connectNulls isAnimationActive={false} />
+                            <ReferenceBlock yAxisId="yield" />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
 
                 {/* Quarterly fundamentals: revenue / net income / gross margin */}
                 <div className="flex-[0.7] min-h-0 border-b border-border/50 relative" style={{ zIndex: 8 }}>

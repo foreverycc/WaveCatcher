@@ -20,6 +20,7 @@ from app.logic.scoring_config import get_config as get_scoring_config, save_conf
 from app.logic.signals import compute_signals, signal_lookback_days
 from app.logic.fundamentals import ticker_quarterly, aggregate_quarterly, refresh_quarterly
 from app.services.stock_weights import load_dma_breadth
+from app.services.bond_yields import load_bond_yields
 
 logger = logging.getLogger(__name__)
 
@@ -853,6 +854,12 @@ def get_fundamentals(ticker: str):
 async def get_fundamentals_aggregate(request: FundamentalsRequest):
     """Calendar-quarter totals over a stock list (same companies in every quarter) and % with EPS up."""
     return aggregate_quarterly(request.tickers)
+
+
+@router.get("/bond_yields")
+def get_bond_yields():
+    """US Treasury 3-month / 2-year / 10-year yields (percent), daily from FRED."""
+    return load_bond_yields()
 
 
 @router.get("/options/{ticker}")

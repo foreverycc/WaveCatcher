@@ -12,6 +12,8 @@ export interface ReportView {
 // This ensures requests work correctly whether accessed via localhost or IP address
 const API_BASE_URL = `/api`;
 
+export interface BondYieldPoint { date: string; y3m: number | null; y2y: number | null; y10y: number | null }
+
 export const api = axios.create({
     baseURL: API_BASE_URL,
     headers: {
@@ -265,6 +267,12 @@ export const analysisApi = {
     },
 
     /** first daily bar (YYYY-MM-DD) of tickers whose history starts late, e.g. recent IPOs */
+    /** US Treasury yields in percent (3-month / 2-year / 10-year), daily */
+    getBondYields: async () => {
+        const response = await api.get<BondYieldPoint[]>('/analysis/bond_yields');
+        return response.data;
+    },
+
     getTickerFirstDates: async () => {
         const response = await api.get<Record<string, string>>('/analysis/ticker_first_dates');
         return response.data;
