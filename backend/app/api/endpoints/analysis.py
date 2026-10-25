@@ -140,6 +140,7 @@ async def get_available_indices():
             "key": key, "symbol": config["symbol"],
             "stock_list": config["stock_list"],
             "whitelist": config.get("whitelist", []),
+            "blacklist": config.get("blacklist", []),
             "tickers": tickers
         })
     
@@ -150,6 +151,7 @@ class IndexConfigEntry(BaseModel):
     symbol: str
     stock_list: str
     whitelist: Optional[List[str]] = []
+    blacklist: Optional[List[str]] = []
 
 
 @router.put("/indices")
@@ -168,29 +170,35 @@ async def upsert_index(key: str, entry: IndexConfigEntry):
     try:
         config = load_index_config()
         entry_data = entry.dict()
-        cleaned_wl = [
-            str(t).strip().upper().replace('.', '-')
-            for t in entry_data.get("whitelist", [])
-            if t and str(t).strip()
-        ]
-        entry_data["whitelist"] = sorted(list(dict.fromkeys(cleaned_wl)))
+        clean = lambda items: sorted(dict.fromkeys(
+            str(t).strip().upper().replace('.', '-') for t in (items or []) if t and str(t).strip()))
+        cleaned_bl = clean(entry_data.get("blacklist", []))
+        # a ticker on both lists is blocked: the blacklist wins
+        cleaned_wl = [t for t in clean(entry_data.get("whitelist", [])) if t not in set(cleaned_bl)]
+        entry_data["whitelist"] = cleaned_wl
+        entry_data["blacklist"] = cleaned_bl
+        previous = config.get(key, {})
         config[key] = entry_data
         save_index_config(config)
 
-        # Merge whitelist into the tab file if it exists
-        if cleaned_wl and entry.stock_list:
+        # Sync the tab file: merge the whitelist, drop the blacklist. Tickers taken off the
+        # blacklist come back with the next "Update Stock Lists".
+        changed = cleaned_wl or cleaned_bl or previous.get("blacklist")
+        if changed and entry.stock_list:
             data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../data"))
             stock_list_path = os.path.join(data_dir, entry.stock_list)
             if os.path.exists(stock_list_path):
                 try:
                     with open(stock_list_path, 'r') as f:
                         existing = [line.strip().upper().replace('.', '-') for line in f if line.strip()]
-                    merged = sorted(list(dict.fromkeys(existing + cleaned_wl)))
-                    with open(stock_list_path, 'w') as f:
-                        for item in merged:
-                            f.write(f"{item}\n")
+                    blocked = set(cleaned_bl)
+                    merged = sorted(t for t in dict.fromkeys(existing + cleaned_wl) if t not in blocked)
+                    if merged != sorted(dict.fromkeys(existing)):
+                        with open(stock_list_path, 'w') as f:
+                            for item in merged:
+                                f.write(f"{item}\n")
                 except Exception as ex:
-                    logger.warning(f"Could not sync whitelist to {entry.stock_list}: {ex}")
+                    logger.warning(f"Could not sync whitelist/blacklist to {entry.stock_list}: {ex}")
 
         return {"status": "success", "key": key}
     except Exception as e:

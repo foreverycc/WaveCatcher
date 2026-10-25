@@ -30,10 +30,12 @@ export const Configuration: React.FC = () => {
     const [newIdxSymbol, setNewIdxSymbol] = useState('');
     const [newIdxStockList, setNewIdxStockList] = useState('');
     const [newIdxWhitelist, setNewIdxWhitelist] = useState('');
+    const [newIdxBlacklist, setNewIdxBlacklist] = useState('');
     const [editingIdx, setEditingIdx] = useState<string | null>(null);
     const [editSymbol, setEditSymbol] = useState('');
     const [editStockList, setEditStockList] = useState('');
     const [editWhitelist, setEditWhitelist] = useState('');
+    const [editBlacklist, setEditBlacklist] = useState('');
 
     const { data: files, isLoading: isLoadingFiles } = useQuery({
         queryKey: ['stockFiles'],
@@ -115,16 +117,19 @@ export const Configuration: React.FC = () => {
     };
 
     const upsertIndexMutation = useMutation({
-        mutationFn: ({ key, symbol, stock_list, whitelist }: { key: string, symbol: string, stock_list: string, whitelist?: string[] }) =>
-            analysisApi.upsertIndex(key, symbol, stock_list, whitelist),
+        mutationFn: ({ key, symbol, stock_list, whitelist, blacklist }: { key: string, symbol: string, stock_list: string, whitelist?: string[], blacklist?: string[] }) =>
+            analysisApi.upsertIndex(key, symbol, stock_list, whitelist, blacklist),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['availableIndices'] });
+            // the stock list file may have changed (whitelist merged / blacklist removed)
+            queryClient.invalidateQueries({ queryKey: ['stockFile'] });
             setAddingIndex(false);
             setEditingIdx(null);
             setNewIdxKey('');
             setNewIdxSymbol('');
             setNewIdxStockList('');
             setNewIdxWhitelist('');
+            setNewIdxBlacklist('');
         },
         onError: (error) => alert(`Error saving index: ${error}`)
     });
@@ -226,11 +231,12 @@ export const Configuration: React.FC = () => {
         }
     };
 
-    const startEdit = (idx: { key: string, symbol: string, stock_list: string, whitelist?: string[] }) => {
+    const startEdit = (idx: { key: string, symbol: string, stock_list: string, whitelist?: string[], blacklist?: string[] }) => {
         setEditingIdx(idx.key);
         setEditSymbol(idx.symbol);
         setEditStockList(idx.stock_list);
         setEditWhitelist((idx.whitelist || []).join(', '));
+        setEditBlacklist((idx.blacklist || []).join(', '));
     };
 
     const saveEdit = () => {
@@ -239,7 +245,8 @@ export const Configuration: React.FC = () => {
                 key: editingIdx,
                 symbol: editSymbol,
                 stock_list: editStockList,
-                whitelist: parseWhitelist(editWhitelist)
+                whitelist: parseWhitelist(editWhitelist),
+                blacklist: parseWhitelist(editBlacklist)
             });
         }
     };
@@ -262,7 +269,7 @@ export const Configuration: React.FC = () => {
                             <Settings className="w-4 h-4" /> Market Indices
                         </h3>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                            Manage index definitions and their whitelists. Whitelisted tickers are forcefully merged and preserved when fetching or updating stock lists.
+                            Manage index definitions, whitelists and blacklists. Whitelisted tickers are always kept in the stock list; blacklisted tickers are removed from it and stay out when stock lists are updated.
                         </p>
                     </div>
                     <button
@@ -282,6 +289,7 @@ export const Configuration: React.FC = () => {
                                 <th className="p-3 text-left font-medium">Symbol</th>
                                 <th className="p-3 text-left font-medium">Stock List</th>
                                 <th className="p-3 text-left font-medium">Whitelist (Always Retained)</th>
+                                <th className="p-3 text-left font-medium">Blacklist (Always Excluded)</th>
                                 <th className="p-3 text-right font-medium w-24">Actions</th>
                             </tr>
                         </thead>
@@ -319,6 +327,15 @@ export const Configuration: React.FC = () => {
                                                     className="w-full px-2 py-1 rounded border border-input bg-background text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
                                                 />
                                             </td>
+                                            <td className="p-3">
+                                                <input
+                                                    type="text"
+                                                    value={editBlacklist}
+                                                    onChange={e => setEditBlacklist(e.target.value)}
+                                                    placeholder="e.g. LITE, STM"
+                                                    className="w-full px-2 py-1 rounded border border-input bg-background text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                                                />
+                                            </td>
                                             <td className="p-3 text-right">
                                                 <div className="flex justify-end gap-1">
                                                     <button onClick={saveEdit} className="p-1 text-green-600 hover:bg-green-500/10 rounded" title="Save">
@@ -342,6 +359,22 @@ export const Configuration: React.FC = () => {
                                                             <span
                                                                 key={ticker}
                                                                 className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono font-medium bg-primary/10 text-primary border border-primary/20"
+                                                            >
+                                                                {ticker}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-muted-foreground text-xs italic">None</span>
+                                                )}
+                                            </td>
+                                            <td className="p-3">
+                                                {idx.blacklist && idx.blacklist.length > 0 ? (
+                                                    <div className="flex flex-wrap gap-1 max-w-sm">
+                                                        {idx.blacklist.map(ticker => (
+                                                            <span
+                                                                key={ticker}
+                                                                className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono font-medium bg-red-500/10 text-red-500 border border-red-500/20 line-through"
                                                             >
                                                                 {ticker}
                                                             </span>
@@ -412,6 +445,15 @@ export const Configuration: React.FC = () => {
                                             className="w-full px-2 py-1 rounded border border-input bg-background text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
                                         />
                                     </td>
+                                    <td className="p-3">
+                                        <input
+                                            type="text"
+                                            value={newIdxBlacklist}
+                                            onChange={e => setNewIdxBlacklist(e.target.value)}
+                                            placeholder="e.g. LITE, STM"
+                                            className="w-full px-2 py-1 rounded border border-input bg-background text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                                        />
+                                    </td>
                                     <td className="p-3 text-right">
                                         <div className="flex justify-end gap-1">
                                             <button
@@ -421,7 +463,8 @@ export const Configuration: React.FC = () => {
                                                             key: newIdxKey,
                                                             symbol: newIdxSymbol,
                                                             stock_list: newIdxStockList,
-                                                            whitelist: parseWhitelist(newIdxWhitelist)
+                                                            whitelist: parseWhitelist(newIdxWhitelist),
+                                                            blacklist: parseWhitelist(newIdxBlacklist)
                                                         });
                                                     }
                                                 }}

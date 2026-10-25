@@ -239,8 +239,9 @@ def fetch_dowjones():
             return sorted(stocks)
     return []
 
-def load_index_whitelist(filename):
-    """Load whitelist tickers for any index mapped to this stock list filename."""
+def load_index_whitelist(filename, field='whitelist'):
+    """Load whitelist (or blacklist, with field='blacklist') tickers for any index mapped to
+    this stock list filename."""
     config_path = os.path.join(DATA_DIR, 'index_config.json')
     if not os.path.exists(config_path):
         return []
@@ -250,12 +251,12 @@ def load_index_whitelist(filename):
         whitelists = []
         for entry in config.values():
             if entry.get('stock_list') == filename:
-                for t in entry.get('whitelist', []):
+                for t in entry.get(field, []):
                     if t and str(t).strip():
                         whitelists.append(str(t).strip().upper().replace('.', '-'))
         return whitelists
     except Exception as e:
-        print(f"Warning: could not load index whitelist from {config_path}: {e}")
+        print(f"Warning: could not load index {field} from {config_path}: {e}")
         return []
 
 # Companies listed with more than one share class: the classes trade almost identically, so keeping
@@ -320,6 +321,12 @@ def save_to_tab(stocks, filename):
         normalize_ticker(s) for s in combined if s and str(s).strip()
     )))
     final_stocks = drop_share_class_duplicates(final_stocks)
+    blacklist = set(load_index_whitelist(filename, 'blacklist'))
+    if blacklist:
+        blocked = [s for s in final_stocks if s in blacklist]
+        final_stocks = [s for s in final_stocks if s not in blacklist]
+        if blocked:
+            print(f"Removed blacklisted tickers from {filename}: {', '.join(blocked)}")
 
     os.makedirs(DATA_DIR, exist_ok=True)
     filepath = os.path.join(DATA_DIR, filename)

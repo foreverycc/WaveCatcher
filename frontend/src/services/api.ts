@@ -279,13 +279,13 @@ export const analysisApi = {
 
     getIndices: async () => {
         const response = await api.get<{
-            indices: { key: string, symbol: string, stock_list: string, whitelist?: string[], tickers: string[] }[]
+            indices: { key: string, symbol: string, stock_list: string, whitelist?: string[], blacklist?: string[], tickers: string[] }[]
         }>('/analysis/indices');
         return response.data;
     },
 
-    upsertIndex: async (key: string, symbol: string, stock_list: string, whitelist?: string[]) => {
-        const response = await api.post(`/analysis/indices/${encodeURIComponent(key)}`, { symbol, stock_list, whitelist });
+    upsertIndex: async (key: string, symbol: string, stock_list: string, whitelist?: string[], blacklist?: string[]) => {
+        const response = await api.post(`/analysis/indices/${encodeURIComponent(key)}`, { symbol, stock_list, whitelist, blacklist });
         return response.data;
     },
 
