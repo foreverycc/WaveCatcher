@@ -117,6 +117,14 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
         enabled: !staticSummary && cardView === 'chart' && (!!selectedTicker || tickers.length > 0)
     });
 
+    // Earnings report dates of the selected stock (marked in the EPS lane)
+    const { data: earnings } = useQuery({
+        queryKey: ['earningsDates', selectedTicker],
+        queryFn: () => analysisApi.getEarningsDates(selectedTicker),
+        staleTime: 1000 * 60 * 60,
+        enabled: !staticSummary && !!selectedTicker && cardView === 'chart'
+    });
+
     // When a ticker is selected, swap index-level breadth with per-ticker data
     // If NO ticker selected (Index view):
     // - Panels use CD/MC Breadth (Sector Sums) passed via props
@@ -477,6 +485,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                                     onTickerChange={setSelectedTicker}
                                     indexTitle={title}
                                     fundamentals={fundamentals}
+                                    earnings={selectedTicker ? earnings : undefined}
                                 />
                             )}
                         </div>
@@ -535,6 +544,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             onTickerChange={setSelectedTicker}
                             indexTitle={title}
                             fundamentals={fundamentals}
+                                    earnings={selectedTicker ? earnings : undefined}
                         />
                     </div>
                 </div>

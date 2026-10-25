@@ -19,6 +19,7 @@ from app.logic.options import get_option_data
 from app.logic.scoring_config import get_config as get_scoring_config, save_config as save_scoring_config, DEFAULT_CONFIG as SCORING_DEFAULTS
 from app.logic.signals import compute_signals, signal_lookback_days
 from app.logic.fundamentals import ticker_quarterly, aggregate_quarterly, refresh_quarterly
+from app.logic.earnings import refresh_earnings, ticker_earnings
 from app.services.stock_weights import load_dma_breadth
 from app.services.bond_yields import load_bond_yields
 
@@ -848,6 +849,13 @@ def get_fundamentals(ticker: str):
     """Quarterly revenue / gross profit / net income / EPS for one ticker (fetched on demand)."""
     refresh_quarterly(ticker)
     return ticker_quarterly(ticker)
+
+
+@router.get("/earnings_dates/{ticker}")
+def get_earnings_dates(ticker: str):
+    """Past and upcoming earnings report dates of a ticker, with time of day and EPS estimate / actual."""
+    refresh_earnings(ticker.upper())
+    return ticker_earnings(ticker.upper())
 
 
 @router.post("/fundamentals/aggregate")

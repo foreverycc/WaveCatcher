@@ -14,6 +14,9 @@ const API_BASE_URL = `/api`;
 
 export interface BondYieldPoint { date: string; y3m: number | null; y2y: number | null; y10y: number | null }
 
+/** an earnings report: session = bmo (before open) / amc (after close) / dmh (during market) / tbd */
+export interface EarningsEvent { date: string; time: string | null; session: string | null; eps_estimate: number | null; eps_actual: number | null; surprise_pct: number | null }
+
 export const api = axios.create({
     baseURL: API_BASE_URL,
     headers: {
@@ -253,6 +256,11 @@ export const analysisApi = {
             cd_company_breadth?: { date: string, count: number, tickers?: string[], scores?: Record<string, Record<string, number>> }[],
             mc_company_breadth?: { date: string, count: number, tickers?: string[], scores?: Record<string, Record<string, number>> }[],
         }>(`/analysis/ticker_signals/${ticker}`);
+        return response.data;
+    },
+
+    getEarningsDates: async (ticker: string) => {
+        const response = await api.get<EarningsEvent[]>(`/analysis/earnings_dates/${ticker}`);
         return response.data;
     },
 

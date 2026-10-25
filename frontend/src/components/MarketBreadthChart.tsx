@@ -16,7 +16,7 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
-import { analysisApi, type QuarterlyFundamentals } from '../services/api';
+import { analysisApi, type EarningsEvent, type QuarterlyFundamentals } from '../services/api';
 import { capWeightedScore, denomAt, listedCount, type CompanyBreadthPoint, type CapHistory, type Denom, type DmaBreadthPoint, type FirstDates } from '../utils/marketBreadth';
 
 interface BreadthDataPoint {
@@ -102,6 +102,8 @@ interface MarketBreadthChartProps {
     capHistory?: CapHistory;
     /** % of stocks above their 20 / 50 / 200-day moving average */
     dmaBreadth?: DmaBreadthPoint[];
+    /** earnings report dates of the selected stock, marked in the EPS lane */
+    earnings?: EarningsEvent[];
 }
 
 // Colors for each interval in stacked bar charts
@@ -125,6 +127,9 @@ const SCORE_WEIGHTS: Record<string, number> = {
 };
 
 const HiddenTooltip = () => null;
+
+// a quarter's figures appear this many days after it ends when its report date is unknown
+const REPORT_LAG_DAYS = 45;
 
 // With tooltips off, the price lane still shows the hovered date (synced across lanes)
 const DateOnlyTooltip = ({ active, payload }: any) => {
@@ -277,16 +282,53 @@ const formatMoney = (v: number | null | undefined) => {
 };
 
 /** Quarterly fundamentals tooltip; each lane shows only its own figures (the lanes' tooltips appear together) */
+const SESSION_LABEL: Record<string, string> = { bmo: 'before the open', amc: 'after the close', dmh: 'during market hours', tbd: 'time not announced' };
+const sessionText = (e: EarningsEvent) => `${SESSION_LABEL[e.session ?? 'tbd'] ?? 'time not announced'}${e.time && e.session !== 'tbd' ? ` (${e.time} ET)` : ''}`;
+
+/**
+ * An earnings report. Estimate / actual / surprise come from Yahoo's earnings calendar on the analysts'
+ * basis (usually adjusted EPS); the EPS line is diluted EPS from the income statement (GAAP, reporting
+ * currency). They can differ a lot, e.g. for ADRs that report in another currency per ADS.
+ */
+const EarningsRows = ({ e, q }: { e: EarningsEvent; q?: { period: string; eps: number | null } | null }) => {
+    const differs = q?.eps != null && e.eps_actual != null && Math.abs(q.eps - e.eps_actual) > 0.3 * Math.max(Math.abs(q.eps), Math.abs(e.eps_actual), 0.01);
+    return (
+        <div className="mt-1 pt-1 border-t border-border/50 max-w-[260px]">
+            <p className="font-semibold text-[#e879f9]">Earnings {e.date}</p>
+            <p className="text-muted-foreground">{sessionText(e)}</p>
+            <div className="grid grid-cols-2 gap-x-4">
+                {e.eps_estimate != null && <><span className="text-muted-foreground">Consensus EPS:</span><span className="text-right">{e.eps_estimate.toFixed(2)}</span></>}
+                {e.eps_actual != null && <><span className="text-muted-foreground">Actual (same basis):</span><span className="text-right">{e.eps_actual.toFixed(2)}</span></>}
+                {e.surprise_pct != null && <><span className="text-muted-foreground">Surprise:</span>
+                    <span className={`text-right ${e.surprise_pct >= 0 ? 'text-green-500' : 'text-red-500'}`}>{e.surprise_pct >= 0 ? '+' : ''}{e.surprise_pct.toFixed(1)}%</span></>}
+                {q?.eps != null && <><span className="text-muted-foreground">Statement EPS:</span><span className="text-right text-[#a78bfa]">{q.eps.toFixed(2)}</span></>}
+            </div>
+            {q && <p className="text-[10px] text-muted-foreground">Statement EPS = the purple line: GAAP diluted, quarter ending {q.period}</p>}
+            {differs && <p className="text-[10px] text-amber-500 mt-0.5">Consensus figures are on the analysts' basis (adjusted EPS, possibly another currency or per-ADS), so they differ from the statement EPS.</p>}
+        </div>
+    );
+};
+
+// With tooltips off, the EPS lane still explains an earnings day
+const EarningsOnlyTooltip = ({ active, payload }: any) => {
+    const d = active && payload?.length ? payload[0].payload : null;
+    return d?.earn ? <div className="bg-background border border-border p-2 rounded shadow text-xs z-50"><EarningsRows e={d.earn} q={d.earnQ} /></div> : null;
+};
+
 const FundamentalsTooltip = ({ active, payload, part }: any) => {
     if (!active || !payload?.length) return null;
     const d = payload[0].payload;
+    if (part === 'eps' && d.earn && !d.fin_period) return (
+        <div className="bg-background border border-border p-2 rounded shadow text-xs z-50"><EarningsRows e={d.earn} q={d.earnQ} /></div>
+    );
     if (!d.fin_period) return null;
     const row = (label: string, value: string, color: string) => (
         <><span className="text-muted-foreground">{label}:</span><span className={`text-right ${color}`}>{value}</span></>
     );
     return (
         <div className="bg-background border border-border p-2 rounded shadow text-xs z-50">
-            {part === 'income' && <p className="font-semibold mb-1">Quarter ending {d.fin_period}{d.fin_companies ? ` (${d.fin_companies} companies)` : ''}</p>}
+            {part === 'income' && <p className="font-semibold mb-1">Quarter ending {d.fin_period}{d.fin_companies ? ` (${d.fin_companies} companies)` : ''}
+                <span className="block font-normal text-muted-foreground">{d.fin_reported ? `reported ${d.fin_reported}` : `shown from ${REPORT_LAG_DAYS} days after the quarter end`}</span></p>}
             <div className="grid grid-cols-2 gap-x-4">
                 {part === 'income' && <>
                     {row('Revenue', formatMoney(d.fin_revenue), 'text-[#60a5fa]')}
@@ -305,6 +347,7 @@ const FundamentalsTooltip = ({ active, payload, part }: any) => {
                     {d.fin_fcf_pos != null && row('FCF positive', `${d.fin_fcf_pos.toFixed(0)}%`, 'text-[#f472b6]')}
                 </>}
             </div>
+            {part === 'eps' && d.earn && <EarningsRows e={d.earn} q={d.earnQ} />}
         </div>
     );
 };
@@ -440,7 +483,8 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     tickerWeights,
     firstDates,
     capHistory,
-    dmaBreadth = []
+    dmaBreadth = [],
+    earnings = []
 }) => {
     // Effective interval weights: use prop if provided, else fall back to SCORE_WEIGHTS constant
     const effectiveWeights = intervalWeights || SCORE_WEIGHTS;
@@ -654,14 +698,26 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         let result = Array.from(dataMap.values())
             .sort((a, b) => a.date.localeCompare(b.date));
 
-        // Quarterly fundamentals: each day shows the latest quarter that had ended by then
-        const quarters = [...(fundamentals || [])].sort((a, b) => a.period_end.localeCompare(b.period_end));
+        // Quarterly fundamentals: each day shows the latest quarter that had been reported by then.
+        // A stock's quarter appears on its earnings day (the next day for an after-close report);
+        // without a known report date (and for stock-list totals) REPORT_LAG_DAYS after the quarter ends.
+        const reportsSorted = [...earnings].sort((a, b) => a.date.localeCompare(b.date));
+        const shiftDays = (iso: string, n: number) => new Date(Date.parse(iso) + n * 86400000).toISOString().slice(0, 10);
+        const reportedOn = (periodEnd: string) => {
+            const e = reportsSorted.find(r => r.date > periodEnd && r.date <= shiftDays(periodEnd, 100));
+            if (e) return { date: e.session === 'amc' ? shiftDays(e.date, 1) : e.date, report: e.date };
+            return { date: shiftDays(periodEnd, REPORT_LAG_DAYS), report: null as string | null };
+        };
+        const quarters = [...(fundamentals || [])]
+            .map(q => ({ ...q, ...(() => { const r = reportedOn(q.period_end); return { avail: r.date, report: r.report }; })() }))
+            .sort((a, b) => a.avail.localeCompare(b.avail));
         let qi = -1;
         result.forEach(d => {
-            while (qi + 1 < quarters.length && quarters[qi + 1].period_end <= d.date) qi++;
+            while (qi + 1 < quarters.length && quarters[qi + 1].avail <= d.date) qi++;
             if (qi < 0) return;
             const q = quarters[qi];
             d.fin_period = q.period_end;
+            d.fin_reported = q.report;
             d.fin_companies = q.companies;
             d.fin_revenue = q.revenue;
             d.fin_gross_margin = q.gross_profit != null && q.revenue ? (q.gross_profit / q.revenue) * 100 : null;
@@ -689,6 +745,20 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         const cdCapScore = capWeightedScore(cdCompanyBreadth, capW, listTickers, effectiveWeights, firstDates, capHistory);
         const mcCapScore = capWeightedScore(mcCompanyBreadth, capW, listTickers, effectiveWeights, firstDates, capHistory);
         const dma = new Map(dmaBreadth.map(r => [r.date, r]));
+        // Earnings: each report sits on its date, or the next trading day when that is not one
+        const reports = [...earnings].sort((a, b) => a.date.localeCompare(b.date));
+        let ej = 0;
+        reports.forEach(r => {
+            while (ej < result.length && result[ej].date < r.date) ej++;
+            const d = result[ej];
+            // within a few days (weekend / holiday), not a report from before the price history
+            if (d && (Date.parse(d.date) - Date.parse(r.date)) <= 4 * 86400000) {
+                d.earn = r;
+                // the quarter this report published
+                const q = quarters.find(x => x.report === r.date);
+                d.earnQ = q ? { period: q.period_end, eps: q.eps ?? null } : null;
+            }
+        });
         // Yields: carry the last published value over days FRED has no row for (holidays, latest day)
         const yields = [...bondYields].sort((a, b) => a.date.localeCompare(b.date));
         let yi = -1;
@@ -726,7 +796,13 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         }
 
         return result;
-    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, cdCompanyBreadth, mcCompanyBreadth, tickerWeights, firstDates, capHistory, dmaBreadth, bondYields, effectiveWeights, minDate, maxDate, selectedTicker, tickers, fundamentals]);
+    }, [spxData, cdBreadth, mcBreadth, cdSignalBreadth, mcSignalBreadth, cdScoreBreadth, mcScoreBreadth, cdBreakthroughScoreBreadth, mcBreakthroughScoreBreadth, cdCompanyBreadth, mcCompanyBreadth, tickerWeights, firstDates, capHistory, dmaBreadth, bondYields, earnings, effectiveWeights, minDate, maxDate, selectedTicker, tickers, fundamentals]);
+
+    // next report after the last day with prices
+    const nextEarnings = useMemo(() => {
+        const last = mergedData.length ? mergedData[mergedData.length - 1].date : '';
+        return [...earnings].sort((a, b) => a.date.localeCompare(b.date)).find(e => e.date > last);
+    }, [earnings, mergedData]);
 
     // Visible slice
     const visibleData = useMemo(() => {
@@ -1401,7 +1477,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                 {/* Quarterly fundamentals: EPS (stock) or share of companies with rising EPS (stock list) */}
                 <div className="flex-[0.7] min-h-0 relative" style={{ zIndex: 6 }}>
                     <span className="absolute top-3 left-2 text-[10px] font-medium text-[#a78bfa] z-10">
-                        {selectedTicker ? 'EPS (quarterly, diluted)' : <>EPS up vs previous quarter / <span className="text-[#f472b6]">free cash flow positive</span> (% of companies)</>}
+                        {selectedTicker ? <>EPS (quarterly, diluted) · <span className="text-[#e879f9]">E = earnings report</span>{nextEarnings && <span className="text-muted-foreground font-normal"> · next {nextEarnings.date}, {sessionText(nextEarnings)}</span>}</> : <>EPS up vs previous quarter / <span className="text-[#f472b6]">free cash flow positive</span> (% of companies)</>}
                     </span>
                     <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={visibleData} syncId="breadthSync" margin={{ left: 5, right: 5, top: 5, bottom: 5 }}>
@@ -1416,9 +1492,13 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                                 tick={{ fontSize: 10 }}
                                 tickCount={3}
                             />
-                            <Tooltip content={showTooltips ? <FundamentalsTooltip part="eps" /> : HiddenTooltip} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
+                            <Tooltip content={showTooltips ? <FundamentalsTooltip part="eps" /> : <EarningsOnlyTooltip />} cursor={{ stroke: 'rgba(150,150,150,0.5)', strokeDasharray: '3 3' }} wrapperStyle={{ zIndex: 100 }} />
                             <Line type="stepAfter" dataKey={selectedTicker ? 'fin_eps' : 'fin_eps_up'} stroke="#a78bfa" dot={false} strokeWidth={1.5} isAnimationActive={false} connectNulls />
                             {!selectedTicker && <Line type="stepAfter" dataKey="fin_fcf_pos" stroke="#f472b6" dot={false} strokeWidth={1.5} isAnimationActive={false} connectNulls />}
+                            {selectedTicker && visibleData.filter(d => d.earn).map(d => (
+                                <ReferenceLine key={`earn-${d.date}`} x={d.date} stroke="#e879f9" strokeOpacity={0.7} strokeDasharray="2 3"
+                                    label={{ value: 'E', position: 'insideBottomRight', fontSize: 10, fontWeight: 600, fill: '#e879f9' }} />
+                            ))}
                             <ReferenceBlock />
                         </ComposedChart>
                     </ResponsiveContainer>

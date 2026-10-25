@@ -94,3 +94,20 @@ class QuarterlyCashFlow(Base):
     free_cash_flow = Column(Float, nullable=True)  # operating cash flow - capital expenditure
     capital_expenditure = Column(Float, nullable=True)  # negative = cash spent
     fetched_at = Column(DateTime, default=datetime.utcnow)
+
+
+class EarningsEvent(Base):
+    """Earnings report dates per ticker (from yfinance get_earnings_dates), past and upcoming.
+    event_time is in the exchange's local time; session = bmo (before open) / amc (after close) /
+    dmh (during market hours) / tbd (time not announced). A row dated 1900-01-01 marks a ticker
+    with no earnings dates, so it is not refetched before the next refresh."""
+    __tablename__ = "earnings_events"
+
+    ticker = Column(String, primary_key=True, index=True)
+    event_date = Column(Date, primary_key=True)
+    event_time = Column(String, nullable=True)  # HH:MM, exchange local time
+    session = Column(String, nullable=True)
+    eps_estimate = Column(Float, nullable=True)
+    eps_actual = Column(Float, nullable=True)
+    surprise_pct = Column(Float, nullable=True)
+    fetched_at = Column(DateTime, default=datetime.utcnow)
