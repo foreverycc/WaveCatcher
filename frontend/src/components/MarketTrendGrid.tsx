@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { cn } from '../utils/cn';
 import { denomAt, listedCount, listedWeight, weightOnDay, type CapHistory, type CompanyBreadthPoint, type FirstDates } from '../utils/marketBreadth';
-import type { HeatmapGroup } from './MarketHeatmap';
+import type { DayMarks, HeatmapGroup } from './MarketHeatmap';
 
 /**
  * Market trend: one row per index / sector plus a "Market" row on top, one column per trading day.
@@ -9,6 +9,8 @@ import type { HeatmapGroup } from './MarketHeatmap';
  * minus the same for MC, as in the Market Breadth chart) or the market-cap weighted score
  * (sum over stocks of interval-weighted CD - MC score x the stock's share of the row's market cap).
  * The Market row pools every stock of all rows (each counted once). Click a row to open its stock heatmap.
+ * Above (MC) and below (CD) each index row, markers show the index's own signals with the Market Breadth chart's symbols:
+ * triangles = CD / MC on its daily chart, diamonds = 1234 signals (green = CD, red = MC).
  */
 
 interface Props {
@@ -100,9 +102,23 @@ function rowSeries(metric: Metric, tickers: string[], weights: Record<string, nu
     });
 }
 
+// Same symbols as the Market Breadth chart: hollow triangles = CD / MC on the daily chart, hollow diamonds = 1234
+const MARK_STYLE = {
+    cd: { color: '#22c55e', path: 'M4,1 L7,7 L1,7 Z' },
+    mc: { color: '#ef4444', path: 'M1,1 L7,1 L4,7 Z' },
+    cd1234: { color: '#15803d', path: 'M4,0.5 L7.5,4 L4,7.5 L0.5,4 Z' },
+    mc1234: { color: '#b91c1c', path: 'M4,0.5 L7.5,4 L4,7.5 L0.5,4 Z' },
+} as const;
+
+const SignalMark = ({ kind }: { kind: keyof typeof MARK_STYLE }) => (
+    <svg width="8" height="8" viewBox="0 0 8 8" className="shrink-0">
+        <path d={MARK_STYLE[kind].path} fill="none" stroke={MARK_STYLE[kind].color} strokeWidth={1.5} strokeLinejoin="round" />
+    </svg>
+);
+
 export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minDate, maxDate, selected, onToggle, onSelectAll, onPickDay, pickedDate, metrics, onToggleMetric }) => {
     const [span, setSpan] = useState(60);
-    const [hover, setHover] = useState<{ row: string; metric: string; date: string; value: number; raw: number; x: number; y: number } | null>(null);
+    const [hover, setHover] = useState<{ row: string; metric: string; date: string; value: number; raw: number; x: number; y: number; marks?: DayMarks } | null>(null);
 
     const { days, rows } = useMemo(() => {
         const allDays = new Set<string>();
@@ -137,7 +153,7 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
         const perGroup = groups.map(g => {
             const tickers = Array.from(new Set(g.tickers.map(t => t.toUpperCase())));
             return {
-                key: g.key, label: g.key, sub: g.symbol, tickers,
+                key: g.key, label: g.key, sub: g.symbol, tickers, marks: g.marks as Record<string, DayMarks> | undefined,
                 strips: metrics.map(m => toStrip(m, rowSeries(m, tickers, g.weights, cd, mc, calcDays, g.firstDates, g.capHistory))),
             };
         });
@@ -160,7 +176,7 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
                 .map(g => g.capHistory!.ratios)),
         };
         const market = {
-            key: MARKET_ROW, label: 'Market', sub: `${mTickers.size} stocks`,
+            key: MARKET_ROW, label: 'Market', sub: `${mTickers.size} stocks`, marks: undefined as Record<string, DayMarks> | undefined,
             strips: metrics.map(m => toStrip(m, rowSeries(m, Array.from(mTickers), allHaveWeights ? mWeights : undefined, cd, mc, calcDays, groups[0]?.firstDates, mHistory))),
         };
         return { days, rows: [market, ...perGroup] };
@@ -178,6 +194,32 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
     const fmt = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(Math.abs(v) >= 10 ? 0 : 1)}`;
     const labelEvery = Math.max(1, Math.round(days.length / 8));
 
+    type Row = { key: string; label: string; strips: { metric: Metric; raw: number[]; values: number[] }[]; marks?: Record<string, DayMarks> };
+    const markLine = (r: Row, both: boolean, sd: 'cd' | 'mc') => (
+        <div className="flex items-stretch">
+            {both && <span className="w-3.5 shrink-0" />}
+            <div className="flex flex-1 h-[9px]" onMouseLeave={() => setHover(null)}>
+                {days.map((d, i) => {
+                    const m = r.marks![d];
+                    const st = r.strips[0];
+                    return (
+                        <div key={d} className="flex-1 min-w-0 flex items-center justify-center gap-px overflow-visible cursor-pointer"
+                            onClick={() => onPickDay(r.key, d)}
+                            onMouseMove={e => setHover({ row: r.label, metric: METRICS.find(x => x.key === st.metric)!.label, date: d, value: st.values[i], raw: st.raw[i], x: e.clientX, y: e.clientY, marks: m })}>
+                            {sd === 'mc' ? <>
+                                {m?.mc && <SignalMark kind="mc" />}
+                                {m?.mc1234 && <SignalMark kind="mc1234" />}
+                            </> : <>
+                                {m?.cd && <SignalMark kind="cd" />}
+                                {m?.cd1234 && <SignalMark kind="cd1234" />}
+                            </>}
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+
     return (
         <div className="rounded-lg border bg-card p-3">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
@@ -185,6 +227,7 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
                     <h3 className="text-base font-semibold">Market Trend</h3>
                     <p className="text-xs text-muted-foreground">
                         <span>{metrics.length > 1 ? 'Breadth Score (B) and Weighted (W)' : metrics[0] === 'breadth' ? 'Breadth Score' : 'Market-cap weighted score'}</span>: daily percentile of the Date Filters range · click a name or a day for the stock heatmap
+                        {' · '}markers under each index: <span className="inline-flex gap-px align-middle"><SignalMark kind="cd" /><SignalMark kind="mc" /></span> daily CD / MC, <span className="inline-flex gap-px align-middle"><SignalMark kind="cd1234" /><SignalMark kind="mc1234" /></span> 1234
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -209,7 +252,7 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
                 </div>
             </div>
 
-            <div className="grid gap-y-[3px] items-center" style={{ gridTemplateColumns: 'minmax(90px, max-content) 1fr 56px 56px' }}>
+            <div className="grid gap-y-3 items-center" style={{ gridTemplateColumns: 'minmax(90px, max-content) 1fr 56px 56px' }}>
                 <span />
                 <div className="relative h-4 text-[10px] text-muted-foreground">
                     {days.map((d, i) => (i % labelEvery === 0 || i === days.length - 1) && (
@@ -236,6 +279,8 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
                                 <span className="block text-[10px] text-muted-foreground">{r.sub}</span>
                             </button>
                             <div className={cn("flex flex-col gap-px rounded-sm", open && "ring-2 ring-primary")}>
+                                {/* index signals like on the price chart: MC above the row, CD below */}
+                                {r.marks && markLine(r, both, 'mc')}
                                 {r.strips.map(st => (
                                     <div key={st.metric} className="flex items-stretch">
                                         {both && <span className="w-3.5 shrink-0 text-[9px] text-muted-foreground flex items-center" title={METRICS.find(m => m.key === st.metric)!.label}>{tag(st.metric)}</span>}
@@ -249,14 +294,16 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
                                                             : isExtreme(v) ? 'inset 0 3px 0 #fff, inset -0.5px 0 0 rgba(0,0,0,0.25)' : 'inset -0.5px 0 0 rgba(0,0,0,0.25)',
                                                     }}
                                                     onClick={() => onPickDay(r.key, days[i])}
-                                                    onMouseMove={e => setHover({ row: r.label, metric: METRICS.find(m => m.key === st.metric)!.label, date: days[i], value: v, raw: st.raw[i], x: e.clientX, y: e.clientY })} />
+                                                    onMouseMove={e => setHover({ row: r.label, metric: METRICS.find(m => m.key === st.metric)!.label, date: days[i], value: v, raw: st.raw[i], x: e.clientX, y: e.clientY, marks: r.marks?.[days[i]] })} />
                                             ))}
                                         </div>
                                     </div>
                                 ))}
+                                {r.marks && markLine(r, both, 'cd')}
                             </div>
                             {(['last', 'a5'] as const).map(col => (
                                 <div key={col} className="flex flex-col gap-px">
+                                    {r.marks && <span className="h-[9px]" />}
                                     {r.strips.map(st => {
                                         const v = col === 'last' ? (st.values[st.values.length - 1] ?? 50) : avg(st.values, 5);
                                         return (
@@ -266,6 +313,7 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
                                             </span>
                                         );
                                     })}
+                                    {r.marks && <span className="h-[9px]" />}
                                 </div>
                             ))}
                         </React.Fragment>
@@ -279,6 +327,14 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
                     <span className="font-semibold">{hover.row}</span> <span className="text-muted-foreground">{hover.metric} · {hover.date}</span>
                     <span className="ml-2 font-semibold" style={{ color: hover.value >= 90 ? '#16a34a' : hover.value <= 10 ? '#dc2626' : undefined }}>{fmtPct(hover.value)} · {zoneOf(hover.value)}</span>
                     <span className="ml-2 text-muted-foreground">(score {fmt(hover.raw)})</span>
+                    {hover.marks && (hover.marks.cd || hover.marks.mc || hover.marks.cd1234 || hover.marks.mc1234) && (
+                        <span className="ml-2">
+                            {hover.marks.cd && <span className="inline-flex items-center gap-0.5 text-green-500 mr-1.5"><SignalMark kind="cd" />CD</span>}
+                            {hover.marks.cd1234 && <span className="inline-flex items-center gap-0.5 text-green-600 font-semibold mr-1.5"><SignalMark kind="cd1234" />1234 CD</span>}
+                            {hover.marks.mc && <span className="inline-flex items-center gap-0.5 text-red-500 mr-1.5"><SignalMark kind="mc" />MC</span>}
+                            {hover.marks.mc1234 && <span className="inline-flex items-center gap-0.5 text-red-600 font-semibold"><SignalMark kind="mc1234" />1234 MC</span>}
+                        </span>
+                    )}
                 </div>
             )}
         </div>

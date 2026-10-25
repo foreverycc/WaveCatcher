@@ -288,6 +288,9 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                         )}
                     </div>
 
+                    {/* CD/MC and 1234 signals of the last 7 days: on the dashboard they are markers in Market Trend;
+                        the offline report (no Market Trend) keeps them here */}
+                    {staticSummary && <>
                     {/* CD/MC Signals last 7 days */}
                     <div className="mb-1 flex items-center gap-4">
                         <span className="text-xs text-muted-foreground font-medium shrink-0">idx CD/MC</span>
@@ -331,6 +334,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
                             ))}
                         </div>
                     </div>
+
+                    </>}
 
                     {/* Breadth Score gauge (main) with recent history */}
                     <div className="flex items-center gap-3 mt-1">

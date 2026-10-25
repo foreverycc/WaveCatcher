@@ -22,7 +22,11 @@ export interface HeatmapGroup {
     firstDates?: FirstDates;
     /** price history for weights at each day's market cap */
     capHistory?: CapHistory;
+    /** the index's own signals by day (YYYY-MM-DD): CD / MC on its daily chart and 1234 signals */
+    marks?: Record<string, DayMarks>;
 }
+
+export interface DayMarks { cd?: boolean; mc?: boolean; cd1234?: boolean; mc1234?: boolean }
 
 interface Props {
     groups: HeatmapGroup[];

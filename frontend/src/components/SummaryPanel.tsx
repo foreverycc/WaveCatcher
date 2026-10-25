@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { analysisApi, stocksApi, reportsApi, type ScoringConfig } from '../services/api';
 import { IndexSummaryFigures } from './IndexSummaryFigures';
-import { MarketHeatmap, type HeatmapGroup } from './MarketHeatmap';
+import { MarketHeatmap, type DayMarks, type HeatmapGroup } from './MarketHeatmap';
 import { MarketTrendGrid, MARKET_ROW, type Metric } from './MarketTrendGrid';
 import { RunReportButton } from './RunReportButton';
 import { cn } from '../utils/cn';
@@ -199,6 +199,22 @@ interface SummaryPanelProps {
     availableIndices?: { key: string, symbol: string, stock_list: string, tickers: string[] }[];
     dateRange: { start: string; end: string };
     breadthDateRange: { start: string; end: string };
+}
+
+
+/** Index CD / MC days (from its daily price history) and 1234 days, for the Market Trend markers */
+function indexMarks(history: any[] | undefined, signals: { cd_dates?: string[]; mc_dates?: string[] } | undefined) {
+    const marks: Record<string, DayMarks> = {};
+    const at = (d: string) => (marks[d] ??= {});
+    (history ?? []).forEach((r: any) => {
+        const d = String(r.time ?? '').split('T')[0];
+        if (!d) return;
+        if (r.cd_signal) at(d).cd = true;
+        if (r.mc_signal) at(d).mc = true;
+    });
+    (signals?.cd_dates ?? []).forEach(d => { at(d).cd1234 = true; });
+    (signals?.mc_dates ?? []).forEach(d => { at(d).mc1234 = true; });
+    return marks;
 }
 
 export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [], availableIndices = [], dateRange, breadthDateRange }) => {
@@ -610,6 +626,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
             tradingDays: (historyQueries[i]?.data ?? []).map((d: any) => String(d.time ?? '').split('T')[0]).filter(Boolean),
             firstDates,
             capHistory: capHistoryQueries[i]?.data,
+            marks: indexMarks(historyQueries[i]?.data, signalQueries[i]?.data),
         };
     });
     const openIndices = activeIndices
