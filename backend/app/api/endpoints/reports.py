@@ -71,7 +71,7 @@ def run_figures(run_id: int):
         cache_key = (run_id, run.timestamp)  # ids can be reused after a database cleanup
         if cache_key not in _figures_cache:
             try:
-                figures = summary_figures(load_results(db, run_id, tables=False))
+                figures = summary_figures(load_results(db, run_id, report=False))
             except ValueError as exc:
                 raise HTTPException(status_code=404, detail=str(exc))
             if len(_figures_cache) >= 4:

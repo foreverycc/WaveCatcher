@@ -1,9 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { analysisApi, stocksApi, reportsApi, type ScoringConfig } from '../services/api';
-import { IndexSummaryFigures } from './IndexSummaryFigures';
-import { MarketHeatmap, type DayMarks, type HeatmapGroup } from './MarketHeatmap';
-import { MarketTrendGrid, MARKET_ROW, type Metric } from './MarketTrendGrid';
+import { MarketLevels, type LevelIndex } from './MarketLevels';
+import { indexMarks } from '../utils/marketBreadth';
 import { RunReportButton } from './RunReportButton';
 import { cn } from '../utils/cn';
 import { parseISO, format } from 'date-fns';
@@ -204,20 +203,6 @@ interface SummaryPanelProps {
 }
 
 
-/** Index CD / MC days (from its daily price history) and 1234 days, for the Market Trend markers */
-function indexMarks(history: any[] | undefined, signals: { cd_dates?: string[]; mc_dates?: string[] } | undefined) {
-    const marks: Record<string, DayMarks> = {};
-    const at = (d: string) => (marks[d] ??= {});
-    (history ?? []).forEach((r: any) => {
-        const d = String(r.time ?? '').split('T')[0];
-        if (!d) return;
-        if (r.cd_signal) at(d).cd = true;
-        if (r.mc_signal) at(d).mc = true;
-    });
-    (signals?.cd_dates ?? []).forEach(d => { at(d).cd1234 = true; });
-    (signals?.mc_dates ?? []).forEach(d => { at(d).mc1234 = true; });
-    return marks;
-}
 
 export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndices = [], availableIndices = [], dateRange, breadthDateRange }) => {
 
@@ -381,10 +366,6 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
         enabled: !!runId,
         staleTime: Infinity, // a run's results never change
     });
-
-    // Date Filters — breadthDateRange for Index Cards/Chart, dateRange for signal tables
-    const breadthMinDate = useMemo(() => parseISO(breadthDateRange.start), [breadthDateRange.start]);
-    const breadthMaxDate = useMemo(() => parseISO(breadthDateRange.end), [breadthDateRange.end]);
 
     // --- Helpers ---
     const formatPercent = (val: number) => `${val.toFixed(1)}%`;
@@ -595,52 +576,50 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
 
     const [warningsDismissed, setWarningsDismissed] = useState(false);
 
-    // Market trend on top -> click an index to open its stock heatmap -> click a heatmap block for its gauges
-    const [heatmapIndices, setHeatmapIndices] = useState<string[]>([]);
-    const [heatmapDate, setHeatmapDate] = useState<string | null>(null); // null = latest day
-    // Breadth Score by default; Weighted can be shown with it or alone (at least one stays on)
-    const [trendMetrics, setTrendMetrics] = useState<Metric[]>(['breadth']);
-    const toggleTrendMetric = (m: Metric) => setTrendMetrics(prev => {
-        const next = prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m];
-        return next.length ? (['breadth', 'weighted'] as Metric[]).filter(k => next.includes(k)) : prev;
-    });
-    const toggleHeatmap = (key: string) => {
-        setHeatmapDate(null);
-        setHeatmapIndices(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
-    };
-    const toggleAllHeatmaps = () => {
-        setHeatmapDate(null);
-        setHeatmapIndices(prev => prev.length === activeIndices.length ? [] : activeIndices.map(idx => idx.key));
-    };
-    const pickHeatmapDay = (key: string, date: string) => {
-        setHeatmapDate(date);
-        setHeatmapIndices(prev => key === MARKET_ROW
-            ? activeIndices.map(idx => idx.key)
-            : prev.includes(key) ? prev : [...prev, key]);
-    };
-    const [expandedIndices, setExpandedIndices] = useState<string[]>([]);
-    const toggleIndex = (key: string) =>
-        setExpandedIndices(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
-    const heatmapGroups: HeatmapGroup[] = activeIndices.map((idx, i) => {
+    // Market trend on top -> click an index to open its stock heatmap -> click a heatmap block for its card
+    const levelIndices: LevelIndex[] = activeIndices.map((idx, i) => {
         const breadth = breadthQueries[i]?.data;
         const figure = savedFigures?.figures.find(f => f.title === idx.key);
+        const history = historyQueries[i]?.data ?? [];
         return {
             key: idx.key,
-            symbol: idx.symbol,
-            tickers: (figure?.tickers ?? idx.tickers) || [],
-            weights: weightQueries[i]?.data,
-            cdCompanyBreadth: breadth?.cd_company_breadth ?? [],
-            mcCompanyBreadth: breadth?.mc_company_breadth ?? [],
-            tradingDays: (historyQueries[i]?.data ?? []).map((d: any) => String(d.time ?? '').split('T')[0]).filter(Boolean),
-            firstDates,
-            capHistory: capHistoryQueries[i]?.data,
-            marks: indexMarks(historyQueries[i]?.data, signalQueries[i]?.data),
+            group: {
+                key: idx.key,
+                symbol: idx.symbol,
+                tickers: (figure?.tickers ?? idx.tickers) || [],
+                weights: weightQueries[i]?.data,
+                cdCompanyBreadth: breadth?.cd_company_breadth ?? [],
+                mcCompanyBreadth: breadth?.mc_company_breadth ?? [],
+                tradingDays: history.map((d: any) => String(d.time ?? '').split('T')[0]).filter(Boolean),
+                firstDates,
+                capHistory: capHistoryQueries[i]?.data,
+                marks: indexMarks(historyQueries[i]?.data, signalQueries[i]?.data),
+            },
+            card: {
+                title: idx.key,
+                spxData: history,
+                cdBreadth: breadth?.cd_breadth ?? [],
+                mcBreadth: breadth?.mc_breadth ?? [],
+                cdSignalBreadth: breadth?.cd_signal_breadth ?? [],
+                mcSignalBreadth: breadth?.mc_signal_breadth ?? [],
+                cdScoreBreadth: breadth?.cd_score_breadth ?? [],
+                mcScoreBreadth: breadth?.mc_score_breadth ?? [],
+                cdBreakthroughScoreBreadth: breadth?.cd_breakthrough_score_breadth ?? [],
+                mcBreakthroughScoreBreadth: breadth?.mc_breakthrough_score_breadth ?? [],
+                cdCompanyBreadth: breadth?.cd_company_breadth ?? [],
+                mcCompanyBreadth: breadth?.mc_company_breadth ?? [],
+                tickerWeights: weightQueries[i]?.data,
+                intervalWeights: scoringConfig?.interval_weights,
+                signals1234: signalQueries[i]?.data,
+                tickers: idx.tickers,
+                firstDates,
+                capHistory: capHistoryQueries[i]?.data,
+                dmaBreadth: breadth?.dma_breadth,
+                indexTicker: idx.symbol,
+                ...figure,
+            },
         };
     });
-    const openIndices = activeIndices
-        .map((idx, i) => ({ idx, i }))
-        .filter(({ idx }) => expandedIndices.includes(idx.key) && heatmapIndices.includes(idx.key));
-    const shownHeatmapGroups = heatmapGroups.filter(g => heatmapIndices.includes(g.key));
     const intervalWeightsOrDefault = scoringConfig?.interval_weights ?? { '1h': 1, '2h': 2, '3h': 4, '4h': 8, '1d': 32 };
     const [warningsExpanded, setWarningsExpanded] = useState(false);
 
@@ -698,72 +677,7 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
                 </div>
             )}
 
-            <MarketTrendGrid
-                groups={heatmapGroups}
-                intervalWeights={intervalWeightsOrDefault}
-                minDate={breadthDateRange.start}
-                maxDate={breadthDateRange.end}
-                selected={heatmapIndices}
-                onToggle={toggleHeatmap}
-                onSelectAll={toggleAllHeatmaps}
-                onPickDay={pickHeatmapDay}
-                pickedDate={heatmapDate}
-                metrics={trendMetrics}
-                onToggleMetric={toggleTrendMetric}
-            />
-
-            {shownHeatmapGroups.length > 0 && (
-                <MarketHeatmap
-                    groups={shownHeatmapGroups}
-                    intervalWeights={intervalWeightsOrDefault}
-                    maxDate={breadthDateRange.end}
-                    date={heatmapDate}
-                    metrics={['breadth', 'weighted']}
-                    onClearDate={() => setHeatmapDate(null)}
-                    expanded={expandedIndices}
-                    onToggle={toggleIndex}
-                />
-            )}
-
-            {/* Market Breadth charts of the indices opened in the heatmap (flip to Distributions inside each card) */}
-            {openIndices.length > 0 && (
-            <div className="grid gap-4 w-full grid-cols-1 xl:grid-cols-2">
-                {openIndices.map(({ idx, i }) => {
-                    const history = historyQueries[i]?.data ?? [];
-                    const breadth = breadthQueries[i]?.data;
-                    const signals = signalQueries[i]?.data;
-                    return (
-                        <IndexSummaryFigures
-                            key={idx.key}
-                            title={idx.key}
-                            spxData={history}
-                            cdBreadth={breadth?.cd_breadth ?? []}
-                            mcBreadth={breadth?.mc_breadth ?? []}
-                            cdSignalBreadth={breadth?.cd_signal_breadth ?? []}
-                            mcSignalBreadth={breadth?.mc_signal_breadth ?? []}
-                            cdScoreBreadth={breadth?.cd_score_breadth ?? []}
-                            mcScoreBreadth={breadth?.mc_score_breadth ?? []}
-                            cdBreakthroughScoreBreadth={breadth?.cd_breakthrough_score_breadth ?? []}
-                            mcBreakthroughScoreBreadth={breadth?.mc_breakthrough_score_breadth ?? []}
-                            cdCompanyBreadth={breadth?.cd_company_breadth ?? []}
-                            mcCompanyBreadth={breadth?.mc_company_breadth ?? []}
-                            tickerWeights={weightQueries[i]?.data}
-                            intervalWeights={scoringConfig?.interval_weights}
-                            minDate={breadthMinDate}
-                            maxDate={breadthMaxDate}
-                            signals1234={signals}
-                            tickers={idx.tickers}
-                            firstDates={firstDates}
-                            capHistory={capHistoryQueries[i]?.data}
-                            dmaBreadth={breadth?.dma_breadth}
-                            indexTicker={idx.symbol}
-                            focusDate={heatmapDate}
-                            {...savedFigures?.figures.find(figure => figure.title === idx.key)}
-                        />
-                    );
-                })}
-            </div>
-            )}
+            <MarketLevels indices={levelIndices} intervalWeights={intervalWeightsOrDefault} dateRange={breadthDateRange} />
 
             <div className="border-t border-border pt-6"></div>
 

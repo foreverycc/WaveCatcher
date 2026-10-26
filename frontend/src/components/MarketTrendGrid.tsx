@@ -16,7 +16,7 @@ import type { DayMarks, HeatmapGroup } from './MarketHeatmap';
 interface Props {
     groups: HeatmapGroup[];
     intervalWeights: Record<string, number>;
-    /** Date Filters range (YYYY-MM-DD): percentiles are taken against the days in it, like the gauges */
+    /** Date Filters range (YYYY-MM-DD): percentiles are taken against the days in it */
     minDate?: string;
     maxDate?: string;
     selected: string[];
@@ -129,7 +129,7 @@ export const MarketTrendGrid: React.FC<Props> = ({ groups, intervalWeights, minD
         if (allDays.size === 0) groups.forEach(g => [...g.cdCompanyBreadth, ...g.mcCompanyBreadth].forEach(c => allDays.add(c.date)));
         const fullDays = Array.from(allDays).filter(d => !maxDate || d <= maxDate).sort();
         const days = fullDays.slice(-span);
-        // Reference days for the percentile: the Date Filters range, as the gauges use
+        // Reference days for the percentile: the Date Filters range
         let refDays = fullDays.filter(d => !minDate || d >= minDate);
         if (refDays.length === 0) refDays = days;
         const calcDays = Array.from(new Set([...refDays, ...days])).sort();

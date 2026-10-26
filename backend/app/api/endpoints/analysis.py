@@ -24,6 +24,7 @@ from app.logic.fundamentals import ticker_quarterly, aggregate_quarterly, refres
 from app.logic.earnings import refresh_earnings, ticker_earnings
 from app.services.stock_weights import load_dma_breadth
 from app.services.bond_yields import load_bond_yields
+from app.services.first_dates import ticker_first_dates
 
 logger = logging.getLogger(__name__)
 
@@ -323,42 +324,10 @@ def _latest_run_for_stock_list(db, stock_list):
 
 
 # (cache key, built at, result) of /ticker_first_dates
-_first_dates_cache = {'key': None, 'at': 0.0, 'value': None}
-_FIRST_DATES_TTL = 600  # seconds; analysis jobs write prices from another process
-
-
 @router.get("/ticker_first_dates")
 def get_ticker_first_dates(db: Session = Depends(get_db)):
-    """First stored daily bar (YYYY-MM-DD) of every ticker whose history starts later than the
-    earliest one, e.g. a recent IPO. Breadth shares and scores divide by the stocks that were
-    trading on each day, so a stock does not dilute the days before it had data."""
-    import time
-    # Prices change when an analysis run starts or finishes, so the runs table keys the cache
-    key = tuple(db.execute(text("SELECT max(id), count(*), sum(status = 'completed') FROM analysis_runs")).fetchone())
-    cache = _first_dates_cache
-    if cache['key'] == key and time.time() - cache['at'] < _FIRST_DATES_TTL:
-        return cache['value']
-    cache.update(key=key, at=time.time(), value=_compute_ticker_first_dates(db))
-    return cache['value']
-
-
-def _compute_ticker_first_dates(db):
-    # A GROUP BY over all ~30M bars takes seconds; stepping ticker to ticker through the
-    # indexes takes one seek each.
-    firsts, ticker = {}, ''
-    while True:
-        row = db.execute(text("SELECT ticker FROM price_history WHERE ticker > :t ORDER BY ticker LIMIT 1"), {'t': ticker}).fetchone()
-        if not row:
-            break
-        ticker = row[0]
-        ts = db.execute(text("SELECT min(timestamp) FROM price_history WHERE ticker = :t AND interval = '1d'"), {'t': ticker}).scalar()
-        if ts is not None:
-            firsts[ticker] = pd.Timestamp(ts).strftime('%Y-%m-%d')
-    if not firsts:
-        return {}
-    # a week of slack: tickers whose stored history starts a few days later still count from the start
-    cutoff = (pd.Timestamp(min(firsts.values())) + pd.Timedelta(days=7)).strftime('%Y-%m-%d')
-    return {t: d for t, d in firsts.items() if d > cutoff}
+    """First stored daily bar (YYYY-MM-DD) of every ticker whose history starts late, e.g. a recent IPO."""
+    return ticker_first_dates(db)
 
 
 # stock list -> (cache key, encoded JSON) of /market_breadth

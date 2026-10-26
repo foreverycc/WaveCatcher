@@ -28,6 +28,7 @@ def fixture_results():
             'failed_tickers': ['<script>alert(1)</script>'],
         },
         ('cd_signal_breadth_by_interval', 'test.tab'): [{'date': '2026-10-09', 'count_1h': 2}],
+        ('cd_company_breadth', 'test.tab'): [{'date': '2026-10-09', 'count': 1, 'tickers': ['AAA']}],
         ('cd_breakout_candidates_summary_1234', 'ALL'): [
             {'ticker': 'AAA', 'date': '2026-10-09', 'intervals': '1,2', 'nx_1d': True},
             {'ticker': 'WRONG_INDEX', 'date': '2026-10-09', 'intervals': '1'},
@@ -51,7 +52,12 @@ class ReportTests(unittest.TestCase):
         output = reports.render_report(SimpleNamespace(id=42, stock_list_name='multi_index'), results, ReportSettings())
         encoded = re.search(r'<script type="application/json" id="report-data">(.*?)</script>', output, re.S).group(1)
         payload = json.loads(encoded)
-        self.assertEqual(payload['figures'], summary_figures(results)['figures'])
+        level_keys = {'cdCompanyBreadth', 'mcCompanyBreadth'}
+        self.assertEqual([{k: v for k, v in f.items() if k not in level_keys} for f in payload['figures']], summary_figures(results)['figures'])
+        self.assertEqual(payload['figures'][0]['cdCompanyBreadth'], [{'date': '2026-10-09', 'count': 1, 'tickers': ['AAA']}])
+        for level in ('level-1', 'level-2', 'level-3'):
+            self.assertIn(f'href="#{level}"', output)
+        self.assertIn('id="report-levels"', output)
         self.assertNotIn('<script>alert(1)</script>', output)
         self.assertNotRegex(output, r'<script[^>]+src=')
         self.assertNotRegex(output, r'<link[^>]+href=')
@@ -78,6 +84,16 @@ class ReportTests(unittest.TestCase):
         view['indices'] = ['MISSING']
         with self.assertRaisesRegex(ValueError, 'not all available'):
             reports.render_report(SimpleNamespace(id=42), fixture_results(), ReportSettings(), view)
+
+    def test_report_embeds_list_data_and_first_dates(self):
+        extras = {'firstDates': {'BBB': '2026-10-05'}, 'lists': {'test.tab': {'tickerWeights': {'AAA': 2.0}, 'capHistory': {'dates': [], 'ratios': {}}, 'dmaBreadth': []}}}
+        results = fixture_results()
+        results[('report_snapshot', 'ALL')]['indices'][0]['stock_list'] = 'test.tab'
+        output = reports.render_report(SimpleNamespace(id=42, stock_list_name='multi_index'), results, ReportSettings(), None, extras)
+        payload = json.loads(re.search(r'<script type="application/json" id="report-data">(.*?)</script>', output, re.S).group(1))
+        self.assertEqual(payload['firstDates'], {'BBB': '2026-10-05'})
+        self.assertEqual(payload['figures'][0]['tickerWeights'], {'AAA': 2.0})
+        self.assertEqual(payload['figures'][0]['dmaBreadth'], [])
 
     def test_payload_cannot_close_script_element(self):
         results = fixture_results()

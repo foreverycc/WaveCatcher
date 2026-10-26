@@ -1,3 +1,4 @@
+import type { DayMarks } from '../components/MarketHeatmap';
 // Market breadth: how many companies had a CD / MC signal each day, and the breadth score
 // (that day's CD / MC Score times the share of companies with a signal).
 
@@ -127,36 +128,6 @@ export function breadthScore(
         .map(s => ({ date: s.date, value: weightedScore(s, weights, n) * (share.get(s.date) || 0) }));
 }
 
-/** Value of a daily series on each of `days` (0 where the series has no entry). */
-export function onDays(series: ValuePoint[], days: string[]): number[] {
-    const byDate = new Map(series.map(p => [p.date, p.value]));
-    return days.map(d => byDate.get(d) ?? 0);
-}
-
-/**
- * CD vs MC balance index (0-100) for each day: the percentile of that day's CD - MC among all days
- * (ties count half), so 50 is a typical day, near 100 CD dominates as rarely before, near 0 MC does.
- */
-export function balanceIndex(cd: ValuePoint[], mc: ValuePoint[], days: string[]): number[] {
-    const cdv = onDays(cd, days), mcv = onDays(mc, days);
-    const net = days.map((_, i) => cdv[i] - mcv[i]);
-    const sorted = [...net].sort((a, b) => a - b);
-    const n = sorted.length;
-    const below = (x: number) => { let lo = 0, hi = n; while (lo < hi) { const m = (lo + hi) >> 1; if (sorted[m] < x) lo = m + 1; else hi = m; } return lo; };
-    const atOrBelow = (x: number) => { let lo = 0, hi = n; while (lo < hi) { const m = (lo + hi) >> 1; if (sorted[m] <= x) lo = m + 1; else hi = m; } return lo; };
-    return net.map(x => n === 0 ? 50 : ((below(x) + (atOrBelow(x) - below(x)) * 0.5) / n) * 100);
-}
-
-/** Signal count per stock per day (all intervals). */
-export function signalCountSeries(rows: SignalRow[] = [], n: Denom): ValuePoint[] {
-    return rows.map(r => ({ date: r.date, value: KEYS.reduce((s, k) => s + (r[`count_${k}`] || 0), 0) / denomAt(n, r.date) }));
-}
-
-/** CD / MC Score per day (interval-weighted, per stock). */
-export function scoreSeries(rows: ScoreRow[] = [], weights: Record<string, number> | undefined, n: Denom): ValuePoint[] {
-    return rows.map(r => ({ date: r.date, value: weightedScore(r, weights, n) }));
-}
-
 /**
  * Weighted share of the stock list with a signal each day (0-1): the summed weight of the tickers
  * with a signal over the summed weight of the list. Tickers without a weight count as 0.
@@ -203,4 +174,22 @@ export function capWeightedScore(
         out.set(c.date, v);
     }
     return out;
+}
+
+/** Index CD / MC days (from its daily price history) and 1234 days, for the Market Trend markers */
+export function indexMarks(
+    history: { time?: string; cd_signal?: boolean; mc_signal?: boolean }[] | undefined,
+    signals: { cd_dates?: string[]; mc_dates?: string[] } | undefined,
+) {
+    const marks: Record<string, DayMarks> = {};
+    const at = (d: string) => (marks[d] ??= {});
+    (history ?? []).forEach(r => {
+        const d = String(r.time ?? '').split('T')[0];
+        if (!d) return;
+        if (r.cd_signal) at(d).cd = true;
+        if (r.mc_signal) at(d).mc = true;
+    });
+    (signals?.cd_dates ?? []).forEach(d => { at(d).cd1234 = true; });
+    (signals?.mc_dates ?? []).forEach(d => { at(d).mc1234 = true; });
+    return marks;
 }

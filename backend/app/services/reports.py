@@ -17,12 +17,18 @@ from app.services.report_settings import load_settings, ROOT
 from app.services.summary_data import summary_figures
 
 INTERVALS = ['1h', '2h', '3h', '4h', '1d']
-COLORS = ['#079669', '#dc5263', '#437be2']
 METRICS = [
     ('CD/MC', 'signal_breadth_by_interval', 'count', False),
     ('CD/MC Score', 'score_breadth_by_interval', 'score', False),
     ('CD/MC HQ', 'market_breadth_1234', 'count', True),
     ('CD/MC HQ Score', 'breakthrough_score_by_interval', 'score', True),
+]
+
+# Headings of the report's chart levels; the React renderer uses the same anchors (level-1..3)
+LEVELS = [
+    (1, 'Market Trend', 'every index by day'),
+    (2, 'Stock Heatmaps', 'the stocks of each index'),
+    (3, 'Index Cards', 'Market Breadth and Distributions of each index'),
 ]
 
 
@@ -95,43 +101,63 @@ def report_assets():
         return assets[0].read_text(), assets[1].read_text()
 
 
-def load_results(db, run_id, tables=True):
-    """tables=False skips the signal-table results (eval_custom_detailed is ~100MB per side),
-    which the Summary figures do not use."""
+def load_results(db, run_id, report=True):
+    """report=False loads only what the Summary figures use, skipping the signal tables
+    (eval_custom_detailed is ~100MB per side) and the stock heatmap's company breadth."""
     required_types = {'report_snapshot', 'data_quality_warnings'}
     for side in ('cd', 'mc'):
         required_types.update(f'{side}_{suffix}' for _, suffix, _, _ in METRICS)
         required_types.add(f'{side}_breakout_candidates_summary_1234')
-        if tables:
-            required_types.update(f'{side}_{suffix}' for suffix in ('eval_good_signals', 'eval_custom_detailed'))
+        if report:
+            required_types.update(f'{side}_{suffix}' for suffix in ('eval_good_signals', 'eval_custom_detailed', 'company_breadth'))
     return {(r.result_type, r.ticker): r.data for r in db.query(AnalysisResult)
             .filter_by(run_id=run_id).filter(AnalysisResult.result_type.in_(required_types))
             .order_by(AnalysisResult.id).all()}
 
 
-def render_report(run, results, settings, view=None):
+def list_data(db, snapshot):
+    """Data the report reads besides the run's results: the first trading day of recently listed
+    stocks, and each stock list's weights, cap history and % above moving averages (files)."""
+    from app.services.first_dates import ticker_first_dates
+    from app.services.stock_weights import load_weights, load_cap_history, load_dma_breadth
+    lists = {}
+    for index in snapshot['indices']:
+        name = index.get('stock_list')
+        if name and name not in lists:
+            lists[name] = {'tickerWeights': load_weights(name), 'capHistory': load_cap_history(name), 'dmaBreadth': load_dma_breadth(name)}
+    return {'firstDates': ticker_first_dates(db), 'lists': lists}
+
+
+def render_report(run, results, settings, view=None, extras=None):
+    """The Summary's three chart levels (Market Trend -> stock heatmaps -> index cards with Market
+    Breadth / Distributions) rendered by the same components, then the signal tables."""
     payload = summary_figures(results)
     snapshot = results[('report_snapshot', 'ALL')]
+    extras = extras or {}
     view = view or {}
     end = date.fromisoformat(snapshot['as_of'][:10])
     chart_range = view.get('breadth_date_range') or {'start': (end - timedelta(days=settings.chart_days)).isoformat(), 'end': end.isoformat()}
     signal_range = view.get('date_range') or {'start': (end - timedelta(days=settings.signal_days)).isoformat(), 'end': end.isoformat()}
+    for figure, index in zip(payload['figures'], snapshot['indices']):
+        for side in ('cd', 'mc'):
+            figure[f'{side}CompanyBreadth'] = results.get((f'{side}_company_breadth', index['breadth_key']), [])
+        figure.update(extras.get('lists', {}).get(index.get('stock_list'), {}))
     selected = view.get('indices')
     if selected is not None:
         available = {figure['title'] for figure in payload['figures']}
         if not selected or set(selected) - available:
             raise ValueError('The selected indices are not all available in this run. Run analysis for those indices first.')
         payload['figures'] = [figure for figure in payload['figures'] if figure['title'] in selected]
-    payload.update(start=chart_range['start'], end=chart_range['end'])
+    payload.update(start=chart_range['start'], end=chart_range['end'], firstDates=extras.get('firstDates', {}))
     script, css = report_assets()
     parts = ['<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">',
              f'<title>WaveCatcher · {esc(end)} · Run {run.id}</title><style>{css}</style></head><body><main class="report-shell">',
              f'<header id="report-top" class="report-header"><div>WAVECATCHER / SUMMARY REPORT</div><h1>Market signals · {esc(end)}</h1><p>Run #{run.id} · {esc(run.stock_list_name)}</p><p>Charts: {esc(chart_range["start"])} – {esc(chart_range["end"])} · Signals: {esc(signal_range["start"])} – {esc(signal_range["end"])}</p><button onclick="window.print()">Print / Save as PDF</button></header>',
              '<noscript>This report requires JavaScript to render the same interactive charts as Summary. Open it in your browser.</noscript>']
-    parts.append('<nav class="report-contents" aria-label="Report contents"><h2>Contents</h2><ul>')
-    for i, figure in enumerate(payload['figures']):
-        parts.append(f'<li><a href="#sector-{i}">{esc(figure["title"])}</a><span><a href="#sector-{i}-breadth">Market Breadth</a> · <a href="#sector-{i}-distribution">Distribution</a></span></li>')
-    parts.append('<li><a href="#signals-1234">1234 Signals</a></li><li><a href="#high-return">High Return Opportunities</a></li></ul></nav>')
+    parts.append('<nav class="report-contents" aria-label="Report contents"><h2>Contents</h2><ol>')
+    for level, name, note in LEVELS:
+        parts.append(f'<li><a href="#level-{level}">Level {level} · {name}</a><span>{note}</span></li>')
+    parts.append('<li><a href="#signals-1234">1234 Signals</a></li><li><a href="#high-return">High Return Opportunities</a></li></ol></nav>')
     quality = results.get(('data_quality_warnings', 'ALL'), {})
     failed = snapshot.get('failed_tickers', [])
     warnings = quality.get('warnings', [])
@@ -139,8 +165,7 @@ def render_report(run, results, settings, view=None):
         parts.append(f'<p class="report-warning">Data quality: {len(failed)} failed tickers; {len(warnings)} warnings. Failed: {esc(", ".join(failed) or "none")}</p>')
         if warnings:
             parts.append('<details><summary>Data quality details</summary><ul>' + ''.join(f'<li>{esc(w)}</li>' for w in warnings) + '</ul></details>')
-    for i, figure in enumerate(payload['figures']):
-        parts.append(f'<section id="sector-{i}" class="report-sector"><a class="report-back" href="#report-top">↑ Back to contents</a><h2>{esc(figure["title"])}</h2><div id="figure-{i}"></div></section>')
+    parts.append('<div id="report-levels"></div>')
     allowed = {ticker for figure in payload['figures'] for ticker in figure['tickers']}
     parts.append('<section class="report-tables"><a class="report-back" href="#report-top">↑ Back to contents</a><h2 id="signals-1234">1234 Signals · Top 10</h2><div class="report-table-grid">')
     for side in ['cd', 'mc']:
@@ -168,7 +193,8 @@ def generate_report(run_id, settings=None, view=None):
         temporary = None
         try:
             results = load_results(db, run_id)
-            content = render_report(run, results, settings, view)
+            snapshot = results.get(('report_snapshot', 'ALL'))
+            content = render_report(run, results, settings, view, list_data(db, snapshot) if snapshot else None)
             folder = Path(settings.output_directory)
             folder.mkdir(parents=True, exist_ok=True)
             filename = f'WaveCatcher_{datetime.utcnow():%Y-%m-%d_%H%M%S}_run-{run_id}_{report_id[:8]}.html'

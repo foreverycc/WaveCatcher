@@ -964,7 +964,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}
                 </h3>
                 <div className="flex items-center gap-2">
-                    {tickers.length > 0 && (
+                    {tickers.length > 0 && onTickerChange && (
                         <TickerSelector
                             tickers={tickers}
                             selectedTicker={selectedTicker}

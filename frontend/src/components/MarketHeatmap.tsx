@@ -6,7 +6,7 @@ import { denomAt, listedCount, listedOn, weightOnDay, type CapHistory, type Comp
  * Finviz-style market heatmap. One block per index / sector; inside it every stock is a tile
  * sized by market cap (equal size when no market caps are stored) and colored by its net signal
  * score over the chosen window: CD score - MC score, each interval-weighted. Green = CD, red = MC.
- * Clicking a block opens that index's gauge card.
+ * Clicking a block opens that index's card (Market Breadth / Distributions).
  */
 
 export interface HeatmapGroup {
@@ -228,7 +228,7 @@ export const MarketHeatmap: React.FC<Props> = ({ groups, intervalWeights, maxDat
                         )}
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                        Size = {metrics.includes('weighted') ? 'market cap' : 'equal (Breadth Score)'} · Color = CD score − MC score per stock · Click an index to open its gauges
+                        Size = {metrics.includes('weighted') ? 'market cap' : 'equal (Breadth Score)'} · Color = CD score − MC score per stock · Click an index to open its Market Breadth card
                     </p>
                 </div>
                 <div className="flex items-center gap-3">

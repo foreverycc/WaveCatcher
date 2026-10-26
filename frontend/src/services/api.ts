@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { IndexSummaryCardProps } from '../components/IndexSummaryCard';
 
-export type ReportFigure = Omit<IndexSummaryCardProps, 'minDate' | 'maxDate' | 'staticSummary'>;
+export type ReportFigure = Omit<IndexSummaryCardProps, 'minDate' | 'maxDate' | 'focusDate'>;
 export interface ReportView {
     indices: string[];
     date_range: { start: string; end: string };
