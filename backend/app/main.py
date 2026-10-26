@@ -3,6 +3,7 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
 # Add logic directory to sys.path to ensure legacy imports work
@@ -61,6 +62,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Breadth / result JSON is large and compresses ~3-6x
+app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=5)  # level 9 costs ~8x the CPU for ~7% less
 
 # Include routers
 app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])

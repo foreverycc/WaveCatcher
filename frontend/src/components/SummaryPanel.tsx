@@ -18,7 +18,8 @@ const FetchingChartView = ({ row, type, runId, onClose }: { row: any, type: 'bul
     const { data: detailedData, isLoading } = useQuery({
         queryKey: ['detailedRowData', runId, resultType, row.ticker],
         queryFn: () => runId ? analysisApi.getResult(runId, resultType, row.ticker) : null,
-        enabled: !!runId && !!row.ticker
+        enabled: !!runId && !!row.ticker,
+        staleTime: Infinity,
     });
 
     const detailedRow = useMemo(() => {
@@ -102,7 +103,8 @@ const Fetching1234ChartView = ({ row, type, runId, onClose }: { row: any, type: 
     const { data: detailedData, isLoading } = useQuery({
         queryKey: ['detailedRowData', runId, resultType, row.ticker],
         queryFn: () => runId ? analysisApi.getResult(runId, resultType, row.ticker) : null,
-        enabled: !!runId && !!row.ticker
+        enabled: !!runId && !!row.ticker,
+        staleTime: Infinity,
     });
 
     const detailedRows = useMemo(() => {
@@ -342,36 +344,42 @@ export const SummaryPanel: React.FC<SummaryPanelProps> = ({ runId, selectedIndic
     const { data: bestCD } = useQuery({
         queryKey: ['best', runId, 'cd_eval_good_signals'],
         queryFn: () => runId ? analysisApi.getResult(runId, 'cd_eval_good_signals') : null,
-        enabled: !!runId
+        enabled: !!runId,
+        staleTime: Infinity,
     });
     const { data: bestMC } = useQuery({
         queryKey: ['best', runId, 'mc_eval_good_signals'],
         queryFn: () => runId ? analysisApi.getResult(runId, 'mc_eval_good_signals') : null,
-        enabled: !!runId
+        enabled: !!runId,
+        staleTime: Infinity,
     });
 
     // 4. 1234 Signals Data for Summary Tab table
     const { data: cd1234Data } = useQuery({
         queryKey: ['1234signals', runId, 'cd_breakout_candidates_summary_1234'],
         queryFn: () => runId ? analysisApi.getResult(runId, 'cd_breakout_candidates_summary_1234') : null,
-        enabled: !!runId
+        enabled: !!runId,
+        staleTime: Infinity,
     });
     const { data: mc1234Data } = useQuery({
         queryKey: ['1234signals', runId, 'mc_breakout_candidates_summary_1234'],
         queryFn: () => runId ? analysisApi.getResult(runId, 'mc_breakout_candidates_summary_1234') : null,
-        enabled: !!runId
+        enabled: !!runId,
+        staleTime: Infinity,
     });
 
     // 5. Detailed data for calculating average returns in 1234 table
     const { data: cdDetailedData } = useQuery({
-        queryKey: ['detailed', runId, 'cd_eval_custom_detailed'],
-        queryFn: () => runId ? analysisApi.getResult(runId, 'cd_eval_custom_detailed') : null,
-        enabled: !!runId
+        queryKey: ['bestMetrics', runId, 'cd_eval_custom_detailed'],
+        queryFn: () => runId ? analysisApi.getBestMetrics(runId, 'cd_eval_custom_detailed') : null,
+        enabled: !!runId,
+        staleTime: Infinity, // a run's results never change
     });
     const { data: mcDetailedData } = useQuery({
-        queryKey: ['detailed', runId, 'mc_eval_custom_detailed'],
-        queryFn: () => runId ? analysisApi.getResult(runId, 'mc_eval_custom_detailed') : null,
-        enabled: !!runId
+        queryKey: ['bestMetrics', runId, 'mc_eval_custom_detailed'],
+        queryFn: () => runId ? analysisApi.getBestMetrics(runId, 'mc_eval_custom_detailed') : null,
+        enabled: !!runId,
+        staleTime: Infinity, // a run's results never change
     });
 
     // Date Filters — breadthDateRange for Index Cards/Chart, dateRange for signal tables

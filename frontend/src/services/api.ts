@@ -223,6 +223,11 @@ export const analysisApi = {
         });
         return response.data;
     },
+    /** eval result rows cut down to ticker / interval / best_period and that period's metrics */
+    getBestMetrics: async (runId: number, resultType: string) => {
+        const response = await api.get<any[]>(`/analysis/runs/${runId}/results/${resultType}/best_metrics`);
+        return response.data;
+    },
     getLogs: async (lines: number = 50) => {
         const response = await api.get<{ logs: string[] }>('/analysis/logs', { params: { lines } });
         return response.data;

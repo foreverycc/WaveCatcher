@@ -36,14 +36,14 @@ class StockListResponse(BaseModel):
     content: Optional[str] = None
 
 @router.get("/", response_model=List[str])
-async def list_stock_files():
+def list_stock_files():
     """List all available stock list files."""
     if not os.path.exists(DATA_DIR):
         return []
     return [f for f in os.listdir(DATA_DIR) if f.endswith('.tab') or f.endswith('.txt')]
 
 @router.get("/{filename}", response_model=StockListResponse)
-async def get_stock_list(filename: str):
+def get_stock_list(filename: str):
     """Get content of a specific stock list file."""
     file_path = os.path.join(DATA_DIR, filename)
     if not os.path.exists(file_path):
@@ -64,7 +64,7 @@ async def get_stock_list(filename: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{filename}/content")
-async def get_stock_list_content(filename: str):
+def get_stock_list_content(filename: str):
     """Get full raw content of a stock list file."""
     file_path = os.path.join(DATA_DIR, filename)
     if not os.path.exists(file_path):
@@ -89,7 +89,7 @@ def _list_tickers(filename):
 
 
 @router.get("/{filename}/weights")
-async def get_stock_weights(filename: str):
+def get_stock_weights(filename: str):
     """Per-ticker weights of a stock list (empty when none are set)."""
     _list_tickers(filename)
     return {"weights": load_weights(filename)}
@@ -103,7 +103,7 @@ def get_cap_history(filename: str):
 
 
 @router.put("/{filename}/weights")
-async def update_stock_weights(filename: str, update: StockWeightsUpdate):
+def update_stock_weights(filename: str, update: StockWeightsUpdate):
     _list_tickers(filename)
     return {"weights": save_weights(filename, update.weights)}
 
@@ -117,7 +117,7 @@ def fill_weights_from_market_cap(filename: str):
 
 
 @router.post("/")
-async def create_stock_list(stock_list: StockListCreate):
+def create_stock_list(stock_list: StockListCreate):
     """Create a new stock list file."""
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
@@ -136,7 +136,7 @@ async def create_stock_list(stock_list: StockListCreate):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/{filename}")
-async def update_stock_list(filename: str, update: StockListUpdate):
+def update_stock_list(filename: str, update: StockListUpdate):
     """Update an existing stock list file."""
     file_path = os.path.join(DATA_DIR, filename)
     if not os.path.exists(file_path):
@@ -150,7 +150,7 @@ async def update_stock_list(filename: str, update: StockListUpdate):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/{filename}")
-async def delete_stock_list(filename: str):
+def delete_stock_list(filename: str):
     """Delete a stock list file."""
     file_path = os.path.join(DATA_DIR, filename)
     if not os.path.exists(file_path):
@@ -168,7 +168,7 @@ class ValidateTickersRequest(BaseModel):
 
 
 @router.post("/validate")
-async def validate_tickers(request: ValidateTickersRequest, db: Session = Depends(get_db)):
+def validate_tickers(request: ValidateTickersRequest, db: Session = Depends(get_db)):
     """Validate tickers by checking if they have price data in the database."""
     if not request.tickers:
         return {"bad_tickers": [], "good_tickers": []}

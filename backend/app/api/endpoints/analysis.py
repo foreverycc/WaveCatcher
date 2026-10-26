@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 import logging
 import traceback
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
@@ -31,7 +33,7 @@ import subprocess
 import sys
 
 @router.post("/update-indices")
-async def update_indices(body: Optional[Dict[str, Any]] = None):
+def update_indices(body: Optional[Dict[str, Any]] = None):
     """Run the script to update index stock lists.
     
     Args:
@@ -124,7 +126,7 @@ class JobStatus(BaseModel):
     report: Optional[Dict[str, Any]] = None
 
 @router.get("/indices")
-async def get_available_indices():
+def get_available_indices():
     """Get list of available indices for multi-index analysis."""
     index_config = load_index_config()
     data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../data"))
@@ -158,7 +160,7 @@ class IndexConfigEntry(BaseModel):
 
 
 @router.put("/indices")
-async def update_all_indices(config: Dict[str, IndexConfigEntry]):
+def update_all_indices(config: Dict[str, IndexConfigEntry]):
     """Replace the entire index configuration."""
     try:
         save_index_config({k: v.dict() for k, v in config.items()})
@@ -168,7 +170,7 @@ async def update_all_indices(config: Dict[str, IndexConfigEntry]):
 
 
 @router.post("/indices/{key}")
-async def upsert_index(key: str, entry: IndexConfigEntry):
+def upsert_index(key: str, entry: IndexConfigEntry):
     """Add or update a single index entry."""
     try:
         config = load_index_config()
@@ -209,7 +211,7 @@ async def upsert_index(key: str, entry: IndexConfigEntry):
 
 
 @router.delete("/indices/{key}")
-async def delete_index(key: str):
+def delete_index(key: str):
     """Remove an index entry."""
     config = load_index_config()
     if key not in config:
@@ -219,7 +221,7 @@ async def delete_index(key: str):
     return {"status": "success", "key": key}
 
 @router.post("/run", response_model=JobStatus)
-async def run_analysis(request: AnalysisRequest):
+def run_analysis(request: AnalysisRequest):
     """Start a new analysis job."""
     try:
         # job_manager still manages the background thread/process
@@ -238,7 +240,7 @@ async def run_analysis(request: AnalysisRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/run_multi_index", response_model=JobStatus)
-async def run_multi_index_analysis(request: MultiIndexRequest):
+def run_multi_index_analysis(request: MultiIndexRequest):
     """
     Start analysis for multiple indices. Combines all stock lists into unique set,
     runs analysis once, then computes per-index breadth.
@@ -270,7 +272,7 @@ async def run_multi_index_analysis(request: MultiIndexRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/status/current", response_model=Optional[JobStatus])
-async def get_current_status():
+def get_current_status():
     """Get status of the current or last job."""
     job = job_manager.get_current_job()
     if not job:
@@ -287,7 +289,7 @@ async def get_current_status():
     }
 
 @router.get("/runs")
-async def get_analysis_runs(db: Session = Depends(get_db)):
+def get_analysis_runs(db: Session = Depends(get_db)):
     """List all analysis runs."""
     runs = db.query(AnalysisRun).order_by(desc(AnalysisRun.timestamp)).all()
     return [{
@@ -320,16 +322,38 @@ def _latest_run_for_stock_list(db, stock_list):
     return (row[0], row[1]) if row else (None, None)
 
 
+# (cache key, built at, result) of /ticker_first_dates
+_first_dates_cache = {'key': None, 'at': 0.0, 'value': None}
+_FIRST_DATES_TTL = 600  # seconds; analysis jobs write prices from another process
+
+
 @router.get("/ticker_first_dates")
-async def get_ticker_first_dates(db: Session = Depends(get_db)):
+def get_ticker_first_dates(db: Session = Depends(get_db)):
     """First stored daily bar (YYYY-MM-DD) of every ticker whose history starts later than the
     earliest one, e.g. a recent IPO. Breadth shares and scores divide by the stocks that were
     trading on each day, so a stock does not dilute the days before it had data."""
-    from sqlalchemy import func
-    rows = db.query(PriceBar.ticker, func.min(PriceBar.timestamp)).filter(
-        PriceBar.interval == '1d'
-    ).group_by(PriceBar.ticker).all()
-    firsts = {t: pd.Timestamp(ts).strftime('%Y-%m-%d') for t, ts in rows if ts is not None}
+    import time
+    # Prices change when an analysis run starts or finishes, so the runs table keys the cache
+    key = tuple(db.execute(text("SELECT max(id), count(*), sum(status = 'completed') FROM analysis_runs")).fetchone())
+    cache = _first_dates_cache
+    if cache['key'] == key and time.time() - cache['at'] < _FIRST_DATES_TTL:
+        return cache['value']
+    cache.update(key=key, at=time.time(), value=_compute_ticker_first_dates(db))
+    return cache['value']
+
+
+def _compute_ticker_first_dates(db):
+    # A GROUP BY over all ~30M bars takes seconds; stepping ticker to ticker through the
+    # indexes takes one seek each.
+    firsts, ticker = {}, ''
+    while True:
+        row = db.execute(text("SELECT ticker FROM price_history WHERE ticker > :t ORDER BY ticker LIMIT 1"), {'t': ticker}).fetchone()
+        if not row:
+            break
+        ticker = row[0]
+        ts = db.execute(text("SELECT min(timestamp) FROM price_history WHERE ticker = :t AND interval = '1d'"), {'t': ticker}).scalar()
+        if ts is not None:
+            firsts[ticker] = pd.Timestamp(ts).strftime('%Y-%m-%d')
     if not firsts:
         return {}
     # a week of slack: tickers whose stored history starts a few days later still count from the start
@@ -337,8 +361,12 @@ async def get_ticker_first_dates(db: Session = Depends(get_db)):
     return {t: d for t, d in firsts.items() if d > cutoff}
 
 
+# stock list -> (cache key, encoded JSON) of /market_breadth
+_breadth_cache: Dict[str, tuple] = {}
+
+
 @router.get("/market_breadth/{stock_list}")
-async def get_market_breadth_by_stock_list(
+def get_market_breadth_by_stock_list(
     stock_list: str,
     db: Session = Depends(get_db)
 ):
@@ -351,6 +379,16 @@ async def get_market_breadth_by_stock_list(
     # ticker "ALL") or a multi-index run (results under the stock list name). Picking per list keeps
     # an index's data after later runs of other indices.
     run_id, key = _latest_run_for_stock_list(db, stock_list)
+
+    # Stored results never change for a run, so the encoded response is reused until a newer
+    # run (or a rebuilt DMA breadth file) comes along
+    from app.services.stock_weights import dma_breadth_path
+    dma_path = dma_breadth_path(stock_list)
+    run_time = db.get(AnalysisRun, run_id).timestamp if run_id else None  # ids can be reused after a cleanup
+    cache_key = (run_id, run_time, key, os.path.getmtime(dma_path) if os.path.exists(dma_path) else None)
+    cached = _breadth_cache.get(stock_list)
+    if cached and cached[0] == cache_key:
+        return Response(cached[1], media_type='application/json')
 
     def _result(rtype):
         if not run_id:
@@ -385,7 +423,7 @@ async def get_market_breadth_by_stock_list(
             ).first()
             data_quality = dq_result.data if dq_result and dq_result.data else {}
     
-    return {
+    payload = {
         "cd_breadth": cd_breadth,
         "mc_breadth": mc_breadth,
         "cd_signal_breadth": cd_signal_breadth,
@@ -401,9 +439,13 @@ async def get_market_breadth_by_stock_list(
         "dma_breadth": load_dma_breadth(stock_list),
         "run_id": run_id
     }
+    body = JSONResponse(jsonable_encoder(payload)).body
+    if run_id:
+        _breadth_cache[stock_list] = (cache_key, body)
+    return Response(body, media_type='application/json')
 
 @router.get("/runs/{run_id}/results/{result_type}")
-async def get_analysis_result(
+def get_analysis_result(
     run_id: int, 
     result_type: str, 
     ticker: Optional[str] = None,
@@ -438,6 +480,23 @@ async def get_analysis_result(
                         results.append(res.data)
             return results
             
+        # The "ALL" blob can be ~100MB of JSON; let SQLite pick out this ticker's rows
+        # instead of decoding all of it in Python
+        if db.bind.dialect.name == 'sqlite':
+            import json as _json
+            rows = db.execute(text(
+                "SELECT j.value FROM analysis_results r, json_each(r.data) j "
+                "WHERE r.run_id = :run AND r.result_type = :rtype AND r.ticker = 'ALL' "
+                "AND substr(r.data, 1, 1) = '[' AND json_extract(j.value, '$.ticker') = :ticker "
+                "ORDER BY r.id, j.key"
+            ), {'run': run_id, 'rtype': result_type, 'ticker': ticker}).fetchall()
+            non_array = db.execute(text(
+                "SELECT count(*) FROM analysis_results WHERE run_id = :run AND result_type = :rtype "
+                "AND ticker = 'ALL' AND substr(data, 1, 1) != '['"
+            ), {'run': run_id, 'rtype': result_type}).scalar()
+            if not non_array:
+                return [_json.loads(v) for (v,) in rows]
+
     # 2. Fallback or "ALL" query
     # Fetch generic result (ticker="ALL")
     generic_results = query.filter(AnalysisResult.ticker == "ALL").all()
@@ -461,8 +520,38 @@ async def get_analysis_result(
         
     return combined_data
 
+# (run_id, result_type) -> slim rows; a run's results never change once written
+_best_metrics_cache: Dict[tuple, list] = {}
+
+
+@router.get("/runs/{run_id}/results/{result_type}/best_metrics")
+def get_best_metrics(run_id: int, result_type: str, db: Session = Depends(get_db)):
+    """Each row of an eval result cut down to its best-period metrics. The full rows carry price
+    and return histories (~23KB each, ~90MB per result), while tables only show these numbers."""
+    key = (run_id, result_type)
+    if key not in _best_metrics_cache:
+        rows = get_analysis_result(run_id, result_type, None, db)
+        slim = []
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            item = {'ticker': row.get('ticker'), 'interval': row.get('interval'), 'best_period': row.get('best_period')}
+            p = row.get('best_period')
+            if p is not None:
+                for field in ('avg_return', 'success_rate', 'test_count'):
+                    if f'{field}_{p}' in row:
+                        item[f'{field}_{p}'] = row[f'{field}_{p}']
+            slim.append(item)
+        if not slim:
+            return slim  # not written yet (run still going) - don't cache
+        if len(_best_metrics_cache) >= 8:
+            _best_metrics_cache.pop(next(iter(_best_metrics_cache)))
+        _best_metrics_cache[key] = slim
+    return _best_metrics_cache[key]
+
+
 @router.get("/price_history/{ticker}/{interval}")
-async def get_price_history(
+def get_price_history(
     ticker: str,
     interval: str,
     db: Session = Depends(get_db)
@@ -602,7 +691,7 @@ async def get_price_history(
 
 
 @router.get("/ticker_signals/{ticker}")
-async def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
+def get_ticker_signals(ticker: str, db: Session = Depends(get_db)):
     """
     Get per-date aggregated CD/MC signal and score data across all intervals
     for a single ticker. Returns the same shape as index-level breadth data
@@ -859,7 +948,7 @@ def get_earnings_dates(ticker: str):
 
 
 @router.post("/fundamentals/aggregate")
-async def get_fundamentals_aggregate(request: FundamentalsRequest):
+def get_fundamentals_aggregate(request: FundamentalsRequest):
     """Calendar-quarter totals over a stock list (same companies in every quarter) and % with EPS up."""
     return aggregate_quarterly(request.tickers)
 
@@ -901,7 +990,7 @@ def get_logs(lines: int = 100):
         return {"logs": [f"Error reading logs: {str(e)}"]}
 
 @router.get("/signals_1234/{ticker}")
-async def get_signals_1234(ticker: str, stock_list: Optional[str] = None, db: Session = Depends(get_db)):
+def get_signals_1234(ticker: str, stock_list: Optional[str] = None, db: Session = Depends(get_db)):
     """Get 1234 CD/MC signal dates for a specific ticker from the latest analysis run.
     With stock_list (an index card), use the newest run that analysed that stock list instead."""
     run_id = _latest_run_for_stock_list(db, stock_list)[0] if stock_list else None
@@ -963,26 +1052,26 @@ async def get_signals_1234(ticker: str, stock_list: Optional[str] = None, db: Se
 # ─── Scoring Configuration ───────────────────────────────────────────────
 
 @router.get("/config/scoring")
-async def get_scoring_weights():
+def get_scoring_weights():
     """Return the current scoring weight configuration."""
     return get_scoring_config()
 
 
 @router.put("/config/scoring")
-async def update_scoring_weights(config: Dict[str, Any]):
+def update_scoring_weights(config: Dict[str, Any]):
     """Update scoring weight configuration. Changes take effect immediately."""
     updated = save_scoring_config(config)
     return updated
 
 
 @router.get("/config/scoring/defaults")
-async def get_scoring_defaults():
+def get_scoring_defaults():
     """Return the default scoring weight configuration."""
     return SCORING_DEFAULTS
 
 
 @router.delete("/cleanup-database")
-async def cleanup_database(tables: Optional[str] = None, db: Session = Depends(get_db)):
+def cleanup_database(tables: Optional[str] = None, db: Session = Depends(get_db)):
     """Delete data from selected tables to allow a fresh re-run.
     
     Args:

@@ -95,12 +95,15 @@ def report_assets():
         return assets[0].read_text(), assets[1].read_text()
 
 
-def load_results(db, run_id):
+def load_results(db, run_id, tables=True):
+    """tables=False skips the signal-table results (eval_custom_detailed is ~100MB per side),
+    which the Summary figures do not use."""
     required_types = {'report_snapshot', 'data_quality_warnings'}
     for side in ('cd', 'mc'):
         required_types.update(f'{side}_{suffix}' for _, suffix, _, _ in METRICS)
-        required_types.update(f'{side}_{suffix}' for suffix in (
-            'breakout_candidates_summary_1234', 'eval_good_signals', 'eval_custom_detailed'))
+        required_types.add(f'{side}_breakout_candidates_summary_1234')
+        if tables:
+            required_types.update(f'{side}_{suffix}' for suffix in ('eval_good_signals', 'eval_custom_detailed'))
     return {(r.result_type, r.ticker): r.data for r in db.query(AnalysisResult)
             .filter_by(run_id=run_id).filter(AnalysisResult.result_type.in_(required_types))
             .order_by(AnalysisResult.id).all()}

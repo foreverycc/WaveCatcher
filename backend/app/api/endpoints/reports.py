@@ -4,7 +4,8 @@ from typing import Optional
 from pydantic import BaseModel, model_validator
 
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import FileResponse, JSONResponse, Response
 
 from app.db.database import SessionLocal
 from app.db.models import SavedReport, AnalysisRun
@@ -57,16 +58,26 @@ class ReportView(BaseModel):
     breadth_date_range: DateRange
 
 
+# (run id, run time) -> encoded figures; a completed run's results and snapshot never change
+_figures_cache = {}
+
+
 @router.get('/runs/{run_id}/figures')
 def run_figures(run_id: int):
     with SessionLocal() as db:
         run = db.get(AnalysisRun, run_id)
         if not run or run.status != 'completed':
             raise HTTPException(status_code=404, detail='Completed run not found')
-        try:
-            return summary_figures(load_results(db, run_id))
-        except ValueError as exc:
-            raise HTTPException(status_code=404, detail=str(exc))
+        cache_key = (run_id, run.timestamp)  # ids can be reused after a database cleanup
+        if cache_key not in _figures_cache:
+            try:
+                figures = summary_figures(load_results(db, run_id, tables=False))
+            except ValueError as exc:
+                raise HTTPException(status_code=404, detail=str(exc))
+            if len(_figures_cache) >= 4:
+                _figures_cache.pop(next(iter(_figures_cache)))
+            _figures_cache[cache_key] = JSONResponse(jsonable_encoder(figures)).body
+        return Response(_figures_cache[cache_key], media_type='application/json')
 
 
 @router.post('/runs/{run_id}')

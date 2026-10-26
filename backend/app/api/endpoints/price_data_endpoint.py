@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 @router.get("/price_data/{ticker}")
-async def get_price_data(
+def get_price_data(
     ticker: str,
     interval: str = "1d",
     days: int = 60
