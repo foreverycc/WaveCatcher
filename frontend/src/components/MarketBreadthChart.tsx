@@ -911,6 +911,124 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         };
     }, [handleMouseMove, handleMouseUp]);
 
+    // Two fingers on phones / tablets, decided by their first ~10px of movement:
+    // - spreading / pinching zooms as on maps: the date under each finger stays under that finger;
+    // - moving both sideways pans, and once the range reaches the last (first) day, moving further
+    //   left (right) zooms into that end with it pinned, so from the full range a left swipe zooms
+    //   into the latest days.
+    // One finger still scrolls the page and the lower lanes.
+    const zoomRef = useRef(zoomState);
+    zoomRef.current = zoomState;
+    const totalRef = useRef(mergedData.length);
+    totalRef.current = mergedData.length;
+    const hasData = mergedData.length > 0; // the chart (and wrapperRef) only mount with data
+    useEffect(() => {
+        const el = wrapperRef.current;
+        if (!el) return;
+        type Pinch = {
+            ids: [number, number]; at: [number, number]; span: number; left: number; width: number;
+            mode: 'pending' | 'pinch' | 'pan'; x0: [number, number]; mid: number; cur: { start: number; span: number };
+        };
+        let pinch: Pinch | null = null;
+        let frame = 0;
+        // Plot area (screen x) of the lane under the fingers, past its Y axes
+        const plotArea = (target: EventTarget | null) => {
+            const chart = target instanceof Element ? target.closest('.recharts-wrapper') : null;
+            const clip = chart?.querySelector('clipPath rect');
+            const svg = chart?.querySelector('svg');
+            if (clip && svg) {
+                const box = svg.getBoundingClientRect();
+                const width = Number(clip.getAttribute('width'));
+                if (width > 0) return { left: box.left + Number(clip.getAttribute('x') || 0), width };
+            }
+            const rect = el.getBoundingClientRect();
+            return { left: rect.left + 43, width: rect.width - 48 }; // 5px margin + 38px Y axis
+        };
+        const point = (e: TouchEvent, id: number) => {
+            for (let i = 0; i < e.touches.length; i++) if (e.touches[i].identifier === id) return e.touches[i];
+            return null;
+        };
+        const apply = (span: number, start: number, total: number) => {
+            span = Math.round(Math.max(Math.min(total, 10), Math.min(total, span)));
+            start = Math.max(0, Math.min(total - span, Math.round(start)));
+            const next = span >= total ? null : { start, end: start + span - 1 };
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(() => setZoomState(next));
+        };
+        const onStart = (e: TouchEvent) => {
+            if (e.touches.length !== 2) { pinch = null; return; }
+            isSelectingRef.current = false;
+            setSelection(null);
+            const total = totalRef.current;
+            const start = zoomRef.current?.start ?? 0;
+            const span = (zoomRef.current?.end ?? total - 1) - start + 1;
+            const area = plotArea(e.touches[0].target);
+            // bar i covers [i, i + 1) of `span` equal slots across the plot
+            const index = (x: number) => start + Math.max(0, Math.min(1, (x - area.left) / area.width)) * span;
+            const [a, b] = [e.touches[0], e.touches[1]];
+            pinch = {
+                ids: [a.identifier, b.identifier], at: [index(a.clientX), index(b.clientX)], span, ...area,
+                mode: 'pending', x0: [a.clientX, b.clientX], mid: (a.clientX + b.clientX) / 2, cur: { start, span },
+            };
+        };
+        const onMove = (e: TouchEvent) => {
+            if (!pinch || e.touches.length !== 2) return;
+            const a = point(e, pinch.ids[0]), b = point(e, pinch.ids[1]);
+            if (!a || !b) return;
+            e.preventDefault(); // keep the browser from zooming the whole page
+            const total = totalRef.current;
+            const mid = (a.clientX + b.clientX) / 2;
+            if (pinch.mode === 'pending') {
+                const spread = Math.abs(Math.abs(a.clientX - b.clientX) - Math.abs(pinch.x0[0] - pinch.x0[1]));
+                const moved = Math.abs(mid - (pinch.x0[0] + pinch.x0[1]) / 2);
+                if (Math.max(spread, moved) < 10) return;
+                pinch.mode = spread > moved ? 'pinch' : 'pan';
+            }
+            if (pinch.mode === 'pan') {
+                const minSpan = Math.min(total, 10);
+                let { start, span } = pinch.cur;
+                start -= (mid - pinch.mid) / pinch.width * span; // fingers left -> later days
+                pinch.mid = mid;
+                if (start + span > total) {
+                    // past the last day: the leftover movement zooms into the end, which stays pinned
+                    const px = (start + span - total) / span * pinch.width;
+                    span = Math.max(minSpan, span * Math.exp(-px / 200));
+                    start = total - span;
+                } else if (start < 0) {
+                    const px = -start / span * pinch.width;
+                    span = Math.max(minSpan, span * Math.exp(-px / 200));
+                    start = 0;
+                }
+                pinch.cur = { start, span };
+                // keep the range whole bars wide, with the pinned end exactly at the data's end
+                const whole = Math.round(span);
+                apply(whole, start + span >= total - 1e-6 ? total - whole : start, total);
+                return;
+            }
+            const f1 = (a.clientX - pinch.left) / pinch.width, f2 = (b.clientX - pinch.left) / pinch.width;
+            const [i1, i2] = pinch.at;
+            // solve start + f * span = index for both fingers
+            let span = Math.abs(f2 - f1) > 0.02 && Math.abs(i2 - i1) > 0.5 ? (i2 - i1) / (f2 - f1) : pinch.span;
+            if (!(span > 0)) span = pinch.span;
+            const clamped = Math.max(Math.min(total, 10), Math.min(total, span));
+            // within limits both dates stay under their fingers; past them the midpoint does
+            const start = clamped === span ? i1 - f1 * span : (i1 + i2) / 2 - ((f1 + f2) / 2) * clamped;
+            apply(clamped, start, total);
+        };
+        const onEnd = (e: TouchEvent) => { if (e.touches.length < 2) pinch = null; };
+        el.addEventListener('touchstart', onStart, { passive: true });
+        el.addEventListener('touchmove', onMove, { passive: false });
+        el.addEventListener('touchend', onEnd);
+        el.addEventListener('touchcancel', onEnd);
+        return () => {
+            cancelAnimationFrame(frame);
+            el.removeEventListener('touchstart', onStart);
+            el.removeEventListener('touchmove', onMove);
+            el.removeEventListener('touchend', onEnd);
+            el.removeEventListener('touchcancel', onEnd);
+        };
+    }, [hasData]);
+
 
     if (mergedData.length === 0) {
         return (
@@ -959,11 +1077,11 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
     return (
         <div className="flex flex-col h-[1000px] border rounded-lg bg-card p-4">
-            <div className="flex justify-between items-center mb-2 gap-2">
+            <div className="flex flex-wrap justify-between items-center mb-2 gap-2">
                 <h3 className="text-lg font-semibold text-foreground shrink-0">
                     {selectedTicker ? `${selectedTicker} (${indexTitle || title})` : title}
                 </h3>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     {tickers.length > 0 && onTickerChange && (
                         <TickerSelector
                             tickers={tickers}
@@ -990,7 +1108,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
 
             <div
                 ref={wrapperRef}
-                className="flex-1 flex flex-col min-h-0 select-none pb-2"
+                className="flex-1 flex flex-col min-h-0 select-none pb-2 touch-pan-y"
                 onMouseDown={handleMouseDown}
             >
                 {/* 1. Price History (Candle) */}
