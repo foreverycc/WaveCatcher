@@ -26,6 +26,10 @@ interface SignalBreadthDataPoint {
     count_1d: number;
 }
 
+// Shared empty array for missing props, so the charts' memoized data keeps its identity across renders
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const NONE: any[] = [];
+
 export interface IndexSummaryCardProps {
     /** saved data only (the offline report): no live requests, no switching to a single stock */
     offline?: boolean;
@@ -64,14 +68,14 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     spxData,
     cdBreadth,
     mcBreadth,
-    cdSignalBreadth = [],
-    mcSignalBreadth = [],
-    cdScoreBreadth = [],
-    mcScoreBreadth = [],
-    cdBreakthroughScoreBreadth = [],
-    mcBreakthroughScoreBreadth = [],
-    cdCompanyBreadth = [],
-    mcCompanyBreadth = [],
+    cdSignalBreadth = NONE,
+    mcSignalBreadth = NONE,
+    cdScoreBreadth = NONE,
+    mcScoreBreadth = NONE,
+    cdBreakthroughScoreBreadth = NONE,
+    mcBreakthroughScoreBreadth = NONE,
+    cdCompanyBreadth = NONE,
+    mcCompanyBreadth = NONE,
     tickerWeights,
     intervalWeights,
     firstDates,
@@ -80,7 +84,7 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     minDate,
     maxDate,
     signals1234,
-    tickers = [],
+    tickers = NONE,
     indexTicker,
     focusDate
 }) => {
@@ -136,8 +140,8 @@ export const IndexSummaryCard: React.FC<IndexSummaryCardProps> = ({
     const effectiveMcSignalBreadth = useTickerSignals ? tickerSignals!.mc_signal_breadth : mcSignalBreadth;
     const effectiveCdScoreBreadth = useTickerSignals ? tickerSignals!.cd_score_breadth : cdScoreBreadth;
     const effectiveMcScoreBreadth = useTickerSignals ? tickerSignals!.mc_score_breadth : mcScoreBreadth;
-    const effectiveCdBtScoreBreadth = useTickerSignals ? (tickerSignals!.cd_breakthrough_score_breadth ?? []) : cdBreakthroughScoreBreadth;
-    const effectiveMcBtScoreBreadth = useTickerSignals ? (tickerSignals!.mc_breakthrough_score_breadth ?? []) : mcBreakthroughScoreBreadth;
+    const effectiveCdBtScoreBreadth = useTickerSignals ? (tickerSignals!.cd_breakthrough_score_breadth ?? NONE) : cdBreakthroughScoreBreadth;
+    const effectiveMcBtScoreBreadth = useTickerSignals ? (tickerSignals!.mc_breakthrough_score_breadth ?? NONE) : mcBreakthroughScoreBreadth;
 
     // Market breadth: companies with a CD / MC signal per day (a single ticker counts 1 on its signal days)
     const effectiveCdCompanyBreadth = useMemo(() => useTickerSignals ? companiesFromSignalBreadth(effectiveCdSignalBreadth) : cdCompanyBreadth,

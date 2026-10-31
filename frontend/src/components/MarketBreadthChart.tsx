@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useRef, useState, useCallback, useEffect, useLayoutEffect } from 'react';
 import {
     ComposedChart,
     Bar,
@@ -118,6 +118,11 @@ const INTERVAL_COLORS: Record<string, string> = {
 const INTERVALS = ['1h', '2h', '3h', '4h', '1d'] as const;
 
 // Score weights per interval: super-exponential scaling (backtest-optimized)
+// One shared empty array for missing props: a fresh `[]` default on every render would look like new
+// data to the useMemos below and rebuild every lane on each zoom step or toggle
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const NONE: any[] = [];
+
 const SCORE_WEIGHTS: Record<string, number> = {
     '1h': 1,
     '2h': 2,
@@ -461,35 +466,35 @@ const MarketBreadthTooltip = ({ active, payload, kind }: any) => {
 export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     title,
     spxData,
-    cdBreadth = [],
-    mcBreadth = [],
-    cdSignalBreadth = [],
-    mcSignalBreadth = [],
-    cdScoreBreadth = [],
-    mcScoreBreadth = [],
-    cdBreakthroughScoreBreadth = [],
-    mcBreakthroughScoreBreadth = [],
+    cdBreadth = NONE,
+    mcBreadth = NONE,
+    cdSignalBreadth = NONE,
+    mcSignalBreadth = NONE,
+    cdScoreBreadth = NONE,
+    mcScoreBreadth = NONE,
+    cdBreakthroughScoreBreadth = NONE,
+    mcBreakthroughScoreBreadth = NONE,
     intervalWeights,
     minDate,
     maxDate,
     signals1234,
-    tickers = [],
+    tickers = NONE,
     selectedTicker = '',
     onTickerChange,
     indexTitle,
-    fundamentals = [],
-    cdCompanyBreadth = [],
-    mcCompanyBreadth = [],
+    fundamentals = NONE,
+    cdCompanyBreadth = NONE,
+    mcCompanyBreadth = NONE,
     tickerWeights,
     firstDates,
     capHistory,
-    dmaBreadth = [],
-    earnings = []
+    dmaBreadth = NONE,
+    earnings = NONE
 }) => {
     // Effective interval weights: use prop if provided, else fall back to SCORE_WEIGHTS constant
     const effectiveWeights = intervalWeights || SCORE_WEIGHTS;
     // US Treasury yields, shared by every chart (FRED daily data)
-    const { data: bondYields = [] } = useQuery({
+    const { data: bondYields = NONE } = useQuery({
         queryKey: ['bondYields'],
         queryFn: analysisApi.getBondYields,
         staleTime: 1000 * 60 * 60,
@@ -917,6 +922,14 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
     //   left (right) zooms into that end with it pinned, so from the full range a left swipe zooms
     //   into the latest days.
     // One finger still scrolls the page and the lower lanes.
+    // While the fingers move, the lanes are only stretched / shifted on the GPU (a CSS transform of
+    // each chart, clipped to its plot area), which redraws nothing; the real range is drawn once
+    // when the fingers lift. Redrawing a dozen charts per move cannot keep up with the fingers.
+    const clearPreviewRef = useRef<(() => void) | null>(null);
+    useLayoutEffect(() => {
+        // the zoomed range is drawn: drop the preview before the browser paints
+        clearPreviewRef.current?.();
+    }, [zoomState]);
     const zoomRef = useRef(zoomState);
     zoomRef.current = zoomState;
     const totalRef = useRef(mergedData.length);
@@ -931,6 +944,35 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
         };
         let pinch: Pinch | null = null;
         let frame = 0;
+        // preview of the range the fingers point at, relative to the drawn one
+        let base: { start: number; span: number } | null = null;
+        let target: { start: number; span: number } | null = null;
+        let lanes: { wrapper: HTMLElement; svg: SVGSVGElement; left: number; width: number; outer: number }[] = [];
+        const clearPreview = () => {
+            lanes.forEach(({ wrapper, svg }) => { svg.style.transform = ''; svg.style.transformOrigin = ''; wrapper.style.clipPath = ''; });
+            lanes = [];
+            el.classList.remove('chart-gesture');
+        };
+        clearPreviewRef.current = clearPreview;
+        const drawPreview = () => {
+            if (!base || !target) return;
+            if (!lanes.length) {
+                el.classList.add('chart-gesture'); // hides the tooltips while previewing
+                el.querySelectorAll<HTMLElement>('.recharts-wrapper').forEach(wrapper => {
+                    const svg = wrapper.querySelector('svg'), clip = wrapper.querySelector('clipPath rect');
+                    const width = Number(clip?.getAttribute('width'));
+                    if (svg && width > 0) lanes.push({ wrapper, svg, left: Number(clip!.getAttribute('x') || 0), width, outer: wrapper.clientWidth });
+                });
+            }
+            const s = base.span / target.span;
+            lanes.forEach(({ wrapper, svg, left, width, outer }) => {
+                // bar i sits at left + (i - start) / span * width: map the drawn range onto the target one
+                const tx = left * (1 - s) - (target!.start - base!.start) / target!.span * width;
+                svg.style.transformOrigin = '0 0';
+                svg.style.transform = `matrix(${s}, 0, 0, 1, ${tx}, 0)`;
+                wrapper.style.clipPath = `inset(0 ${Math.max(0, outer - left - width)}px 0 ${left}px)`;
+            });
+        };
         // Plot area (screen x) of the lane under the fingers, past its Y axes
         const plotArea = (target: EventTarget | null) => {
             const chart = target instanceof Element ? target.closest('.recharts-wrapper') : null;
@@ -949,19 +991,34 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             return null;
         };
         const apply = (span: number, start: number, total: number) => {
-            span = Math.round(Math.max(Math.min(total, 10), Math.min(total, span)));
-            start = Math.max(0, Math.min(total - span, Math.round(start)));
-            const next = span >= total ? null : { start, end: start + span - 1 };
+            span = Math.max(Math.min(total, 10), Math.min(total, span));
+            start = Math.max(0, Math.min(total - span, start));
+            target = { start, span };
             cancelAnimationFrame(frame);
-            frame = requestAnimationFrame(() => setZoomState(next));
+            frame = requestAnimationFrame(drawPreview);
+        };
+        const commit = () => {
+            cancelAnimationFrame(frame);
+            if (!target) { clearPreview(); return; }
+            const total = totalRef.current;
+            const span = Math.round(target.span);
+            const start = Math.max(0, Math.min(total - span, Math.round(target.start)));
+            const next = span >= total ? null : { start, end: start + span - 1 };
+            target = null;
+            base = null;
+            const cur = zoomRef.current;
+            if ((cur?.start ?? null) === (next?.start ?? null) && (cur?.end ?? null) === (next?.end ?? null)) clearPreview();
+            else setZoomState(next); // the layout effect drops the preview once the range is drawn
         };
         const onStart = (e: TouchEvent) => {
-            if (e.touches.length !== 2) { pinch = null; return; }
+            if (e.touches.length !== 2) { if (pinch) { pinch = null; commit(); } return; }
+            e.stopPropagation(); // the charts' own touch tooltips would redraw every lane
             isSelectingRef.current = false;
             setSelection(null);
             const total = totalRef.current;
             const start = zoomRef.current?.start ?? 0;
             const span = (zoomRef.current?.end ?? total - 1) - start + 1;
+            base = { start, span };
             const area = plotArea(e.touches[0].target);
             // bar i covers [i, i + 1) of `span` equal slots across the plot
             const index = (x: number) => start + Math.max(0, Math.min(1, (x - area.left) / area.width)) * span;
@@ -976,6 +1033,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             const a = point(e, pinch.ids[0]), b = point(e, pinch.ids[1]);
             if (!a || !b) return;
             e.preventDefault(); // keep the browser from zooming the whole page
+            e.stopPropagation();
             const total = totalRef.current;
             const mid = (a.clientX + b.clientX) / 2;
             if (pinch.mode === 'pending') {
@@ -1000,9 +1058,7 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
                     start = 0;
                 }
                 pinch.cur = { start, span };
-                // keep the range whole bars wide, with the pinned end exactly at the data's end
-                const whole = Math.round(span);
-                apply(whole, start + span >= total - 1e-6 ? total - whole : start, total);
+                apply(span, start, total);
                 return;
             }
             const f1 = (a.clientX - pinch.left) / pinch.width, f2 = (b.clientX - pinch.left) / pinch.width;
@@ -1015,17 +1071,20 @@ export const MarketBreadthChart: React.FC<MarketBreadthChartProps> = ({
             const start = clamped === span ? i1 - f1 * span : (i1 + i2) / 2 - ((f1 + f2) / 2) * clamped;
             apply(clamped, start, total);
         };
-        const onEnd = (e: TouchEvent) => { if (e.touches.length < 2) pinch = null; };
-        el.addEventListener('touchstart', onStart, { passive: true });
-        el.addEventListener('touchmove', onMove, { passive: false });
-        el.addEventListener('touchend', onEnd);
-        el.addEventListener('touchcancel', onEnd);
+        const onEnd = (e: TouchEvent) => { if (pinch && e.touches.length < 2) { pinch = null; commit(); } };
+        // capture phase, so two-finger moves can be kept from the charts' own handlers
+        el.addEventListener('touchstart', onStart, { passive: true, capture: true });
+        el.addEventListener('touchmove', onMove, { passive: false, capture: true });
+        el.addEventListener('touchend', onEnd, { capture: true });
+        el.addEventListener('touchcancel', onEnd, { capture: true });
         return () => {
             cancelAnimationFrame(frame);
-            el.removeEventListener('touchstart', onStart);
-            el.removeEventListener('touchmove', onMove);
-            el.removeEventListener('touchend', onEnd);
-            el.removeEventListener('touchcancel', onEnd);
+            clearPreview();
+            clearPreviewRef.current = null;
+            el.removeEventListener('touchstart', onStart, { capture: true });
+            el.removeEventListener('touchmove', onMove, { capture: true });
+            el.removeEventListener('touchend', onEnd, { capture: true });
+            el.removeEventListener('touchcancel', onEnd, { capture: true });
         };
     }, [hasData]);
 
