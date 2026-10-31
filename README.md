@@ -55,6 +55,17 @@ npm run dev
 ```
 The frontend application will be available at `http://localhost:5173`.
 
+#### 3. Running both with one command
+After the setup above, start the backend and the frontend together from the repository root:
+```bash
+./start.sh        # production frontend: builds, then serves at http://localhost:5173 (fast)
+./start.sh dev    # development frontend: reloads on every code change (slower)
+```
+Each line of output is labelled `[backend]` or `[frontend]`. Ctrl+C stops both, and if one of them
+exits the other is stopped too. The backend runs with the `python` on your PATH; set
+`PYTHON=/path/to/python` to use another one. The script stops early if port 8000 or 5173 is taken.
+After changing frontend code in production mode, restart the script to rebuild.
+
 ## 📂 Project Structure
 
 ```text
