@@ -506,6 +506,10 @@ def get_best_metrics(run_id: int, result_type: str, db: Session = Depends(get_db
                 continue
             item = {'ticker': row.get('ticker'), 'interval': row.get('interval'), 'best_period': row.get('best_period')}
             p = row.get('best_period')
+            # best_period is stored as a float (100.0) but the metric keys use the int (avg_return_100)
+            if isinstance(p, float) and p.is_integer():
+                p = int(p)
+                item['best_period'] = p
             if p is not None:
                 for field in ('avg_return', 'success_rate', 'test_count'):
                     if f'{field}_{p}' in row:
